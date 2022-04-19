@@ -14,6 +14,7 @@ def test():
     b_label_dataset('test2.json')
     # 合并标注数据标签和原始数据
     
+    
     # 将json训练数据转换为bio标签
     bio_labels = b_generate_biolabels_from('labels.txt')
     # 将json训练数据转换为bio训练数据 train_trf.json文件
