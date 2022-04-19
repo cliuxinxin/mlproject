@@ -13,7 +13,7 @@ def test():
     # 模型标注数据
     b_label_dataset('test2.json')
     # 合并标注数据标签和原始数据
-    
+    #
     
     # 将json训练数据转换为bio标签
     bio_labels = b_generate_biolabels_from('labels.txt')
