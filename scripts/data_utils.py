@@ -662,20 +662,28 @@ def b_change_label(file,label_file,label_names):
     data = b_read_dataset(file)
     label_data = b_read_dataset(label_file)
 
+    label_ids = [ entry['id'] for entry in label_data ]
+
+    # 找到data中的id在label_ids中的数据，然后如果label[2]在label_names中的，就删除该label
+    for entry in data:
+        if entry['id'] in label_ids:
+            label = entry['label']
+            for l in label:
+                if l[2] in label_names:
+                    label.remove(l)
+            entry['label'] = label
+
     for label_sample in label_data:
         id = label_sample['id']
         s_start = label_sample['start']
         for sample in data:
             if sample['id'] == id:
                 break
-        for idx,label in enumerate(sample['labels']):
-            if label[2] in label_names:
-                sample['labels'].remove(label)
         for label in label_sample['label']:
             if label[2] in label_names:
                 start = label[0] + s_start
                 end = label[1] + s_start
-                sample['labels'].append([start,end,label[2]])
+                sample['label'].append([start,end,label[2]])
     
     b_save_list_datasets(data,file)
 
