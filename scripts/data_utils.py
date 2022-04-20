@@ -956,6 +956,43 @@ def b_split_train_dev():
 
     b_save_df_datasets(train,'train.json')
     b_save_df_datasets(dev,'dev.json')
+
+# 从doccano上面下载train，dev，合并保存到train_dev中
+def p_doccano_download_tran_dev():
+    train = b_read_dataset('train.json')
+    dev = b_read_dataset('dev.json')
+
+    train = pd.DataFrame(train)
+    dev = pd.DataFrame(dev)
+
+    # 添加dataset列
+    train['dataset'] = 'tender_train'
+    dev['dataset'] = 'tender_dev'
+
+    train_dev = pd.concat([train,dev])
+
+    b_save_df_datasets(train_dev,'train_dev.json')
+
+# 从doccano中下载train,dev,并且用最好的模型标注，把标注结果放到mlabel中
+def b_doccano_train_dev_nlp_label():
+    p_doccano_download_tran_dev()
+
+    train_dev = b_read_dataset('train_dev.json')
+
+    nlp = b_load_best_model()
+
+    train_dev_data = [ sample['data'] for sample in train_dev ]
+
+    docs = nlp.pipe(train_dev_data)
+
+    for doc,sample in zip(docs,train_dev):
+        labels = []
+        for ent in doc.ents:
+            labels.append([ent.start_char,ent.end_char,ent.label_])
+        sample['mlabel'] = labels
+
+    b_save_list_datasets(train_dev,'train_dev_mlabel.json')
+
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
