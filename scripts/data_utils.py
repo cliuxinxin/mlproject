@@ -561,7 +561,9 @@ def b_doccano_dataset_label_view(file,labels,project_id):
         text = entry['data']
         for label in entry['label']:
             new_entry = copy.deepcopy(entry)
-            new_entry.remove('data')
+            new_entry.pop('data')
+
+            
             new_entry['id'] = entry['id']
             start = label[0]
             end = label[1]

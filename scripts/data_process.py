@@ -23,10 +23,7 @@ def test():
     b_bio_split_dataset_by_max('train_trf.json',510)
     b_bio_split_dataset_by_max('dev_trf.json',510)
 
-db = b_read_db_basic()
-
-# 随机选一条数据
-db.sample(1)['text'].values[0]
+b_doccano_dataset_label_view("train_dev.json",['预算'],1)
 
 
 
