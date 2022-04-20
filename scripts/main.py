@@ -17,7 +17,7 @@ class ModelName(str, Enum):
 
 
 DEFAULT_MODEL = ModelName.zh_ner_tender
-path = 'model-best'
+path = '/app/app/model-best'
 nlp_model = spacy.load(path)
 
 
