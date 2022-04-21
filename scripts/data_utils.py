@@ -22,7 +22,7 @@ def d_parse_config():
     config.read('config.ini')
     return config
 
-configs = d_parse_config()
+project_configs = d_parse_config()
 
 
 
@@ -54,9 +54,9 @@ DATABASE_PATH = ROOT_PATH + 'database/'
 
 # instantiate a client and log in to a Doccano instance
 doccano_client = DoccanoClient(
-    configs['doccano']['url'],
-    configs['doccano']['user'],
-    configs['doccano']['password']
+    project_configs['doccano']['url'],
+    project_configs['doccano']['user'],
+    project_configs['doccano']['password']
 )
 
 
@@ -525,7 +525,7 @@ def b_doccano_upload(file,project_id):
 
     # 从doccano获取数据
 def b_doccano_export_project(project_id,path):
-    url = configs['doccano']['url']
+    url = project_configs['doccano']['url']
     result = doccano_client.post(f'{url}/v1/projects/{project_id}/download', json={'exportApproved': False, 'format': 'JSONL'}) 
     task_id = result['task_id']
     while True:
@@ -563,8 +563,6 @@ def b_doccano_dataset_label_view(file,labels,project_id):
             new_entry = copy.deepcopy(entry)
             new_entry.pop('data')
 
-            
-            new_entry['id'] = entry['id']
             start = label[0]
             end = label[1]
             s_start = start - 200 if start - 200 > 0 else 0
@@ -959,6 +957,9 @@ def b_split_train_dev():
 
 # 从doccano上面下载train，dev，合并保存到train_dev中
 def p_doccano_download_tran_dev():
+    b_doccano_export_project(2,'train.json')
+    b_doccano_export_project(3,'dev.json')
+
     train = b_read_dataset('train.json')
     dev = b_read_dataset('dev.json')
 
@@ -992,6 +993,72 @@ def b_doccano_train_dev_nlp_label():
         sample['mlabel'] = labels
 
     b_save_list_datasets(train_dev,'train_dev_mlabel.json')
+
+# 使用机器标注好的数据进行对比
+def b_compare_human_machine_label():
+    train_dev_label = b_read_dataset('train_dev_mlabel.json')
+
+    b_doccano_delete_project(1)
+
+    new_data = []
+
+    def record_data(new_data,wrong_type,label_type,sample, label):
+        new_sample = copy.deepcopy(sample)
+        new_sample.pop('data')
+        new_sample.pop('mlabel')
+
+        text = sample['data']
+
+        new_sample['错误种类'] = wrong_type
+        new_sample['标注人'] = label_type
+
+        start = label[0]
+        end = label[1]
+        s_start = start - 200 if start - 200 > 0 else 0
+        s_end = end + 200 if end + 200 < len(text) else len(text)
+
+        new_sample['text'] = text[s_start:s_end]
+        label_ = [[start - s_start,end - s_start,label[2]]]
+        new_sample['label'] = label_
+        new_sample['s_start'] = s_start
+        new_sample['s_end'] = s_end
+
+        new_data.append(new_sample)
+
+    for sample in train_dev_label:
+        labels = sample['label']
+        mlabels = sample['mlabel']
+
+        wrong_mlabels = []
+        for label in labels:
+            if label not in mlabels:
+                start = label[0]
+                end = label[1]
+                label_type = label[2]
+                for mlabel in mlabels:
+                    if mlabel[0] >= start:
+                        break
+                mstart = mlabel[0]
+                mend = mlabel[1]
+                if start == mstart and end == mend:
+                    record_data(new_data,'机器错标类别','机器',sample,mlabel)
+                    record_data(new_data,'机器错标类别答案','人',sample,label)
+                
+                    wrong_mlabels.append(mlabel)
+                elif abs(start - mstart) < 10:
+                    record_data(new_data,'机器错标位置','机器',sample,mlabel)
+                    record_data(new_data,'机器错标位置答案','人',sample,label)
+                    wrong_mlabels.append(mlabel)
+                else:
+                    record_data(new_data,'机器漏标答案','人',sample,label) 
+                
+        for mlabel in mlabels:
+            if mlabel not in labels:
+                if mlabel not in wrong_mlabels:
+                    record_data(new_data,'机器多标','机器',sample,mlabel)  
+    
+    b_save_list_datasets(new_data,'train_dev_mlabel_new.json')
+    b_doccano_upload('train_dev_mlabel_new.json',1)
 
 # ——————————————————————————————————————————————————
 # 调用
