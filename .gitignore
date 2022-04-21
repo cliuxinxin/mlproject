@@ -150,3 +150,16 @@ scripts/wandb/run-20220415_165444-2vujtucd/files/wandb-metadata.json
 scripts/wandb/run-20220415_165444-2vujtucd/files/wandb-summary.json
 scripts/seqeval.py
 test_notebook.ipynb
+scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/config.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/optimizer.pt
+scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/pytorch_model.bin
+scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/rng_state.pth
+scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/scheduler.pt
+scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/special_tokens_map.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/tokenizer_config.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/tokenizer.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/trainer_state.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/training_args.bin
+scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/vocab.txt
+scripts/.DS_Store
+.gitignore
