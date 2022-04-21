@@ -43,6 +43,14 @@ workflows:
 
 # 项目命令
 commands:
+  - name: "hf"
+    help: "使用huggingface的transformer训练"
+    script:
+      - "python scripts/trf.py"
+    deps:
+      - "assets/train_trf_maxlen.json"
+      - "assets/dev_trf_maxlen.json"
+
   - name: "convert"
     help: "convert to ner data"
     script:

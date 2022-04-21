@@ -76,11 +76,11 @@ def compute_metrics(p):
 
     # Remove ignored index (special tokens)
     true_predictions = [
-        [bio_labels[p] for (p, l) in zip(prediction, label) if (l != -100 or l != 0)]
+        [bio_labels[p] for (p, l) in zip(prediction, label) if l != -100 ]
         for prediction, label in zip(predictions, labels)
     ]
     true_labels = [
-        [bio_labels[l] for (p, l) in zip(prediction, label) if (l != -100 or l != 0)]
+        [bio_labels[l] for (p, l) in zip(prediction, label) if l != -100 ]
         for prediction, label in zip(predictions, labels)
     ]
 
