@@ -1076,6 +1076,47 @@ def b_bio_datasets_trans_and_max():
 
     b_bio_split_dataset_by_max('train_trf.json',511)
     b_bio_split_dataset_by_max('dev_trf.json',511)
+
+def b_doccano_add_new_data(key_words:list):
+    """
+    传入keywords，生成train_cat.json,并且上传到项目1中。
+    生成train_imp.json导入到项目2中
+    生成dev_imp.json导入到项目3中
+
+    key_words [list]
+    """
+    db = b_extrct_data_from_db_basic('tender')
+
+    b_doccano_cat_data(db,132,key_words,1)
+
+    test = b_read_dataset('train_cat.json')
+
+    df = pd.DataFrame(test)
+
+    # 将data列改名为text列
+    df.rename(columns={'data':'text'},inplace=True)
+
+    # 去掉label列
+    df.drop(['label'],axis=1,inplace=True)
+
+    # 分为训练和测试
+    df_train = df.sample(frac=0.91)
+    df_dev = df.drop(df_train.index)
+
+    df_train['dataset'] = 'tender_train'
+    df_dev['dataset'] = 'tender_dev'
+
+
+    b_save_df_datasets(df_train,'train_imp.json')
+    b_save_df_datasets(df_dev,'dev_imp.json')
+
+    db = b_read_db_datasets()
+
+    db = db.append(df_train)
+    db = db.append(df_dev)
+
+    b_doccano_upload('train_imp.json',2)
+    b_doccano_upload('dev_imp.json',3)
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
