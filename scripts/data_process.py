@@ -1,7 +1,8 @@
 from data_utils import *
 
-b_doccano_dataset_label_view('train_dev.json',['预算'],6)
+b_doccano_delete_project(1)
+b_doccano_dataset_label_view('train_dev.json',['项目招标编号'],1)
 
 db = b_extrct_data_from_db_basic('tender')
 
-b_doccano_cat_data(db,100,['总投资','总投资额','项目规模','合同估算价','本项目投资','本项目投资','建设规模','招标控制价','工程投资','工程标的','预算'],6)
+b_doccano_cat_data(db,100,['项目招标编号','项目编号','招标编号','招标项目编号','项目代码','标段编号','标段编号为'],1)
