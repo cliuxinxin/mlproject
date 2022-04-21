@@ -583,7 +583,7 @@ def b_doccano_dataset_label_view(file,labels,project_id):
 
 # b_cat_data_to_doccano(db,100,['招标编号','招标项目编号'])
 # 找出一些关键词的数据
-def b_doccano_cat_data(df,number,terms):
+def b_doccano_cat_data(df,number,terms,project_id):
 
     number = number
 
@@ -614,7 +614,7 @@ def b_doccano_cat_data(df,number,terms):
     df = pd.DataFrame(new_trian)
     df.rename(columns={'text':'data'},inplace=True)
     b_save_df_datasets(df,'train_cat.json')
-    b_doccano_dataset_label_view('train_cat.json',['其他'],1)
+    b_doccano_dataset_label_view('train_cat.json',['其他'],project_id)
 
 # 随机根据业务初始化数据集，并且上传到doccano
 def b_doccano_init_dataseet(name,num,ratio,train_id,test_id):
@@ -1064,6 +1064,18 @@ def b_compare_human_machine_label():
     b_save_list_datasets(new_data,'train_dev_mlabel_new.json')
     b_doccano_upload('train_dev_mlabel_new.json',1)
 
+
+# 将现有数据集转换成bio格式，并且切断成512长度
+def b_bio_datasets_trans_and_max():
+    b_save_labels()
+
+    bio_labels = b_bio_labels_generate_from('labels.txt')
+
+    b_bio_trans_dataset(bio_labels,'train.json')
+    b_bio_trans_dataset(bio_labels,'dev.json')
+
+    b_bio_split_dataset_by_max('train_trf.json',511)
+    b_bio_split_dataset_by_max('dev_trf.json',511)
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
