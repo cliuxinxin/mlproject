@@ -39,9 +39,9 @@ model_checkpoint = "bert-base-chinese"
 task = 'ner'
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 
-bio_labels = b_generate_biolabels_from('labels.txt')
+bio_labels = b_bio_labels_generate_from('labels.txt')
 
-datasets = load_dataset('json', data_files= {'train': ASSETS_PATH + 'train_trf_max.json', 'dev': ASSETS_PATH + 'dev_trf_max.json'})
+datasets = load_dataset('json', data_files= {'train': ASSETS_PATH + 'train_trf_maxlen.json', 'dev': ASSETS_PATH + 'dev_trf_maxlen.json'})
 
 label_all_tokens = True
 

@@ -449,7 +449,7 @@ def b_read_train_label_counts():
 def b_save_labels():
     label_counts = b_read_train_label_counts()
     l = list(label_counts.keys())
-    d_save_file(l,"labels.txt")
+    d_save_file(l, ASSETS_PATH + "labels.txt")
 
 # 分割数据集
 def b_cut_datasets_size_pipe(file):
@@ -507,18 +507,19 @@ def b_extrct_data_from_db_basic(dataset_name) -> pd.DataFrame:
 
 
 # 根据cats模型选择数据
-def b_select_data_by_model(dataset_name,num):
-    db = b_extrct_data_from_db_basic('tender')
+def b_select_data_by_model(dataset_name,num) -> list:
+    db = b_extrct_data_from_db_basic(dataset_name)
     nlp = b_load_best_cats()
 
     sample_data = []
     for index,row in db.iterrows():
         text = row['text']
-        doc = nlp(text)
-        if doc.cats['需要'] >= 0.5 and doc.cats['需要'] <= 0.6:
-            sample_data.append(row)
-        if len(sample_data) == 100:
-            break
+        if len(text) > 500:
+            doc = nlp(text)
+            if doc.cats['需要'] >= 0.3:
+                sample_data.append(row)
+            if len(sample_data) == num:
+                break
 
     return pd.DataFrame(sample_data)
 
@@ -715,7 +716,7 @@ def b_json2bio(file):
         f_write.write("\n")
 
 # 将预测转换成json
-def b_convert_bio_json(text,predict):
+def b_bio_to_json(text,predict):
     string="我是李明，我爱中国，我来自呼和浩特"
     predict=["o","o","i-per","i-per","o","o","o","b-loc","i-loc","o","o","o","o","b-per","i-loc","i-loc","i-loc"]
     item = {"string": string, "entities": []}
@@ -760,7 +761,7 @@ def b_split_train_test(df_db,ratio):
 
 # 从labels.txt中生成biolabels
 # b_generate_biolabels_from('labels.txt')
-def b_generate_biolabels_from(file):
+def b_bio_labels_generate_from(file):
     labels = b_read_text_file(file)
 
     bio_labels = []
@@ -773,7 +774,7 @@ def b_generate_biolabels_from(file):
 
 # 将json标注改成数组对应标注法
 # b_trans_dataset_bio(bio_labels,'train.json')
-def b_trans_dataset_bio(bio_labels,file):
+def b_bio_trans_dataset(bio_labels,file):
     file_name = file.split('.')[0]
     data  = b_read_dataset(file)
     
