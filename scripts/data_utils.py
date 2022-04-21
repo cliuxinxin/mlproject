@@ -387,6 +387,9 @@ def b_check_random(data,num):
 
 # 根据最好的模型、训练集，测试集生成cats模型
 def b_generate_cats_datasets():
+    b_doccano_export_project(2,'train.json')
+    b_doccano_export_project(3,'dev.json')
+
     train = b_read_dataset('train.json')
     dev = b_read_dataset('dev.json')
 
@@ -443,7 +446,7 @@ def b_read_train_label_counts():
     return label_counts
 
 # 读取训练集的labels并且保存
-def b_save_labes():
+def b_save_labels():
     label_counts = b_read_train_label_counts()
     l = list(label_counts.keys())
     d_save_file(l,"labels.txt")
