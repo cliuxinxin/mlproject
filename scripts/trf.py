@@ -4,6 +4,9 @@ from datasets import load_dataset, load_metric
 from transformers import (AutoModelForTokenClassification, AutoTokenizer,
                           DataCollatorForTokenClassification, Trainer,
                           TrainingArguments)
+import torch
+from torch import nn
+from transformers import Trainer
 
 from data_utils import *
 
@@ -61,8 +64,11 @@ args = TrainingArguments(
     learning_rate=2e-5,
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
-    num_train_epochs=50,
+    num_train_epochs=500,
     weight_decay=0.01,
+    load_best_model_at_end=True,
+    # save_strategy = "no",
+    save_total_limit = 5
 )
 
 
@@ -92,7 +98,23 @@ def compute_metrics(p):
         "accuracy": results["overall_accuracy"],
     }
 
-trainer = Trainer(
+# 增加class weight
+weight = [ 10 ] * len(bio_labels)
+weight[0] = 1
+weight = torch.tensor(weight, dtype=torch.float)
+
+class CustomTrainer(Trainer):
+    def compute_loss(self, model, inputs, return_outputs=False):
+        labels = inputs.get("labels")
+        # forward pass
+        outputs = model(**inputs)
+        logits = outputs.get("logits")
+        # compute custom loss (suppose one has 3 labels with different weights)
+        loss_fct = nn.CrossEntropyLoss(weight=weight)
+        loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
+        return (loss, outputs) if return_outputs else loss
+
+trainer = CustomTrainer(
     model,
     args,
     train_dataset=tokenized_datasets['train'],
@@ -103,7 +125,7 @@ trainer = Trainer(
 )
 
 trainer.train()
-
+trainer.save_model('trf_model')
 
 
 
