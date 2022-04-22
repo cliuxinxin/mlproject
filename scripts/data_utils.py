@@ -392,8 +392,7 @@ def b_check_random(data,num):
 
 # 根据最好的模型、训练集，测试集生成cats模型
 def b_generate_cats_datasets():
-    b_doccano_export_project(2,'train.json')
-    b_doccano_export_project(3,'dev.json')
+    b_doccano_update_train_dev()
 
     train = b_read_dataset('train.json')
     dev = b_read_dataset('dev.json')
@@ -763,10 +762,11 @@ def b_split_train_test(df_db,ratio):
     return df_train,df_test
 
 
-
-# 从labels.txt中生成biolabels
-# b_generate_biolabels_from('labels.txt')
-def b_bio_labels_generate_from(file):
+def b_bio_labels_generate_from(file='labels.txt'):
+    """
+    从labels.txt中生成biolabels的列表,需要在assets目录下面有labels.txt文件
+    
+    """
     labels = b_read_text_file(file)
 
     bio_labels = []
@@ -859,7 +859,7 @@ def b_bio_split_dataset_by_max(file,max_len):
     file_name = file.split('.')[0]
     max_length = max_len
 
-    data = b_read_dataset('dev_trf.json')
+    data = b_read_dataset(file)
 
     new_data = []
     for sample in data:
@@ -897,8 +897,11 @@ def b_bio_split_dataset_by_max(file,max_len):
     b_save_list_datasets(new_data,file_name  + '_maxlen.json')
 
 
-# 同步train.json和dev.json的数据到doccano中
 def b_doccano_train_dev():
+    """
+    同步train.json和dev.json的数据到doccano中
+    
+    """
     train = b_read_dataset('train.json')
     dev = b_read_dataset('dev.json')
 
@@ -966,8 +969,7 @@ def b_split_train_dev():
 
 # 从doccano上面下载train，dev，合并保存到train_dev中
 def p_doccano_download_tran_dev():
-    b_doccano_export_project(2,'train.json')
-    b_doccano_export_project(3,'dev.json')
+    b_doccano_update_train_dev()
 
     train = b_read_dataset('train.json')
     dev = b_read_dataset('dev.json')
@@ -983,8 +985,11 @@ def p_doccano_download_tran_dev():
 
     b_save_df_datasets(train_dev,'train_dev.json')
 
-# 从doccano中下载train,dev,并且用最好的模型标注，把标注结果放到mlabel中
+
 def b_doccano_train_dev_nlp_label():
+    """
+    从doccano中下载train,dev,并且用最好的模型标注，把标注结果放到mlabel中
+    """
     p_doccano_download_tran_dev()
 
     train_dev = b_read_dataset('train_dev.json')
@@ -1026,7 +1031,7 @@ def b_compare_human_machine_label():
         s_start = start - 200 if start - 200 > 0 else 0
         s_end = end + 200 if end + 200 < len(text) else len(text)
 
-        new_sample['text'] = text[s_start:s_end]
+        new_sample['text'] = text[s_start:s_end] + '\n' + '错误类型'+label[2]
         label_ = [[start - s_start,end - s_start,label[2]]]
         new_sample['label'] = label_
         new_sample['s_start'] = s_start
@@ -1262,6 +1267,15 @@ def b_eavl_dataset(org_dataset_file,prd_dataset_file):
     # 行列倒置
     df = df.T
     return df
+
+def b_doccano_update_train_dev():
+    """
+    从doccano中下载2的数据到train.json中
+    从doccano中下载3的数据到dev.json中
+    
+    """
+    b_doccano_export_project(2,'train.json')
+    b_doccano_export_project(3,'dev.json')
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————

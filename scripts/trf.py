@@ -60,7 +60,7 @@ batch_size = 8
 
 args = TrainingArguments(
     f"{model_name}-finetuned-{task}",
-    evaluation_strategy = "epoch",
+    evaluation_strategy = "steps",
     learning_rate=2e-5,
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
@@ -109,7 +109,6 @@ class CustomTrainer(Trainer):
         # forward pass
         outputs = model(**inputs)
         logits = outputs.get("logits")
-        # compute custom loss (suppose one has 3 labels with different weights)
         loss_fct = nn.CrossEntropyLoss(weight=weight)
         loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
         return (loss, outputs) if return_outputs else loss

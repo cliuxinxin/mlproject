@@ -174,3 +174,9 @@ scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/tokenizer.json
 scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/trainer_state.json
 scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/training_args.bin
 scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/vocab.txt
+scripts/client_serets.json
+scripts/client_secrets.json
+.gitignore
+.gitignore
+scripts/settings.yaml
+scripts/credentials.json
