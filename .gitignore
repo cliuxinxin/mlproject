@@ -163,3 +163,14 @@ scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/training_args.bin
 scripts/bert-base-chinese-finetuned-ner/checkpoint-7000/vocab.txt
 scripts/.DS_Store
 .gitignore
+scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/config.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/optimizer.pt
+scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/pytorch_model.bin
+scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/rng_state.pth
+scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/scheduler.pt
+scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/special_tokens_map.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/tokenizer_config.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/tokenizer.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/trainer_state.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/training_args.bin
+scripts/bert-base-chinese-finetuned-ner/checkpoint-2500/vocab.txt

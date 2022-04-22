@@ -17,6 +17,10 @@ from doccano_api_client import DoccanoClient
 from spacy.matcher import PhraseMatcher
 
 
+from transformers import (AutoConfig, AutoModelForTokenClassification,
+                          AutoTokenizer, pipeline)
+
+
 def d_parse_config():
     config = configparser.ConfigParser()
     config.read('config.ini')
@@ -1065,8 +1069,21 @@ def b_compare_human_machine_label():
     b_doccano_upload('train_dev_mlabel_new.json',1)
 
 
-# 将现有数据集转换成bio格式，并且切断成512长度
 def b_bio_datasets_trans_and_max():
+    """
+    将现有数据集转换成bio格式,并且切断成512长度
+    
+    输入文件：
+    train.json
+    dev.json
+
+    生成文件：
+    labels.txt
+    train_trf.json bio格式数据
+    dev_trf.json bio格式数据
+    train_trf_maxlen 切断511长数据
+    dev_trf_maxlen 切断511长数据
+    """
     b_save_labels()
 
     bio_labels = b_bio_labels_generate_from('labels.txt')
@@ -1079,11 +1096,11 @@ def b_bio_datasets_trans_and_max():
 
 def b_doccano_add_new_data(key_words:list):
     """
-    传入keywords，生成train_cat.json,并且上传到项目1中。
+    传入keywords,生成train_cat.json,并且上传到项目1中。
     生成train_imp.json导入到项目2中
     生成dev_imp.json导入到项目3中
 
-    key_words [list]
+    key_words=['项目招标编号','项目编号','招标编号','招标项目编号','项目代码','标段编号','标段编号为']
     """
     db = b_extrct_data_from_db_basic('tender')
 
@@ -1117,6 +1134,85 @@ def b_doccano_add_new_data(key_words:list):
 
     b_doccano_upload('train_imp.json',2)
     b_doccano_upload('dev_imp.json',3)
+
+def b_trf_load_model(path):
+    """
+    读取trf模型，需要传入模型的地址
+
+    前提条件需要在assets文件夹中放入labels.txt
+    
+    """
+    path = 'bert-base-chinese-finetuned-ner/checkpoint-2500'
+
+    bio_labels = b_bio_labels_generate_from('labels.txt')
+
+    config = AutoConfig.from_pretrained(path,
+                                    num_labels=len(bio_labels),
+                                    id2label={i: label for i, label in enumerate(bio_labels)},
+                                    label2id={label: i for i, label in enumerate(bio_labels)}
+)
+
+    tokenizer = AutoTokenizer.from_pretrained(path)
+    model = AutoModelForTokenClassification.from_pretrained(path,config=config)
+ 
+    nlp = pipeline('ner', model=model, tokenizer=tokenizer)
+    return nlp
+
+def b_trf_label_dataset(nlp,file):
+    """
+    使用nlp模型对file文件进行标注,标签放在label字段下
+    
+    并且生成原文件名+_trf_label.json文件
+    """
+    file_name = file.split('.')[0]
+
+    data = b_read_dataset(file)
+
+    for sample in data:
+        text = sample['data']
+    
+    # 把text按照500字符分割
+        if len(text) > 500:
+            text_list = [text[i:i+500] for i in range(0, len(text), 500)]
+        else:
+            text_list = [text]
+
+        l_ents = nlp(text_list)
+
+        for i,ents in enumerate(l_ents):
+            s_start = i * 500
+            for ent in ents:
+                ent['start'] += s_start
+                ent['end'] += s_start
+
+    # 将ents中的list去掉
+        result = []
+
+        for ent in l_ents:
+            result += ent
+
+        new_labels = []
+        new_label = {}
+        for ent in result:
+            if ent['entity'][0] == 'B':
+                if new_label :
+                # new_label['text'] = text[new_label['start']:new_label['end']]
+                    new_label = [new_label['start'],new_label['end'],new_label['label']]
+                    new_labels.append(new_label)
+                    new_label = {}
+                new_label['label'] = ent['entity'][2:]
+                new_label['start']= ent['start']
+                new_label['end'] = ent['end']
+            elif ent['entity'][0] == 'I':
+                if not new_label:
+                    new_label['label'] = ent['entity'][2:]
+                    new_label['start']= ent['start']
+                    new_label['end'] = ent['end']
+                if new_label['label'] == ent['entity'][2:]:
+                    new_label['end'] = ent['end']
+        sample['label'] = new_labels
+
+    b_save_list_datasets(data, file_name +  '_trf_label.json')
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
