@@ -1,4 +1,5 @@
 import configparser
+import copy
 import hashlib
 import itertools
 import json
@@ -8,15 +9,15 @@ import pickle
 import random
 import re
 import time
+import warnings
 import zipfile
-import copy
 
 import pandas as pd
 import spacy
 from doccano_api_client import DoccanoClient
 from spacy.matcher import PhraseMatcher
-
-
+from spacy.scorer import Scorer
+from spacy.training import Example
 from transformers import (AutoConfig, AutoModelForTokenClassification,
                           AutoTokenizer, pipeline)
 
@@ -1213,6 +1214,54 @@ def b_trf_label_dataset(nlp,file):
         sample['label'] = new_labels
 
     b_save_list_datasets(data, file_name +  '_trf_label.json')
+
+def b_eavl_dataset(org_dataset_file,prd_dataset_file):
+    """
+    评估两个数据集的指标
+
+    org_dataset_file : 原始数据集,label是标注
+    prd_dataset_file : 预测数据集,label是预测
+    
+    """
+    org_data = b_read_dataset(org_dataset_file)
+    prd_data = b_read_dataset(prd_dataset_file)
+    nlp = spacy.blank('zh')
+
+
+    def get_ents(text, doc,sample,label_name='label'):
+        ents = []   
+        for start, end, label in sample[label_name]:
+            span = doc.char_span(start, end, label=label,alignment_mode="contract")
+            if span is None:
+                msg = f"Skipping entity [{start}, {end}, {label}] in the following text because the character span '{doc.text[start:end]}' does not align with token boundaries:\n\n{repr(text)}\n"
+                warnings.warn(msg)
+            else:
+                ents.append(span)
+        return ents
+
+
+    examples = []
+    for org,prd in zip(org_data,prd_data):
+        text = org['data']
+        org_doc = nlp.make_doc(text)
+        prd_doc = nlp.make_doc(text)
+        org_ents = get_ents(text, org_doc,org)
+        prd_ents = get_ents(text, prd_doc,prd)
+        org_doc.ents = org_ents
+        prd_doc.ents = prd_ents
+        example = Example(prd_doc,org_doc)
+        examples.append(example)
+
+    scorer = Scorer()
+    scores = scorer.score(examples)
+
+    ents_scores = scores['ents_per_type']
+
+    df = pd.DataFrame(ents_scores)
+
+    # 行列倒置
+    df = df.T
+    return df
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
