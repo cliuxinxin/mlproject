@@ -38,7 +38,7 @@ def tokenize_and_align_labels(examples):
     tokenized_inputs["labels"] = labels
     return tokenized_inputs
 
-model_checkpoint = "bert-base-chinese"
+model_checkpoint = "hfl/chinese-roberta-wwm-ext"
 task = 'ner'
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 

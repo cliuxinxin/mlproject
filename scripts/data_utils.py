@@ -1143,14 +1143,14 @@ def b_doccano_add_new_data(key_words:list):
     b_doccano_upload('train_imp.json',2)
     b_doccano_upload('dev_imp.json',3)
 
-def b_trf_load_model(path):
+def b_trf_load_model():
     """
     读取trf模型，需要传入模型的地址
 
     前提条件需要在assets文件夹中放入labels.txt
     
     """
-    path = 'bert-base-chinese-finetuned-ner/checkpoint-2500'
+    path = 'bert-base-chinese-finetuned-ner/checkpoint'
 
     bio_labels = b_bio_labels_generate_from('labels.txt')
 

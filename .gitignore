@@ -180,3 +180,14 @@ scripts/client_secrets.json
 .gitignore
 scripts/settings.yaml
 scripts/credentials.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint/config.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint/optimizer.pt
+scripts/bert-base-chinese-finetuned-ner/checkpoint/pytorch_model.bin
+scripts/bert-base-chinese-finetuned-ner/checkpoint/rng_state.pth
+scripts/bert-base-chinese-finetuned-ner/checkpoint/scheduler.pt
+scripts/bert-base-chinese-finetuned-ner/checkpoint/special_tokens_map.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint/tokenizer_config.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint/tokenizer.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint/trainer_state.json
+scripts/bert-base-chinese-finetuned-ner/checkpoint/training_args.bin
+scripts/bert-base-chinese-finetuned-ner/checkpoint/vocab.txt
