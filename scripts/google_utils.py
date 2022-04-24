@@ -100,6 +100,16 @@ def gdrive_upload_train_dev():
     gdrive_upload(train_file,gdrive_assets_id)
     gdrive_upload(dev_file,gdrive_assets_id)
 
+def gdrive_upload_cats_train_dev():
+    """
+    上传本地的train.json,dev.json到dojo的assets文件夹下
+    """
+    gdrive_assets_id = '1C88ng_CyJW_zzD1Bp7Sr_A9OCs128sbr'
+    train_file = '../assets/train_cats.json'
+    dev_file = '../assets/dev_cats.json'
+
+    gdrive_upload(train_file,gdrive_assets_id)
+    gdrive_upload(dev_file,gdrive_assets_id)
 
 
 
