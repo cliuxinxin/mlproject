@@ -983,6 +983,8 @@ def p_doccano_download_tran_dev():
 
     train_dev = pd.concat([train,dev])
 
+    b_save_db_datasets(train_dev)
+
     b_save_df_datasets(train_dev,'train_dev.json')
 
 
@@ -1276,6 +1278,14 @@ def b_doccano_update_train_dev():
     """
     b_doccano_export_project(2,'train.json')
     b_doccano_export_project(3,'dev.json')
+
+def b_doccano_download_train_dev_label_view_wrong():
+    """
+    下载最新的数据，并且用最好的模型预测，将对不上的数据上传的demo项目进行查看。
+    可以根据错误类型+标签的方式查看对应标签的错误情况
+    """
+    b_doccano_train_dev_nlp_label()
+    b_compare_human_machine_label()
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————

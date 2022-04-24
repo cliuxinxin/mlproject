@@ -102,6 +102,8 @@ def compute_metrics(p):
 weight = [ 10 ] * len(bio_labels)
 weight[0] = 1
 weight = torch.tensor(weight, dtype=torch.float)
+# 放到gpu
+weight = weight.cuda()
 
 class CustomTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False):
