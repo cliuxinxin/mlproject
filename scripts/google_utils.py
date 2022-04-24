@@ -89,6 +89,25 @@ def gdrive_download_best_model():
     shutil.move('model-best', '../training/model-best')
 
 
+def gdrvie_find_file_under_folder(name,folder_id):
+    """
+    在folder_id下，查找到title名叫name的文件
+    
+    """
+    file_list = drive.ListFile({'q': "'%s' in parents and trashed=false and title='%s'" % (folder_id,name)}).GetList()
+    return file_list[0]
+
+def gdrive_del_and_upload(file,folder_id):
+    """
+    找到并且删除某个folder_id下面的文件，并且上传新的文件
+    """
+    file_name = os.path.basename(file)
+    try:
+        file = gdrvie_find_file_under_folder(file_name,folder_id)
+        file.Delete()
+    finally:
+        gdrive_upload(file,folder_id)
+
 def gdrive_upload_train_dev():
     """
     上传本地的train.json,dev.json到dojo的assets文件夹下
@@ -97,8 +116,8 @@ def gdrive_upload_train_dev():
     train_file = '../assets/train.json'
     dev_file = '../assets/dev.json'
 
-    gdrive_upload(train_file,gdrive_assets_id)
-    gdrive_upload(dev_file,gdrive_assets_id)
+    gdrive_del_and_upload(train_file,gdrive_assets_id)
+    gdrive_del_and_upload(dev_file,gdrive_assets_id)
 
 def gdrive_upload_cats_train_dev():
     """
@@ -108,8 +127,12 @@ def gdrive_upload_cats_train_dev():
     train_file = '../assets/train_cats.json'
     dev_file = '../assets/dev_cats.json'
 
-    gdrive_upload(train_file,gdrive_assets_id)
-    gdrive_upload(dev_file,gdrive_assets_id)
+    gdrive_del_and_upload(train_file,gdrive_assets_id)
+    gdrive_del_and_upload(dev_file,gdrive_assets_id)
+
+
+
+
 
 
 

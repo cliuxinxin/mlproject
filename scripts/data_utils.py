@@ -392,7 +392,7 @@ def b_check_random(data,num):
 
 # 根据最好的模型、训练集，测试集生成cats模型
 def b_generate_cats_datasets():
-    b_doccano_update_train_dev()
+    # b_doccano_update_train_dev()
 
     train = b_read_dataset('train.json')
     dev = b_read_dataset('dev.json')
@@ -851,7 +851,7 @@ def b_remove_invalid_label(file):
         cleaned_data['label'] = clean_labels
         cleaned_datas.append(cleaned_data)  
 
-    b_save_list_datasets(cleaned_datas,'file')
+    b_save_list_datasets(cleaned_datas,file)
 
 # 把bio数据集划分成最长的数据集,并且保存为train_trf_max.json
 #split_dataset_by_max('train_trf.json',510) 
@@ -1286,6 +1286,16 @@ def b_doccano_download_train_dev_label_view_wrong():
     """
     b_doccano_train_dev_nlp_label()
     b_compare_human_machine_label()
+
+
+def b_process_origin_data():
+    """
+    讲mysql中导出的数据进行处理，生成basic库
+    """
+    db = b_file_2_df('Untitled.csv')
+
+    b_save_db_basic(db)
+
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
