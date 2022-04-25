@@ -830,7 +830,7 @@ def b_remove_invalid_label(file):
                 text[valid_start]):
                 valid_start += 1
             while valid_end > 1 and invalid_span_tokens.match(
-                text[valid_end - 1]):
+                text[valid_end]):
                 valid_end -= 1
             clean_labels.append([valid_start, valid_end, label])
         cleaned_data['label'] = clean_labels
