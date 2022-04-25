@@ -11,6 +11,8 @@ import re
 import time
 import warnings
 import zipfile
+import queue
+import threading
 
 import pandas as pd
 import spacy
@@ -994,6 +996,41 @@ def b_doccano_train_dev_nlp_label():
         sample['mlabel'] = labels
 
     b_save_list_datasets(train_dev,'train_dev_mlabel.json')
+
+
+def b_doccano_train_dev_nlp_label_mult(thread_num):
+    """
+    从doccano中下载train,dev,并且用最好的模型标注，把标注结果放到mlabel中,多线程处理
+    """
+    def work(q,nlp,data):
+        while True:
+            if q.empty():
+                return
+            else:
+                sample = q.get()
+                doc = nlp(sample['data'])
+                label = [[ent.start,ent.end,ent.label_] for ent in doc.ents]
+                sample['mlabel'] = label
+                data.append(sample)
+
+    p_doccano_download_tran_dev()
+
+    train_dev = b_read_dataset('train_dev.json')
+
+    nlp = b_load_best_model()
+
+    data = []
+    q = queue.Queue()
+    for sample in train_dev:
+        q.put(sample)
+    thread_num = thread_num
+    threads = []
+    for i in range(thread_num):
+        t = threading.Thread(target=work, args=(q,nlp,data))
+        # args需要输出的是一个元组，如果只有一个参数，后面加，表示元组，否则会报错
+        threads.append(t)
+
+    b_save_list_datasets(data,'train_dev_mlabel.json')
 
 # 使用机器标注好的数据进行对比
 def b_compare_human_machine_label():
