@@ -1,5 +1,6 @@
 import pymysql
 import configparser
+import pandas as pd
 
 
 def d_parse_config():
@@ -37,14 +38,40 @@ def mysql_select_df(sql):
     df.columns = [i[0] for i in cursor.description]
     return df
 
-result_df = mysql_select_df('select * from tender_test limit 1')
+def mysql_delete_data(df):
+    """
+    读取df的id字段，并且将数据删除
+    """
+    for id in df['id']:
+        sql = "delete from tender_test where id = '{}'".format(id)
+        cursor = db.cursor()
+        cursor.execute(sql)
+        db.commit()
 
-# 根据id更新liaison_pnumber的数据
-def mysql_update_liaison_pnumber(id, pnumber):
-    sql = 'update tender_test set liaison_pnumber = "{}" where id = {}'.format(pnumber, id)
+def mysql_insert_data(df):
+    """
+    使用df的表头和数据拼成批量更新的sql语句
+    """
+    sql = 'insert into tender_test ({}) values ({})'.format(','.join(df.columns), ','.join(['%s'] * len(df.columns)))
     cursor = db.cursor()
-    cursor.execute(sql)
+    values = df.values.tolist()
+    # 讲NaT 替换成 ''
+    for i in range(len(values)):
+        for j in range(len(values[i])):
+            if pd.isnull(values[i][j]):
+                values[i][j] = None
+    cursor.executemany(sql, values)
     db.commit()
+
+
+
+
+
+
+
+
+
+
 
 
 

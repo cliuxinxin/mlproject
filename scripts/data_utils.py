@@ -978,6 +978,7 @@ def p_doccano_download_tran_dev():
 def b_doccano_train_dev_nlp_label():
     """
     从doccano中下载train,dev,并且用最好的模型标注，把标注结果放到mlabel中
+    保存成train_dev_mlabel.json文件
     """
     p_doccano_download_tran_dev()
 
@@ -1000,7 +1001,8 @@ def b_doccano_train_dev_nlp_label():
 
 def b_doccano_train_dev_nlp_label_mult(thread_num):
     """
-    从doccano中下载train,dev,并且用最好的模型标注，把标注结果放到mlabel中,多线程处理
+    从doccano中下载train,dev,并且用最好的模型标注，把标注结果放到mlabel中
+    保存成train_dev_mlabel.json文件,多线程处理
     """
     def work(q,nlp,data):
         while True:
