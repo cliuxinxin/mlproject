@@ -1,6 +1,8 @@
 import pymysql
 import configparser
 import pandas as pd
+from DBUtils.PooledDB import PooledDB
+
 
 
 def d_parse_config():
@@ -38,15 +40,18 @@ def mysql_select_df(sql):
     df.columns = [i[0] for i in cursor.description]
     return df
 
+result_df = mysql_select_df('select * from tender_test limit 2')
+
 def mysql_delete_data(df):
     """
-    读取df的id字段，并且将数据删除
+    使用df的id，批量删除数据表中的数据
     """
-    for id in df['id']:
-        sql = "delete from tender_test where id = '{}'".format(id)
-        cursor = db.cursor()
-        cursor.execute(sql)
-        db.commit()
+    sql = 'delete from tender_test where id = %s'
+    cursor = db.cursor()
+    cursor.executemany(sql, df['id'].values.tolist())
+    db.commit()
+
+mysql_delete_data(result_df)
 
 def mysql_insert_data(df):
     """
@@ -62,6 +67,8 @@ def mysql_insert_data(df):
                 values[i][j] = None
     cursor.executemany(sql, values)
     db.commit()
+
+mysql_insert_data(result_df)
 
 
 
