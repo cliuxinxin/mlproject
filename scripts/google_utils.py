@@ -151,7 +151,7 @@ def gdrive_download_best_model_cats():
     """
     parent_id = '13341aaueIdJUpPQozOsXlTMkZ6KDdflT'
     file = 'model-best'
-    target_path = '../training/cats' 
+    target_path = '../training/cats/' 
 
     gdrive_find_file_under_folder_download_move(parent_id,file,target_path)
 

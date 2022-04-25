@@ -1,12 +1,24 @@
 from pyspark.sql import SparkSession
 
-log_file = 'readme.me'
+
 spark = SparkSession.builder.appName("test").getOrCreate()
-log_data = spark.read.text(log_file).cache()
 
-numAs = log_data.filter(log_data.value.contains('a')).count()
-numBs = log_data.filter(log_data.value.contains('b')).count()
+train = '../assets/train.json'
 
-print("Lines with a: %i, lines with b: %i" % (numAs, numBs))
+df = spark.read.json(train)
 
-spark.stop()
+df.show()
+
+df['data_source'].show()
+
+df.printSchema()
+
+df.select('data_source').show()
+
+df.select(df['data'],df['dataset']'test').show()
+
+df.createTempView('train')
+
+sql_df = spark.sql("SELECT * FROM train")
+
+sql_df.show()
