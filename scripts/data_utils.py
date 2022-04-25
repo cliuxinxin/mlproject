@@ -1011,7 +1011,7 @@ def b_doccano_train_dev_nlp_label_mult(thread_num):
             else:
                 sample = q.get()
                 doc = nlp(sample['data'])
-                label = [[ent.start,ent.end,ent.label_] for ent in doc.ents]
+                label = [[ent.start_char,ent.end_char,ent.label_] for ent in doc.ents]
                 sample['mlabel'] = label
                 data.append(sample)
 
