@@ -390,43 +390,28 @@ def b_check_random(data,num):
 
 
 
-# 根据最好的模型、训练集，测试集生成cats模型
 def b_generate_cats_datasets():
-    # b_doccano_update_train_dev()
+    """
+    之前先运行 b_doccano_train_dev_nlp_label() 生成mlabel
 
-    train = b_read_dataset('train.json')
-    dev = b_read_dataset('dev.json')
+    对比mlabel和label,生成train_cats.json和dev_cats.json
+    
+    """
+    data = b_read_dataset('train_dev_mlabel.json') 
 
-    # 合并训练集和测试集
-    train_dev = train + dev
-
-    # 提取data字段
-    train_dev_data = [entry['data'] for entry in train_dev]
-
-    nlp = b_load_best_model()
-
-    docs = nlp.pipe(train_dev_data)
-
-    predicts = []
-    for doc in docs:
-        predict = [[ent.text,ent.label_] for ent in doc.ents]
-        predicts.append(predict)
-
-    for sample,predict in zip(train_dev,predicts):
+    for sample in data:
         text = sample['data']
         labels = sample['label']
-        sample_label = [[text[label[0]:label[1]],label[2]] for label in labels]
-        for entry in sample_label:
-            if entry not in predict:
+        predicts = sample['mlabel']
+        sample['cats'] = {"需要":0,"不需要":1} 
+        for entry in labels:
+            if entry not in predicts:
                 sample['cats'] = {"需要":1,"不需要":0}
-                break
-            else:
-                sample['cats'] = {"需要":0,"不需要":1} 
                 break
 
     pos = []
     neg = []
-    for sample in train_dev:
+    for sample in data:
         if sample['cats']['需要'] == 1:
             pos.append(sample)
         else:
