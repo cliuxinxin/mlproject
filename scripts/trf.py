@@ -98,7 +98,7 @@ def compute_metrics(p):
         "accuracy": results["overall_accuracy"],
     }
 
-# 增加class weight
+增加class weight
 weight = [ 10 ] * len(bio_labels)
 weight[0] = 1
 weight = torch.tensor(weight, dtype=torch.float)
@@ -115,7 +115,7 @@ class CustomTrainer(Trainer):
         loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
         return (loss, outputs) if return_outputs else loss
 
-trainer = CustomTrainer(
+trainer = Trainer(
     model,
     args,
     train_dataset=tokenized_datasets['train'],
