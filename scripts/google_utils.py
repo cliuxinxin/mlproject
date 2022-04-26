@@ -75,20 +75,6 @@ def gdrive_download_file(file_id, download_path):
     file_list.GetContentFile(download_path)
 
 
-def gdrive_download_best_model():
-    """
-    把ner训练最好的模型下载到本地的training目录下面
-    
-    """
-    file = gdrive_find_file('model-best')
-
-    gdrive_download_folder(file['id'], file['title'])
-
-    # 将model-best 文件夹移到../training/下面，如果有，则强制覆盖
-    shutil.rmtree('../training/model-best')
-    shutil.move('model-best', '../training/model-best')
-
-
 def gdrvie_find_file_under_folder(name,folder_id):
     """
     在folder_id下，查找到title名叫name的文件
@@ -129,6 +115,60 @@ def gdrive_upload_cats_train_dev():
 
     gdrive_del_and_upload(train_file,gdrive_assets_id)
     gdrive_del_and_upload(dev_file,gdrive_assets_id)
+
+def gdrive_find_and_download(folder_id,file_name):
+    """
+    在folder_id下，查找到文件并且下载回来
+    
+    """
+    gdrvie_training_folder_id = folder_id
+
+    file = gdrvie_find_file_under_folder(file_name,gdrvie_training_folder_id)
+
+    gdrive_download_folder(file['id'], file['title'])
+
+def gdrive_find_file_under_folder_download_move(parent_id,file,target_path):
+    """
+    在parent_id下，查找到file并且下载回来，并且移到target_path下面
+
+    """
+    gdrive_find_and_download(parent_id,file)
+ 
+    gdrive_del_move(file,'../training/'+file)
+
+def gdrive_del_move(orig_path,target_path):
+    """
+    将orig_path文件夹移到target_path下面，如果有，则强制覆盖
+    """
+    shutil.rmtree(target_path)
+    shutil.move(orig_path, target_path)
+
+
+def gdrive_download_best_model_cats():
+    """
+    把cats训练最好的模型下载到本地的training目录下面
+    
+    """
+    parent_id = '13341aaueIdJUpPQozOsXlTMkZ6KDdflT'
+    file = 'model-best'
+    target_path = '../training/cats/' 
+
+    gdrive_find_file_under_folder_download_move(parent_id,file,target_path)
+
+
+def gdrive_download_best_model():
+    """
+    把ner训练最好的模型下载到本地的training目录下面
+    
+    """
+    parent_id = '1D4jgGQhuXbOfA15hZJAYaNgVKiisXNsW'
+    file = 'model-best'
+    target_path = '../training/' 
+
+    gdrive_find_file_under_folder_download_move(parent_id,file,target_path)
+
+
+
 
 
 

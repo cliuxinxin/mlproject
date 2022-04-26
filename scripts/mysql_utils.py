@@ -1,5 +1,8 @@
 import pymysql
 import configparser
+import pandas as pd
+from DBUtils.PooledDB import PooledDB
+
 
 
 def d_parse_config():
@@ -37,14 +40,45 @@ def mysql_select_df(sql):
     df.columns = [i[0] for i in cursor.description]
     return df
 
-result_df = mysql_select_df('select * from tender_test limit 1')
+result_df = mysql_select_df('select * from tender_test limit 2')
 
-# 根据id更新liaison_pnumber的数据
-def mysql_update_liaison_pnumber(id, pnumber):
-    sql = 'update tender_test set liaison_pnumber = "{}" where id = {}'.format(pnumber, id)
+def mysql_delete_data(df):
+    """
+    使用df的id，批量删除数据表中的数据
+    """
+    sql = 'delete from tender_test where id = %s'
     cursor = db.cursor()
-    cursor.execute(sql)
+    cursor.executemany(sql, df['id'].values.tolist())
     db.commit()
+
+mysql_delete_data(result_df)
+
+def mysql_insert_data(df):
+    """
+    使用df的表头和数据拼成批量更新的sql语句
+    """
+    sql = 'insert into tender_test ({}) values ({})'.format(','.join(df.columns), ','.join(['%s'] * len(df.columns)))
+    cursor = db.cursor()
+    values = df.values.tolist()
+    # 讲NaT 替换成 ''
+    for i in range(len(values)):
+        for j in range(len(values[i])):
+            if pd.isnull(values[i][j]):
+                values[i][j] = None
+    cursor.executemany(sql, values)
+    db.commit()
+
+mysql_insert_data(result_df)
+
+
+
+
+
+
+
+
+
+
 
 
 
