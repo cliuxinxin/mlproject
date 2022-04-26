@@ -44,7 +44,6 @@ def mysql_connect_pool(config='mysql'):
     return pool
 
 
-
 pool = mysql_connect_pool()
 
 conn = pool.connection()
