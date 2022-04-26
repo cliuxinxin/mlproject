@@ -60,13 +60,11 @@ batch_size = 8
 
 args = TrainingArguments(
     f"{model_name}-finetuned-{task}",
-    evaluation_strategy = "steps",
     learning_rate=2e-5,
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
-    num_train_epochs=250,
+    num_train_epochs=200,
     weight_decay=0.01,
-    load_best_model_at_end=True,
     # save_strategy = "no",
     save_total_limit = 5
 )
@@ -127,7 +125,6 @@ trainer = Trainer(
 
 trainer.train()
 trainer.save_model('trf_model')
-
 
 
 

@@ -1,24 +1,19 @@
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import split
+from pyspark.sql.functions import explode
 
 
-spark = SparkSession.builder.appName("test").getOrCreate()
+if __name__ == "__main__":
+    spark = SparkSession.builder.appName("StructuredNetworkWordCount").getOrCreate()
 
-train = '../assets/train.json'
+    spark.sparkContext.setLogLevel('WARN')
 
-df = spark.read.json(train)
+    lines = spark.readStream.format("json").load("test")
 
-df.show()
+    query = lines.writeStream.outputMode("complete").format("console").start()
 
-df['data_source'].show()
+    query.awaitTermination()
 
-df.printSchema()
 
-df.select('data_source').show()
 
-df.select(df['data'],df['dataset']'test').show()
 
-df.createTempView('train')
-
-sql_df = spark.sql("SELECT * FROM train")
-
-sql_df.show()
