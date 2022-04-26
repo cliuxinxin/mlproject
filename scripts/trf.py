@@ -96,7 +96,6 @@ def compute_metrics(p):
         "accuracy": results["overall_accuracy"],
     }
 
-增加class weight
 weight = [ 10 ] * len(bio_labels)
 weight[0] = 1
 weight = torch.tensor(weight, dtype=torch.float)
