@@ -134,14 +134,16 @@ def gdrive_find_file_under_folder_download_move(parent_id,file,target_path):
     """
     gdrive_find_and_download(parent_id,file)
  
-    gdrive_del_move(file,'../training/'+file)
+    gdrive_del_move(file,target_path+file)
 
 def gdrive_del_move(orig_path,target_path):
     """
     将orig_path文件夹移到target_path下面，如果有，则强制覆盖
     """
-    shutil.rmtree(target_path)
-    shutil.move(orig_path, target_path)
+    try:
+        shutil.rmtree(target_path)
+    finally:
+        shutil.move(orig_path, target_path)
 
 
 def gdrive_download_best_model_cats():

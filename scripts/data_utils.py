@@ -500,7 +500,7 @@ def b_select_data_by_model(dataset_name,num) -> list:
         text = row['text']
         if len(text) > 500:
             doc = nlp(text)
-            if doc.cats['需要'] == 1:
+            if doc.cats['需要'] >= 0.9:
                 sample_data.append(row)
             if len(sample_data) == num:
                 break
@@ -992,40 +992,46 @@ def b_doccano_train_dev_nlp_label():
     b_save_list_datasets(train_dev,'train_dev_mlabel.json')
 
 
-def b_doccano_train_dev_nlp_label_mult(thread_num):
+def b_label_dataset_mult(file,thread_num):
     """
-    从doccano中下载train,dev,并且用最好的模型标注，把标注结果放到mlabel中
-    保存成train_dev_mlabel.json文件,多线程处理
+    指定文件和线程数，对文件进行标注，标注完成以后，保存成原文件。
     """
-    def work(q,nlp,data):
+    def work(q,nlp,new_data):
         while True:
             if q.empty():
                 return
             else:
                 sample = q.get()
-                doc = nlp(sample['data'])
+                try:
+                    text = sample['data']
+                except:
+                    text = sample['text']
+                doc = nlp(text)
                 label = [[ent.start_char,ent.end_char,ent.label_] for ent in doc.ents]
-                sample['mlabel'] = label
-                data.append(sample)
+                sample['label'] = label
+                new_data.append(sample)
 
-    p_doccano_download_tran_dev()
-
-    train_dev = b_read_dataset('train_dev.json')
+    file_name = file.split('.')[0]
+    data = b_read_dataset(file)
 
     nlp = b_load_best_model()
 
-    data = []
+    new_data = []
     q = queue.Queue()
-    for sample in train_dev:
+    for sample in data:
         q.put(sample)
     thread_num = thread_num
     threads = []
     for i in range(thread_num):
-        t = threading.Thread(target=work, args=(q,nlp,data))
+        t = threading.Thread(target=work, args=(q,nlp,new_data))
         # args需要输出的是一个元组，如果只有一个参数，后面加，表示元组，否则会报错
         threads.append(t)
+        t.start()
 
-    b_save_list_datasets(data,'train_dev_mlabel.json')
+    for t in threads:
+        t.join()
+        
+    b_save_list_datasets(data,file_name+'_label.json')
 
 # 使用机器标注好的数据进行对比
 def b_compare_human_machine_label():
