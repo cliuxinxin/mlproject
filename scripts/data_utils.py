@@ -1320,6 +1320,26 @@ def b_process_origin_data():
 
     b_save_db_basic(db)
 
+
+
+def b_doccano_train_dev_update():
+    """
+    从doccano下载项目2的数据到train.json,项目3的数据到dev.json，并且合并到train_dev.json
+    """
+    b_doccano_update_train_dev()
+
+    train = b_read_dataset('train.json')
+    dev = b_read_dataset('dev.json')
+
+    train = pd.DataFrame(train)
+    dev = pd.DataFrame(dev)
+
+    train['dataset'] = 'tender_train'
+    dev['dataset'] = 'tender_dev'
+
+    train_dev = pd.concat([train,dev])
+
+    b_save_df_datasets(train_dev,'train_dev.json')
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
