@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     lines = spark.readStream.format("json").schema(schemaFromJson).option("latestFirst", True).load("../data")
 
-    lines = lines.rdd.map(lambda x: (x.data, nlp(x.data)))
+    lines = lines.rdd.map(lambda x: (x.data, nlp(x.data)))  
 
     query = lines.writeStream.outputMode("append").format("console").start()
 
