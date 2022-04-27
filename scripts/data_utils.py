@@ -1378,6 +1378,35 @@ def b_generate_cats_datasets():
                 break
     p_generate_cats_datasets(data)
 
+def b_doccano_split_upload_sync(imp:pd.DataFrame):
+    """
+    传入数据集，将数据集按照比例分割，分别存储和上传，并且同步到db_dataset表中
+    """
+    train_imp, dev_imp = b_split_train_test(imp,0.8)
+
+    b_save_df_datasets(train_imp,'train_imp.json')
+    b_save_df_datasets(dev_imp,'dev_imp.json')
+
+    b_doccano_upload('train_imp.json',2)
+    b_doccano_upload('dev_imp.json',3)
+
+    b_doccano_train_dev_update()
+
+
+def b_doccano_model_select_label_upload(num=300):
+    """
+    模型选择数据，label好以后上传到doccano中
+    """
+    data = b_select_data_by_model('tender',num)
+
+    b_save_df_datasets(data,'seleted.json')
+    b_label_dataset_mult('seleted.json',20)
+
+    imp = b_read_dataset('train_dev_label.json')
+
+    imp = pd.DataFrame(imp)
+
+    b_doccano_split_upload_sync(imp)
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
