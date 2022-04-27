@@ -258,6 +258,35 @@ def p_generate_new_datasets(new_data, text, labels, borders_end, borders_start, 
         if len(new_labels) != 0:
             new_data.append(entry)
 
+def p_generate_cats_datasets(data:list):
+    """
+    传入生成cats标签的数据集,自动划成train_cats.json,dev_cats.json
+    """
+    pos = []
+    neg = []
+    for sample in data:
+        if sample['cats']['需要'] == 1:
+            pos.append(sample)
+        else:
+            neg.append(sample)
+
+
+    # 随机排列pos，neg
+    random.shuffle(pos)
+    random.shuffle(neg)
+
+    min = min(len(pos),len(neg))
+    pos = pos[:min]
+    neg = neg[:min]
+
+
+    # train_cat,dev_cat
+    train_cat = pos[:int(len(pos)*0.8)] + neg[:int(len(neg)*0.8)]
+    dev_cat = pos[int(len(pos)*0.8):] + neg[int(len(neg)*0.8):]
+
+    b_save_list_datasets(train_cat,'train_cats.json')
+    b_save_list_datasets(dev_cat,'dev_cats.json')
+
 # ——————————————————————————————————————————————————
 # 构建层
 # ——————————————————————————————————————————————————
@@ -392,43 +421,7 @@ def b_check_random(data,num):
 
 
 
-def b_generate_cats_datasets():
-    """
-    之前先运行 b_doccano_train_dev_nlp_label() 生成mlabel
 
-    对比mlabel和label,生成train_cats.json和dev_cats.json
-    
-    """
-    data = b_read_dataset('train_dev_mlabel.json') 
-
-    for sample in data:
-        text = sample['data']
-        labels = sample['label']
-        predicts = sample['mlabel']
-        sample['cats'] = {"需要":0,"不需要":1} 
-        for entry in labels:
-            if entry not in predicts:
-                sample['cats'] = {"需要":1,"不需要":0}
-                break
-
-    pos = []
-    neg = []
-    for sample in data:
-        if sample['cats']['需要'] == 1:
-            pos.append(sample)
-        else:
-            neg.append(sample)
-
-    # 随机排列pos，neg
-    random.shuffle(pos)
-    random.shuffle(neg)
-
-    # train_cat,dev_cat
-    train_cat = pos[:int(len(pos)*0.8)] + neg[:int(len(neg)*0.8)]
-    dev_cat = pos[int(len(pos)*0.8):] + neg[int(len(neg)*0.8):]
-
-    b_save_list_datasets(train_cat,'train_cats.json')
-    b_save_list_datasets(dev_cat,'dev_cats.json')
 
 # 读取训练集的标签情况
 def b_read_train_label_counts():
@@ -1340,6 +1333,44 @@ def b_doccano_train_dev_update():
     train_dev = pd.concat([train,dev])
 
     b_save_df_datasets(train_dev,'train_dev.json')
+
+def b_generate_cats_by_label(target_labels=['报名开始时间','报名结束时间','预算','开标时间']):
+    """
+    根据是否有标签来提取数据，范围是train_dev,条件是标签在target_labels中
+    """
+    data =  b_read_dataset('train_dev.json')
+
+    for sample in data:
+        labels = sample['label']
+        sample['cats'] = {"需要":0,"不需要":1} 
+        for label in labels:
+            label_ = label[2]
+            if label_ in target_labels:
+                sample['cats'] = {"需要":1,"不需要":0}
+                break
+
+    p_generate_cats_datasets(data)
+
+def b_generate_cats_datasets():
+    """
+    之前先运行 b_doccano_train_dev_nlp_label() 生成mlabel
+
+    对比mlabel和label,生成train_cats.json和dev_cats.json
+    
+    """
+    data = b_read_dataset('train_dev_mlabel.json') 
+
+    for sample in data:
+        text = sample['data']
+        labels = sample['label']
+        predicts = sample['mlabel']
+        sample['cats'] = {"需要":0,"不需要":1} 
+        for entry in labels:
+            if entry not in predicts:
+                sample['cats'] = {"需要":1,"不需要":0}
+                break
+    p_generate_cats_datasets(data)
+
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
