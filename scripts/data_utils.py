@@ -1407,6 +1407,83 @@ def b_doccano_model_select_label_upload(num=300):
     imp = pd.DataFrame(imp)
 
     b_doccano_split_upload_sync(imp)
+
+def b_doccano_compare(org_file,cmp_file):
+    """
+    org_file 是人表的数据，cmp_file是机器标的数据。
+    """
+    org = b_read_dataset(org_file)
+    cmp = b_read_dataset(cmp_file)
+
+    new_data = []
+
+    def record_data(new_data,wrong_type,label_type,sample, label):
+        new_sample = copy.deepcopy(sample)
+        new_sample.pop('data')
+
+        text = sample['data']
+
+        new_sample['错误种类'] = wrong_type
+        new_sample['标注人'] = label_type
+
+        start = label[0]
+        end = label[1]
+        s_start = start - 200 if start - 200 > 0 else 0
+        s_end = end + 200 if end + 200 < len(text) else len(text)
+
+        new_sample['text'] = text[s_start:s_end] + '\n' + '错误类型'+label[2] + '错误种类' + wrong_type
+        label_ = [[start - s_start,end - s_start,label[2]]]
+        new_sample['label'] = label_
+        new_sample['s_start'] = s_start
+        new_sample['s_end'] = s_end
+
+        new_data.append(new_sample)
+
+    for o_sample,c_sample in zip(org,cmp):
+        labels = o_sample['label']
+        mlabels = c_sample['label']
+
+        wrong_mlabels = []
+    
+        label_dict = {}
+        mlabel_dict = {}
+
+        for label in labels:
+            label_type = label[2]
+            if label_type not in label_dict:
+                label_dict[label_type] = 1
+            else:
+                label_dict[label_type] += 1
+                record_data(new_data,'人标签重复','人',o_sample,label)
+            if label not in mlabels:
+                find_label = False
+                for mlabel in mlabels:
+                    mlabel_type = mlabel[2]
+                    if label_type == mlabel_type:
+                       record_data(new_data,'机器错标位置','机器',c_sample,mlabel)
+                       record_data(new_data,'机器错标位置答案','人',o_sample,label)
+                       find_label = True
+                       wrong_mlabels.append(mlabel)
+                       break
+                if not find_label:
+                    record_data(new_data,'机器漏标答案','人',o_sample,label)
+            
+        for mlabel in mlabels:
+            mlabel_type = mlabel[2]
+            if mlabel_type not in mlabel_dict:
+                mlabel_dict[mlabel_type] = 1
+            else:
+                mlabel_dict[mlabel_type] += 1
+                record_data(new_data,'机器标签重复','机器',c_sample,label)
+            if mlabel not in labels:
+                if mlabel not in wrong_mlabels:
+                    record_data(new_data,'机器多标','机器',c_sample,mlabel) 
+                    record_data(new_data,'机器多标修正','人',c_sample,mlabel) 
+
+    b_save_list_datasets(new_data,'compare_imp.json')
+    b_doccano_delete_project(1)
+    b_doccano_upload('compare_imp.json',1)
+
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
