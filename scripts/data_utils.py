@@ -300,27 +300,6 @@ def b_save_lock_file(file):
 def b_read_lock_file() -> list:
     return d_read_file(path=LOCK_FILE_PATH)
 
-# 拿到assets下面的文件列表
-def b_read_assets() -> list:
-    files = os.listdir(ASSETS_PATH)
-    # 去掉.DS_Store
-    files.remove('.DS_Store')
-    return files
-
-# 拿到data下面的文件列表
-def b_read_data() -> list:
-    files = os.listdir(DATA_PATH)
-    # 去掉.DS_Store
-    files.remove('.DS_Store')
-    return files
-
-# 找出新的文件
-def b_get_new_files() -> list:
-    lock_files = b_read_lock_file()
-    files = b_read_data()
-    new_files = p_get_new_files(lock_files, files)
-    b_save_lock_file(files)
-    return new_files
 
 # 生成数据库入库文件，包括文件名，id,md5,清洁数据，并且根据md5去除重复的数据
 def b_file_2_df(file_name,text_col='details') -> pd.DataFrame:
