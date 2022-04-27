@@ -89,8 +89,8 @@ def gdrive_del_and_upload(file,folder_id):
     """
     file_name = os.path.basename(file)
     try:
-        file = gdrvie_find_file_under_folder(file_name,folder_id)
-        file.Delete()
+        gfile = gdrvie_find_file_under_folder(file_name,folder_id)
+        gfile.Delete()
     finally:
         gdrive_upload(file,folder_id)
 

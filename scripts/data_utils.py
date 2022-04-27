@@ -500,7 +500,7 @@ def b_select_data_by_model(dataset_name,num) -> list:
         text = row['text']
         if len(text) > 500:
             doc = nlp(text)
-            if doc.cats['需要'] >= 0.3:
+            if doc.cats['需要'] == 1:
                 sample_data.append(row)
             if len(sample_data) == num:
                 break
@@ -825,7 +825,7 @@ def b_remove_invalid_label(file):
                 text[valid_start]):
                 valid_start += 1
             while valid_end > 1 and invalid_span_tokens.match(
-                text[valid_end]):
+                text[valid_end-1]):
                 valid_end -= 1
             clean_labels.append([valid_start, valid_end, label])
         cleaned_data['label'] = clean_labels
@@ -1332,6 +1332,7 @@ def b_doccano_train_dev_update():
 
     train_dev = pd.concat([train,dev])
 
+    b_save_db_datasets(train_dev)
     b_save_df_datasets(train_dev,'train_dev.json')
 
 def b_generate_cats_by_label(target_labels=['报名开始时间','报名结束时间','预算','开标时间']):
