@@ -13,11 +13,7 @@ from data_utils import *
 # t2 = time.time()
 # t2-t1
 
-
-
-redit_process_comments()
-
-
+b_doccano_export_project(1,'compare.json')
 
 
 

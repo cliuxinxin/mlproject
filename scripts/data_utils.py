@@ -914,8 +914,11 @@ def b_combine_train_dev_meta():
     b_save_df_datasets(db_new,'train_dev.json')
 
 
-# 将train_dev数据集划分为train,dev，并且保存
+
 def b_split_train_dev():
+    """
+    将train_dev数据集划分为train,dev，并且保存为train.json,dev.json
+    """
     train_dev = b_read_dataset('train_dev.json')
 
     df_train_dev = pd.DataFrame(train_dev)
@@ -1402,8 +1405,9 @@ def b_doccano_compare(org_file,cmp_file):
 
         text = sample['data']
 
-        new_sample['错误种类'] = wrong_type
-        new_sample['标注人'] = label_type
+        new_sample['wrong_type'] = wrong_type
+        new_sample['labeler'] = label_type
+        new_sample['label_type'] = label[2]
 
         start = label[0]
         end = label[1]
@@ -1463,6 +1467,47 @@ def b_doccano_compare(org_file,cmp_file):
     b_doccano_delete_project(1)
     b_doccano_upload('compare_imp.json',1)
 
+def b_combine_compare_to_train_dev():
+    """
+    读取train和compare文件，根据compare中人类的答案进行修改
+    """
+    train_dev = b_read_dataset('train_dev.json')
+    compare = b_read_dataset('compare.json')
+
+    def find_sample_by_id(id):
+        for sample in train_dev:
+            if sample['id'] == id:
+                return sample
+
+    def find_label_by_type(labels,label_type):
+        for idx,label in labels:
+            if label[2] == label_type:
+                return idx
+
+    def is_delete_label(label,org_label_idx,org_sample):
+        if label == []:
+            org_sample['label'].pop(org_label_idx)
+
+    def is_replace_label(label,org_label,org_label_idx,org_sample):
+        if label != org_label:
+            org_sample['label'][org_label_idx] = label
+
+
+    for sample in compare:
+        wrong_type = sample['wrong_type']
+        id = sample['id']
+        s_start = sample['start']
+        label = sample['label']
+        label_type = sample['labeler']
+        org_sample = find_sample_by_id(id)
+        org_label_idx = find_label_by_type(org_sample['labels'],label_type)
+        org_label = org_sample['labels'][org_label_idx]
+        if wrong_type in ['人标签重复','机器错标位置答案','机器漏标答案','机器多标修正']:
+            is_delete_label(label,org_label_idx,org_sample)
+            is_replace_label(label,org_label,org_label_idx,org_sample)
+
+
+    b_save_list_datasets(train_dev,'train_dev.json')
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
