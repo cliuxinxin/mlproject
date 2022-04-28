@@ -23,6 +23,9 @@ from spacy.training import Example
 from transformers import (AutoConfig, AutoModelForTokenClassification,
                           AutoTokenizer, pipeline)
 
+from multiprocessing import Pool
+from multiprocessing.managers import BaseManager
+
 
 def d_parse_config():
     config = configparser.ConfigParser()
@@ -1508,6 +1511,46 @@ def b_combine_compare_to_train_dev():
 
 
     b_save_list_datasets(train_dev,'train_dev.json')
+
+def b_label_dataset_multprocess(file):
+    """
+    读取文件，并且标注好，把标注好的文件存为新的_label.json文件    
+    """
+    file_name = file.split('.')[0]
+
+    data = b_read_dataset(file)
+
+    class PoolCorpus(object):
+
+        def __init__(self):
+            self.nlp = b_load_best_model()
+            self.data = []
+
+        def add(self, sample):
+            doc = self.nlp(sample['data'])
+            labels = [[ent.start_char,ent.end_char,ent.label_] for ent in doc.ents]
+            sample['xlabel'] = labels
+            self.data.append(sample)
+
+        def get(self):
+            return self.data
+
+    BaseManager.register('PoolCorpus', PoolCorpus)
+
+    with BaseManager() as manager:
+        corpus = manager.PoolCorpus()
+
+        with Pool() as pool:
+            pool.map(corpus.add, (sample for sample in data))
+
+        new_data = corpus.get()
+    result = []
+    for sample in data:
+        id = sample['id']
+        new_sample = next(sample for sample in new_data if sample['id'] == id)
+        result.append(new_sample)
+
+    b_save_list_datasets(result,file_name+'_label.json')
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
