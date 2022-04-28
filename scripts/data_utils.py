@@ -26,7 +26,7 @@ from transformers import (AutoConfig, AutoModelForTokenClassification,
 
 def d_parse_config():
     config = configparser.ConfigParser()
-    config.read('config.ini')
+    config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
     return config
 
 project_configs = d_parse_config()
@@ -1514,6 +1514,3 @@ def b_combine_compare_to_train_dev():
 
 if __name__ == '__main__':
     pass
-
-
-
