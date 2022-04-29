@@ -491,6 +491,17 @@ def b_select_data_by_model(dataset_name,num) -> list:
 
 # 上传到doccano测试项目
 def b_doccano_upload(file,project_id):
+    data = b_read_dataset(file)
+    for entry in data:
+        if 'data' in entry:
+            text = entry['data']
+            del entry['data']
+        else :
+            text = entry['text']
+        md5 = entry['md5']
+        text  = text + '@crazy@' + md5
+        entry['text'] = text
+    b_save_list_datasets(data,file)
     doccano_client.post_doc_upload(project_id,file,ASSETS_PATH)
 
     # 从doccano获取数据
@@ -510,6 +521,12 @@ def b_doccano_export_project(project_id,path):
             f.write(chunk)
     zipfile.ZipFile(tmp_zip_path).extractall(path=ASSETS_PATH)
     os.rename(ASSETS_PATH + 'all.jsonl', ASSETS_PATH + path)
+    data = b_read_dataset(path)
+    for entry in data:
+        text = entry['data']
+        text = text.split('@crazy@')[0]
+        entry['data'] = text
+    b_save_list_datasets(data,path)
     os.remove(tmp_zip_path)
 
 
@@ -879,10 +896,10 @@ def b_doccano_train_dev():
 
     db_new = db_new.dropna()
 
-    db_new = db_new.drop(['data'],axis=1)
-
     db_new_train = db_new[db_new['dataset']=='tender_train']
     db_new_dev = db_new[db_new['dataset']=='tender_dev']
+
+    db_new = db_new.drop(['data'],axis=1)
 
     b_save_df_datasets(db_new_train,'train_imp.json')
     b_save_df_datasets(db_new_dev,'dev_imp.json')
