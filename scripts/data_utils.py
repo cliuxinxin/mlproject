@@ -278,9 +278,9 @@ def p_generate_cats_datasets(data:list):
     random.shuffle(pos)
     random.shuffle(neg)
 
-    min = min(len(pos),len(neg))
-    pos = pos[:min]
-    neg = neg[:min]
+    min_length = min(len(pos),len(neg))
+    pos = pos[:min_length]
+    neg = neg[:min_length]
 
 
     # train_cat,dev_cat
@@ -1343,25 +1343,29 @@ def b_generate_cats_by_label(target_labels=['报名开始时间','报名结束�
 
     p_generate_cats_datasets(data)
 
-def b_generate_cats_datasets():
+def b_generate_cats_datasets_by_compare(org_file,cmp_file):
     """
-    之前先运行 b_doccano_train_dev_nlp_label() 生成mlabel
-
-    对比mlabel和label,生成train_cats.json和dev_cats.json
+    之前需要运行 b_label_dataset_multprocess 生成 train_dev_label.json
+    根据对比情况，生成cats数据集
     
     """
-    data = b_read_dataset('train_dev_mlabel.json') 
+    org_data = b_read_dataset(org_file) 
+    cmp_data = b_read_dataset(cmp_file)
 
-    for sample in data:
-        text = sample['data']
-        labels = sample['label']
-        predicts = sample['mlabel']
-        sample['cats'] = {"需要":0,"不需要":1} 
+    for o_sample,c_sample in zip(org_data,cmp_data):
+        text = o_sample['data']
+        labels = o_sample['label']
+        predicts = c_sample['label']
+        o_sample['cats'] = {"需要":0,"不需要":1} 
         for entry in labels:
             if entry not in predicts:
-                sample['cats'] = {"需要":1,"不需要":0}
+                o_sample['cats'] = {"需要":1,"不需要":0}
                 break
-    p_generate_cats_datasets(data)
+        for entry in predicts:
+            if entry not in labels:
+                o_sample['cats'] = {"需要":1,"不需要":0}
+                break
+    p_generate_cats_datasets(org_data)
 
 def b_doccano_split_upload_sync(imp:pd.DataFrame):
     """
@@ -1529,7 +1533,7 @@ def b_label_dataset_multprocess(file):
         def add(self, sample):
             doc = self.nlp(sample['data'])
             labels = [[ent.start_char,ent.end_char,ent.label_] for ent in doc.ents]
-            sample['xlabel'] = labels
+            sample['label'] = labels
             self.data.append(sample)
 
         def get(self):
@@ -1546,8 +1550,9 @@ def b_label_dataset_multprocess(file):
         new_data = corpus.get()
     result = []
     for sample in data:
+        md5 = sample['md5']
         id = sample['id']
-        new_sample = next(sample for sample in new_data if sample['id'] == id)
+        new_sample = next(sample for sample in new_data if sample['md5'] == md5 and sample['id'] == id)
         result.append(new_sample)
 
     b_save_list_datasets(result,file_name+'_label.json')
