@@ -1573,6 +1573,88 @@ def b_label_dataset_multprocess(file):
         result.append(new_sample)
 
     b_save_list_datasets(result,file_name+'_label.json')
+
+
+def b_generate_compare_refine():
+    """
+    通过train_dev.json,train_dev_label.json 生成compare_results 用于 google refine处理使用
+    """
+    org_data = b_read_dataset('train_dev.json')
+    cmp_data = b_read_dataset('train_dev_label.json')
+
+    def record_data(result,label_type,text,label,predect,wrong_type=''):
+        result['label_type'] = label_type
+        result['human_start'] = label[0]
+        result['human_end'] = label[1]
+        result['ai_start'] = predect[0]
+        result['ai_end'] = predect[1]
+        result['human_label'] = text[label[0]:label[1]]
+        result['ai_label'] = text[predect[0]:predect[1]]
+        if wrong_type:
+            result['wrong_type'] = wrong_type
+        if wrong_type == 'AI错标' and abs(label[0] - predect[0]) < 5:
+            result['wrong_type'] = 'AI错标位置'
+        results.append(result)
+
+
+
+    results = []
+    for sample in org_data:
+        result = deepcopy(sample)
+        del result['data']
+        del result['label']
+        del result['time']
+        id = sample['id']
+        md5 = sample['md5']
+        text = sample['data']
+        for entry in cmp_data:
+            if entry['id'] == id and entry['md5'] == md5:
+                break
+    
+        labels = sample['label']
+        predicts = entry['label']
+
+        label_types = [ label[2] for label in labels ]
+        predict_types = [ label[2] for label in predicts ]
+
+        label_count = {}
+
+        for label in labels:
+            label_type = label[2]
+            if label_type not in label_count:
+                label_count[label_type] = 0
+            label_count[label_type] += 1
+    
+        for label_type in label_count:
+            if label_count[label_type] > 1:
+                for label in labels:
+                    if label[2] == label_type:
+                        break
+                temp_labels = deepcopy(labels)
+                temp_labels.remove(label)
+                for predict in temp_labels:
+                    if predict[2] == label_type:
+                        break
+                record_data(result,label_type,text,label,predict,'手工重复标注')
+    
+        for label in labels:
+            label_type = label[2]
+            if label_type not in predict_types:
+                record_data(result,label_type,text,label,label,'AI漏标')
+
+        for predict in predicts:
+            predict_type = predict[2]
+            if predict_type not in label_types:
+                record_data(result,predict_type,text,predict,predict,'AI多标')
+
+        for label in labels:
+            if label not in predicts:
+                label_type = label[2]
+                for predect in predicts:
+                    if predect[2] == label_type:
+                        record_data(result,label_type,text,label,predect,'AI错标')
+
+    b_save_list_datasets(results,'compare_results.json')
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
