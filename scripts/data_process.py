@@ -14,7 +14,7 @@ t2 - t1
 b_doccano_compare('train_dev.json','train_dev_label.json')
 b_generate_cats_datasets_by_compare('train_dev.json','train_dev_label.json')
 
-b_remove_invalid_label('train_dev_remove.json')
+b_remove_invalid_label('train_dev.json')
 
 b_generate_compare_refine('train_dev.json','train_dev_remove.json')
 
@@ -41,19 +41,7 @@ b_save_df_datasets(dev,'dev.json')
 # b_doccano_upload('train.json',2)
 # b_doccano_upload('dev.json',3)
 
-df = pd.read_csv(DATA_PATH + 'Untitled.csv')
 
-test = df.sample(5)
-
-test.rename(columns={'text':'data'},inplace=True)
-
-test['md5'] = test['data'].apply(lambda x: p_generate_md5(x))
-
-b_save_df_datasets(test,'test.json')
-
-b_label_dataset_multprocess('test.json')
-
-b_doccano_upload('test_label.json',1)
 
 
 

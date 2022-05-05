@@ -818,10 +818,14 @@ def b_get_all_label_data(file):
 
     b_save_list_datasets(new_train,file_name + '.json')
 
-# 去除标签中的空格字符
-# b_remove_invalid_label('train.json')
+
 def b_remove_invalid_label(file):
+    """
+    去掉标签中的空格字符，并且保存到_remove.json文件中
+    """
     invalid_span_tokens = re.compile(r'\s')
+
+    file_name = file.split('.')[0]
 
     data = b_read_dataset(file)
 
@@ -847,7 +851,7 @@ def b_remove_invalid_label(file):
         sample['label'] = clean_labels
         cleaned_datas.append(cleaned_data)  
 
-    b_save_list_datasets(data,file)
+    b_save_list_datasets(data,file + '_remove.json')
 
 # 把bio数据集划分成最长的数据集,并且保存为train_trf_max.json
 #split_dataset_by_max('train_trf.json',510) 
