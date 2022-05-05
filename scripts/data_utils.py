@@ -13,6 +13,8 @@ import warnings
 import zipfile
 import queue
 import threading
+from copy import deepcopy
+
 
 import pandas as pd
 import spacy
@@ -491,7 +493,13 @@ def b_select_data_by_model(dataset_name,num) -> list:
 
 # 上传到doccano测试项目
 def b_doccano_upload(file,project_id):
+    p_upload_preprocess(file)
+    doccano_client.post_doc_upload(project_id,file,ASSETS_PATH)
+
+def p_upload_preprocess(file):
+    # 预处理需要上传的数据
     data = b_read_dataset(file)
+    std_labels = b_read_text_file('labels.txt')
     for entry in data:
         if 'data' in entry:
             text = entry['data']
@@ -501,8 +509,16 @@ def b_doccano_upload(file,project_id):
         md5 = entry['md5']
         text  = text + '@crazy@' + md5
         entry['text'] = text
+        labels = entry['label']
+        entry['label_counts'] = len(labels)
+        for label in std_labels:
+            temp_list = []
+            for sample_label in labels:
+                if label == sample_label[2]:
+                    label_text = text[sample_label[0]:sample_label[1]]
+                    temp_list.append(label_text)
+            entry[label] = ','.join(temp_list)
     b_save_list_datasets(data,file)
-    doccano_client.post_doc_upload(project_id,file,ASSETS_PATH)
 
     # 从doccano获取数据
 def b_doccano_export_project(project_id,path):
@@ -828,9 +844,10 @@ def b_remove_invalid_label(file):
                 valid_end -= 1
             clean_labels.append([valid_start, valid_end, label])
         cleaned_data['label'] = clean_labels
+        sample['label'] = clean_labels
         cleaned_datas.append(cleaned_data)  
 
-    b_save_list_datasets(cleaned_datas,file)
+    b_save_list_datasets(data,file)
 
 # 把bio数据集划分成最长的数据集,并且保存为train_trf_max.json
 #split_dataset_by_max('train_trf.json',510) 
@@ -935,11 +952,11 @@ def b_combine_train_dev_meta():
 
 
 
-def b_split_train_dev():
+def b_split_train_dev(file):
     """
     将train_dev数据集划分为train,dev，并且保存为train.json,dev.json
     """
-    train_dev = b_read_dataset('train_dev.json')
+    train_dev = b_read_dataset(file)
 
     df_train_dev = pd.DataFrame(train_dev)
 
@@ -1575,25 +1592,31 @@ def b_label_dataset_multprocess(file):
     b_save_list_datasets(result,file_name+'_label.json')
 
 
-def b_generate_compare_refine():
+def b_generate_compare_refine(org_file,cmp_file):
     """
     通过train_dev.json,train_dev_label.json 生成compare_results 用于 google refine处理使用
     """
-    org_data = b_read_dataset('train_dev.json')
-    cmp_data = b_read_dataset('train_dev_label.json')
+    org_data = b_read_dataset(org_file)
+    cmp_data = b_read_dataset(cmp_file)
 
     def record_data(result,label_type,text,label,predect,wrong_type=''):
-        result['label_type'] = label_type
         result['human_start'] = label[0]
         result['human_end'] = label[1]
         result['ai_start'] = predect[0]
         result['ai_end'] = predect[1]
+        result['label_type'] = label_type
         result['human_label'] = text[label[0]:label[1]]
         result['ai_label'] = text[predect[0]:predect[1]]
+        dataset = 2 if result['dataset'] == 'tender_train' else 3
+        md5 = result['md5']
+        
         if wrong_type:
             result['wrong_type'] = wrong_type
         if wrong_type == 'AI错标' and abs(label[0] - predect[0]) < 5:
             result['wrong_type'] = 'AI错标位置'
+
+        result['doccano_url'] = 'http://47.108.218.88:18000/projects/{}/sequence-labeling?page=1&q={}'.format(dataset,md5)
+        result['url'] = result['data_source']
         results.append(result)
 
 
