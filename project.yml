@@ -2,7 +2,7 @@ title: "深度学习系统"
 description: "整合所有我们需要的东西进入到系统"
 # Variables can be referenced across the project.yml using ${vars.var_name}
 vars:
-  name: "ner_tender"
+  name: "tender"
   lang: "zh"
   train: "train.json"
   dev: "dev.json"

@@ -1,45 +1,41 @@
 from data_utils import *
-# from mysql_utils import *
 from google_utils import *
 
+# 定义任务
+task = 'tender'
+# task = 'bid'
+
+# 下载最好的模型
 gdrive_download_best_model()
 
-b_doccano_train_dev_update()
+# 从doccano上下载最新的train和dev，并且合并为train_dev
+b_doccano_train_dev_update(task)
 
+# 标注
 t1 = time.time()
 b_label_dataset_multprocess('train_dev.json')
 t2 = time.time()
 t2 - t1
 
-b_doccano_compare('train_dev.json','train_dev_label.json')
+# 根据标注和AI的情况生成cats数据集
 b_generate_cats_datasets_by_compare('train_dev.json','train_dev_label.json')
 
-b_remove_invalid_label('train_dev.json')
+# 根据差异生成refine对比表
+b_generate_compare_refine('train_dev.json','train_dev_label.json')
 
-b_generate_compare_refine('train_dev.json','train_dev_remove.json')
+# 上传cats数据集
+gdrive_upload_cats_train_dev()
 
+# 下载生成的cats模型
 gdrive_download_best_model_cats()
 
-data = b_select_data_by_model('tender',300)
+# 选择数据
+data = b_select_data_by_model(task,300)
 
-# text 改名 data
-data.rename(columns={'text':'data'},inplace=True)
+# 标注分割和上传
+b_devide_data_import(data,task)
 
-b_save_df_datasets(data,'train_dev_imp.json')
 
-b_label_dataset_multprocess('train_dev_imp.json')
-
-train_dev = b_read_dataset('train_dev_imp_label.json')
-
-train_dev = pd.DataFrame(train_dev)
-
-train,dev = b_split_train_test(train_dev,0.8)
-
-b_save_df_datasets(train,'train.json')
-b_save_df_datasets(dev,'dev.json')
-
-# b_doccano_upload('train.json',2)
-# b_doccano_upload('dev.json',3)
 
 
 

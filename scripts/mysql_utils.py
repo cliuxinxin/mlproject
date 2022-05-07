@@ -3,7 +3,7 @@ import configparser
 import pandas as pd
 from dbutils.persistent_db import PersistentDB
 
-MYSQL = 'mysql-test'
+MYSQL = 'mysql'
 
 def d_parse_config():
     config = configparser.ConfigParser()
@@ -61,21 +61,32 @@ def mysql_select_df(sql):
     df.columns = [i[0] for i in cursor.description]
     return df
 
-def mysql_delete_data(df):
+def mysql_delete_data(df,task):
     """
     使用df的id，批量删除数据表中的数据
     """
-    sql = 'delete from tender_test where id = %s'
+    sql = 'delete from %s where id in %s'
     cursor = conn.cursor()
-    cursor.executemany(sql, df['id'].values.tolist())
+    cursor.executemany(sql,(project_configs[task]['target'],df['id'].values.tolist()))
     db.commit()
 
 
-def mysql_insert_data(df):
+def mysql_delete_data_by_id(id,task):
+    """
+    使用id删除数据表中的数据
+    """
+    sql = "delete from {} where id = '{}'".format(project_configs[task]['target'],id)
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    db.commit()
+
+
+
+def mysql_insert_data(df,task):
     """
     使用df的表头和数据拼成批量更新的sql语句
     """
-    sql = 'insert into tender_test ({}) values ({})'.format(','.join(df.columns), ','.join(['%s'] * len(df.columns)))
+    sql = 'insert into {} ({}) values ({})'.format(project_configs[task]['target'],','.join(df.columns), ','.join(['%s'] * len(df.columns)))
     cursor = conn.cursor()
     values = df.values.tolist()
     # 将NaT 替换成 ''

@@ -292,6 +292,50 @@ def p_generate_cats_datasets(data:list):
     b_save_list_datasets(train_cat,'train_cats.json')
     b_save_list_datasets(dev_cat,'dev_cats.json')
 
+def p_export_preprocess(path,task):
+    """
+    导出前处理，去掉md5信息，删除label读取信息
+    """
+    data = b_read_dataset(path)
+    std_labels = b_read_db_labels(task)['label'].to_list()
+    for entry in data:
+        text = entry['data']
+        text = text.split('@crazy@')[0]
+        entry['data'] = text
+        del entry['label_counts']
+        for label in std_labels:
+            del entry[label]
+    b_save_list_datasets(data,path)
+
+
+def p_upload_preprocess(file,task):
+    # 预处理需要上传的数据
+    data = b_read_dataset(file)
+    std_labels = b_read_db_labels()
+    std_labels = std_labels[std_labels['task'] == task]
+    std_labels = std_labels['label'].tolist()
+    for entry in data:
+        if 'data' in entry:
+            text = entry['data']
+            del entry['data']
+        else :
+            text = entry['text']
+        md5 = entry['md5']
+        text  = text + '@crazy@' + md5
+        entry['text'] = text
+        try:
+            labels = entry['label']
+        except:
+            labels = []
+        entry['label_counts'] = len(labels)
+        for label in std_labels:
+            temp_list = []
+            for sample_label in labels:
+                if label == sample_label[2]:
+                    label_text = text[sample_label[0]:sample_label[1]]
+                    temp_list.append(label_text)
+            entry[label] = ','.join(temp_list)
+    b_save_list_datasets(data,file)
 # ——————————————————————————————————————————————————
 # 构建层
 # ——————————————————————————————————————————————————
@@ -306,12 +350,16 @@ def b_read_lock_file() -> list:
     return d_read_file(path=LOCK_FILE_PATH)
 
 
-# 生成数据库入库文件，包括文件名，id,md5,清洁数据，并且根据md5去除重复的数据
-def b_file_2_df(file_name,text_col='details') -> pd.DataFrame:
+def b_file_2_df(file_name,task) -> pd.DataFrame:
+    """
+    读取data里面的数据，清洗text文档，生成md5，根据configs.ini中的设置进行配置
+    """
+    text_col = project_configs[task]['col']
     df = pd.read_csv(DATA_PATH + file_name)
-    df['id'] = df.index
-    df['file_name'] = file_name
+    df.dropna(subset=[text_col],inplace=True)
     p_html_text(df,text_col)
+    df.rename(columns={project_configs[task]['source']:'data_source'},inplace=True)
+    df['task'] = task
     df['md5'] = df[text_col].apply(p_generate_md5)
     df['time'] = pd.to_datetime('now')
     df['time'] = pd.to_datetime(df['time'], format='%Y-%m-%d %H:%M:%S') + pd.Timedelta(hours=8)
@@ -364,6 +412,23 @@ def b_save_db_basic(df):
 def b_read_db_basic():
     return d_read_pkl(DATABASE_PATH + 'basic.pkl')
 
+# 保存清洗成后的数据
+def b_save_db_labels(df):
+  """
+  保存label数据库
+  """
+  d_save_pkl(df,DATABASE_PATH + 'labels.pkl')
+
+# 读取清洗好的数据
+def b_read_db_labels(task=''):
+  """
+  读取label数据库
+  """
+  df = d_read_pkl(DATABASE_PATH + 'labels.pkl')
+  if task:
+    df = df[df['task'] == task]
+  return df
+
 # 将df保存为datasets
 def b_save_df_datasets(df,file):
     d_save_df_datasets(df,ASSETS_PATH + file)
@@ -403,7 +468,14 @@ def b_check_random(data,num):
         label = random.sample(labels,1)[0]
         print(text[label[0]:label[1]],label[2])
 
-
+def b_updata_db_labels(task,df):
+  """
+  将某个task的labels的数据库更新
+  """
+  db = b_read_db_labels()
+  db = db[~db['task'].str.contains(task)]
+  db = pd.concat([db,df])
+  b_save_db_labels(db)
 
 
 
@@ -467,16 +539,19 @@ def b_add_new_file_to_db_basic(file):
     b_save_db_basic(df_db)
 
 # 从基础库中抽取未被业务未被抽样的数据
-def b_extrct_data_from_db_basic(dataset_name) -> pd.DataFrame:
+def b_extrct_data_from_db_basic(task) -> pd.DataFrame:
     db = b_read_db_basic()
+    db = db[db['task'] == task]
     db_dataset = b_read_db_datasets()
-    db_dataset = db_dataset[db_dataset['dataset'].str.contains(dataset_name)]
+    db_dataset = db_dataset[db_dataset['dataset'].str.contains(task)]
     return db[db['md5'].isin(db_dataset['md5']) == False]
 
 
-# 根据cats模型选择数据
-def b_select_data_by_model(dataset_name,num) -> list:
-    db = b_extrct_data_from_db_basic(dataset_name)
+def b_select_data_by_model(task,num) -> list:
+    """
+    根据cats模型选择数据
+    """
+    db = b_extrct_data_from_db_basic(task)
     nlp = b_load_best_cats()
 
     sample_data = []
@@ -484,6 +559,7 @@ def b_select_data_by_model(dataset_name,num) -> list:
         text = row['text']
         if len(text) > 500:
             doc = nlp(text)
+            print(doc.cats['需要'])
             if doc.cats['需要'] >= 0.9:
                 sample_data.append(row)
             if len(sample_data) == num:
@@ -492,36 +568,14 @@ def b_select_data_by_model(dataset_name,num) -> list:
     return pd.DataFrame(sample_data)
 
 # 上传到doccano测试项目
-def b_doccano_upload(file,project_id):
-    p_upload_preprocess(file)
+def b_doccano_upload(file,project_id,task):
+    p_upload_preprocess(file,task)
     doccano_client.post_doc_upload(project_id,file,ASSETS_PATH)
 
-def p_upload_preprocess(file):
-    # 预处理需要上传的数据
-    data = b_read_dataset(file)
-    std_labels = b_read_text_file('labels.txt')
-    for entry in data:
-        if 'data' in entry:
-            text = entry['data']
-            del entry['data']
-        else :
-            text = entry['text']
-        md5 = entry['md5']
-        text  = text + '@crazy@' + md5
-        entry['text'] = text
-        labels = entry['label']
-        entry['label_counts'] = len(labels)
-        for label in std_labels:
-            temp_list = []
-            for sample_label in labels:
-                if label == sample_label[2]:
-                    label_text = text[sample_label[0]:sample_label[1]]
-                    temp_list.append(label_text)
-            entry[label] = ','.join(temp_list)
-    b_save_list_datasets(data,file)
+
 
     # 从doccano获取数据
-def b_doccano_export_project(project_id,path):
+def b_doccano_export_project(project_id,path,task):
     url = project_configs['doccano']['url']
     result = doccano_client.post(f'{url}/v1/projects/{project_id}/download', json={'exportApproved': False, 'format': 'JSONL'}) 
     task_id = result['task_id']
@@ -537,13 +591,10 @@ def b_doccano_export_project(project_id,path):
             f.write(chunk)
     zipfile.ZipFile(tmp_zip_path).extractall(path=ASSETS_PATH)
     os.rename(ASSETS_PATH + 'all.jsonl', ASSETS_PATH + path)
-    data = b_read_dataset(path)
-    for entry in data:
-        text = entry['data']
-        text = text.split('@crazy@')[0]
-        entry['data'] = text
-    b_save_list_datasets(data,path)
+    p_export_preprocess(path,task)
     os.remove(tmp_zip_path)
+
+
 
 
 # 删除项目中的数据
@@ -615,31 +666,44 @@ def b_doccano_cat_data(df,number,terms,project_id):
     b_save_df_datasets(df,'train_cat.json')
     b_doccano_dataset_label_view('train_cat.json',['其他'],project_id)
 
-# 随机根据业务初始化数据集，并且上传到doccano
-def b_doccano_init_dataseet(name,num,ratio,train_id,test_id):
+def b_updata_db_datasets(task,df):
+  """
+  将某个task的datasets的数据库更新
+  """
+  db = b_read_db_datasets()
+  db = db[~db['dataset'].str.contains(task)]
+  db = pd.concat([db,df])
+  b_save_db_datasets(db)
+
+
+def b_doccano_init_dataseet(task,num,ratio):
+    """
+    根据任务，随机初始化数据集，并且上传到doccano
+    """
     db = b_read_db_basic()
     # 随机抽取1000条数据
-    df_db = pd.DataFrame(db)
-    df_db = df_db.sample(num)
+    db = db[db['task'] == task]
+    db = db.sample(num)
 
     # 按照这2：8的比例切分训练和测试
-    df_train,df_test = b_split_train_test(df_db,ratio)
+    df_train,df_dev = b_split_train_test(db,ratio)
 
     # 分别保存到json文件中
     b_save_df_datasets(df_train,'train.json')
-    b_save_df_datasets(df_test,'test.json')
+    b_save_df_datasets(df_dev,'dev.json')
 
     # 分别上传到doccano
-    b_doccano_upload('train.json',train_id)
-    b_doccano_upload('test.json',test_id)
+    b_doccano_upload('train.json',project_configs[task]['train'],task)
+    b_doccano_upload('dev.json',project_configs[task]['dev'],task)
 
-    df_train['dataset'] = name + '_train'
-    df_test['dataset'] = name + '_test'
+    df_train['dataset'] = task + '_train'
+    df_dev['dataset'] = task + '_dev'
 
     # 合并两个数据集
-    df_train_test = pd.concat([df_train,df_test])
+    df_train_dev = pd.concat([df_train,df_dev])
 
-    b_save_db_datasets(df_train_test)
+    b_updata_db_datasets(task,df_train_dev)
+
 
 # 标注数据集
 # b_label_dataset
@@ -851,7 +915,7 @@ def b_remove_invalid_label(file):
         sample['label'] = clean_labels
         cleaned_datas.append(cleaned_data)  
 
-    b_save_list_datasets(data,file + '_remove.json')
+    b_save_list_datasets(data,file_name + '_remove.json')
 
 # 把bio数据集划分成最长的数据集,并且保存为train_trf_max.json
 #split_dataset_by_max('train_trf.json',510) 
@@ -1316,14 +1380,14 @@ def b_eavl_dataset(org_dataset_file,prd_dataset_file):
     df = df.T
     return df
 
-def b_doccano_update_train_dev():
+def b_doccano_update_train_dev(task):
     """
     从doccano中下载2的数据到train.json中
     从doccano中下载3的数据到dev.json中
     
     """
-    b_doccano_export_project(2,'train.json')
-    b_doccano_export_project(3,'dev.json')
+    b_doccano_export_project(project_configs[task]['train'],'train.json',task)
+    b_doccano_export_project(project_configs[task]['dev'],'dev.json',task)
 
 def b_doccano_download_train_dev_label_view_wrong():
     """
@@ -1344,11 +1408,11 @@ def b_process_origin_data():
 
 
 
-def b_doccano_train_dev_update():
+def b_doccano_train_dev_update(task):
     """
     从doccano下载项目2的数据到train.json,项目3的数据到dev.json，并且合并到train_dev.json
     """
-    b_doccano_update_train_dev()
+    b_doccano_update_train_dev(task)
 
     train = b_read_dataset('train.json')
     dev = b_read_dataset('dev.json')
@@ -1356,12 +1420,12 @@ def b_doccano_train_dev_update():
     train = pd.DataFrame(train)
     dev = pd.DataFrame(dev)
 
-    train['dataset'] = 'tender_train'
-    dev['dataset'] = 'tender_dev'
+    train['dataset'] = task + '_train'
+    dev['dataset'] = task + '_dev'
 
     train_dev = pd.concat([train,dev])
 
-    b_save_db_datasets(train_dev)
+    b_updata_db_datasets(task,train_dev)
     b_save_df_datasets(train_dev,'train_dev.json')
 
 def b_generate_cats_by_label(target_labels=['报名开始时间','报名结束时间','预算','开标时间']):
@@ -1589,8 +1653,7 @@ def b_label_dataset_multprocess(file):
     result = []
     for sample in data:
         md5 = sample['md5']
-        id = sample['id']
-        new_sample = next(sample for sample in new_data if sample['md5'] == md5 and sample['id'] == id)
+        new_sample = next(sample for sample in new_data if sample['md5'] == md5)
         result.append(new_sample)
 
     b_save_list_datasets(result,file_name+'_label.json')
@@ -1611,6 +1674,8 @@ def b_generate_compare_refine(org_file,cmp_file):
         result['label_type'] = label_type
         result['human_label'] = text[label[0]:label[1]]
         result['ai_label'] = text[predect[0]:predect[1]]
+        if text[label[0]:label[1]] == text[predect[0]:predect[1]]:
+            result['label_content'] = '一样' 
         dataset = 2 if result['dataset'] == 'tender_train' else 3
         md5 = result['md5']
         
