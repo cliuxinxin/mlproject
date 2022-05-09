@@ -15,3 +15,4 @@ flask_restx
 torch
 pymysql
 dbutils
+tqdm
