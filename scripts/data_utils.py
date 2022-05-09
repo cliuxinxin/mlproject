@@ -1532,6 +1532,27 @@ def b_label_dataset_multprocess(task,file):
 
     b_save_list_datasets(result,file_name+'_label.json')
 
+def b_anlysis_rule(text,label,predict):
+    """
+    规则分析结果
+    """
+    label_start,label_end = label[:2]
+    predict_start,predict_end = predict[:2]
+    label_text = text[label[0]:label[1]]
+    pred_text = text[predict[0]:predict[1]]
+    result = "未分析成功"
+    if label_text.strip() == pred_text.strip():
+        if label_start == predict_start and label_end - predict_end >= 1:
+            return '标签和预测结果相同，但是标签后面有空格'
+        elif label_start == predict_start and label_end - predict_end <= -1:
+            return '标签和预测结果相同，但是预测后面有空格'
+        elif label_start - predict_start >= 1 and label_end == predict_end:
+            return '标签和预测结果相同，但是预测前面有空格'
+        elif label_start - predict_start <= -1 and label_end == predict_end:
+            return '标签和预测结果相同，但是标签前面有空格'
+        else:
+            return '标签和预测结果相同，但是标注位置不同'
+    return result
 
 def b_generate_compare_refine(task,org_file,cmp_file):
     """
@@ -1543,22 +1564,21 @@ def b_generate_compare_refine(task,org_file,cmp_file):
     train_project_id = project_configs[task]['train']
     dev_project_id = project_configs[task]['dev']
 
-    def record_data(result,label_type,text,label,predect,wrong_type=''):
+    def record_data(result,label_type,text,label,predict,wrong_type=''):
         result['human_start'] = label[0]
         result['human_end'] = label[1]
-        result['ai_start'] = predect[0]
-        result['ai_end'] = predect[1]
+        result['ai_start'] = predict[0]
+        result['ai_end'] = predict[1]
         result['label_type'] = label_type
         result['human_label'] = text[label[0]:label[1]]
-        result['ai_label'] = text[predect[0]:predect[1]]
-        if text[label[0]:label[1]] == text[predect[0]:predect[1]]:
-            result['label_content'] = '一样' 
+        result['ai_label'] = text[predict[0]:predict[1]]
+        result['rule_anlysis'] = b_anlysis_rule(text,label,predict)
         dataset = train_project_id if result['dataset'] == task + '_train' else dev_project_id
         md5 = result['md5']
         
         if wrong_type:
             result['wrong_type'] = wrong_type
-        if wrong_type == 'AI错标' and abs(label[0] - predect[0]) < 5:
+        if wrong_type == 'AI错标' and abs(label[0] - predict[0]) < 5:
             result['wrong_type'] = 'AI错标位置'
 
         result['doccano_url'] = 'http://47.108.218.88:18000/projects/{}/sequence-labeling?page=1&q={}'.format(dataset,md5)
