@@ -568,9 +568,19 @@ def b_select_data_by_model(task,num) -> list:
 
     return pd.DataFrame(sample_data)
 
-# 上传到doccano测试项目
-def b_doccano_upload(file,project_id,task):
+def b_doccano_upload(file,project_id):
+    """
+    把文件上传到doccano的项目中
+    """
+    doccano_client.post_doc_upload(project_id,file,ASSETS_PATH)
+
+
+def b_doccano_upload_by_task(file,task,task_type):
+    """
+    根据文件，任务和任务类型上传到doccano
+    """
     p_upload_preprocess(file,task)
+    project_id = project_configs[task][task_type]
     doccano_client.post_doc_upload(project_id,file,ASSETS_PATH)
 
 
@@ -694,8 +704,8 @@ def b_doccano_init_dataseet(task,num,ratio):
     b_save_df_datasets(df_dev,'dev.json')
 
     # 分别上传到doccano
-    b_doccano_upload('train.json',project_configs[task]['train'],task)
-    b_doccano_upload('dev.json',project_configs[task]['dev'],task)
+    b_doccano_upload_by_task('train.json',task,'train')
+    b_doccano_upload_by_task('dev.json',task,'dev')
 
     df_train['dataset'] = task + '_train'
     df_dev['dataset'] = task + '_dev'
@@ -962,41 +972,6 @@ def b_bio_split_dataset_by_max(file,max_len):
     b_save_list_datasets(new_data,file_name  + '_maxlen.json')
 
 
-def b_doccano_train_dev():
-    """
-    同步train.json和dev.json的数据到doccano中
-    
-    """
-    train = b_read_dataset('train.json')
-    dev = b_read_dataset('dev.json')
-
-    train_dev = train + dev
-
-    df = pd.DataFrame(train_dev)
-
-    df['md5'] = df['data'].apply(p_generate_md5)
-
-    db = b_read_db_datasets()
-
-    db_new = pd.merge(db,df,left_on='md5',right_on='md5',how='left')
-
-    db_new = db_new.dropna()
-
-    db_new_train = db_new[db_new['dataset']=='tender_train']
-    db_new_dev = db_new[db_new['dataset']=='tender_dev']
-
-    db_new = db_new.drop(['data'],axis=1)
-
-    b_save_df_datasets(db_new_train,'train_imp.json')
-    b_save_df_datasets(db_new_dev,'dev_imp.json')
-
-    b_doccano_upload('train_imp.json',2)
-    b_doccano_upload('dev_imp.json',3)
-
-    # 去掉db_new的label列
-    db_new = db_new.drop(['label'],axis=1)
-
-    b_save_db_datasets(db_new)
 
 # 合并train_dev数据，并且附加上meta，保存到train_dev.json
 def b_combine_train_dev_meta():
@@ -1213,46 +1188,6 @@ def b_bio_datasets_trans_and_max():
     b_bio_split_dataset_by_max('train_trf.json',511)
     b_bio_split_dataset_by_max('dev_trf.json',511)
 
-def b_doccano_add_new_data(key_words:list):
-    """
-    传入keywords,生成train_cat.json,并且上传到项目1中。
-    生成train_imp.json导入到项目2中
-    生成dev_imp.json导入到项目3中
-
-    key_words=['项目招标编号','项目编号','招标编号','招标项目编号','项目代码','标段编号','标段编号为']
-    """
-    db = b_extrct_data_from_db_basic('tender')
-
-    b_doccano_cat_data(db,132,key_words,1)
-
-    test = b_read_dataset('train_cat.json')
-
-    df = pd.DataFrame(test)
-
-    # 将data列改名为text列
-    df.rename(columns={'data':'text'},inplace=True)
-
-    # 去掉label列
-    df.drop(['label'],axis=1,inplace=True)
-
-    # 分为训练和测试
-    df_train = df.sample(frac=0.91)
-    df_dev = df.drop(df_train.index)
-
-    df_train['dataset'] = 'tender_train'
-    df_dev['dataset'] = 'tender_dev'
-
-
-    b_save_df_datasets(df_train,'train_imp.json')
-    b_save_df_datasets(df_dev,'dev_imp.json')
-
-    db = b_read_db_datasets()
-
-    db = db.append(df_train)
-    db = db.append(df_dev)
-
-    b_doccano_upload('train_imp.json',2)
-    b_doccano_upload('dev_imp.json',3)
 
 def b_trf_load_model():
     """
@@ -1383,12 +1318,19 @@ def b_eavl_dataset(org_dataset_file,prd_dataset_file):
 
 def b_doccano_update_train_dev(task):
     """
-    从doccano中下载2的数据到train.json中
-    从doccano中下载3的数据到dev.json中
+    根据task将的数据到train.json和dev中
     
     """
     b_doccano_export_project(project_configs[task]['train'],'train.json',task)
     b_doccano_export_project(project_configs[task]['dev'],'dev.json',task)
+
+def b_doccano_bak_train_dev(task):
+    """
+    根据task将的数据到task_train_bak.json和task_dev_bak.json中
+    
+    """
+    b_doccano_export_project(project_configs[task]['train'],task + '_train_bak.json',task)
+    b_doccano_export_project(project_configs[task]['dev'],task + '_dev_bak.json',task)
 
 def b_doccano_download_train_dev_label_view_wrong():
     """
@@ -1469,20 +1411,6 @@ def b_generate_cats_datasets_by_compare(org_file,cmp_file):
                 o_sample['cats'] = {"需要":1,"不需要":0}
                 break
     p_generate_cats_datasets(org_data)
-
-def b_doccano_split_upload_sync(imp:pd.DataFrame):
-    """
-    传入数据集，将数据集按照比例分割，分别存储和上传，并且同步到db_dataset表中
-    """
-    train_imp, dev_imp = b_split_train_test(imp,0.8)
-
-    b_save_df_datasets(train_imp,'train_imp.json')
-    b_save_df_datasets(dev_imp,'dev_imp.json')
-
-    b_doccano_upload('train_imp.json',2)
-    b_doccano_upload('dev_imp.json',3)
-
-    b_doccano_train_dev_update()
 
 
 def b_doccano_model_select_label_upload(num=300):
@@ -1776,9 +1704,8 @@ def b_devide_data_import(data,task,method,threads):
     b_save_df_datasets(train,'train.json')
     b_save_df_datasets(dev,'dev.json')
 
-    task = 'tender'
-    b_doccano_upload('train.json',project_configs[task]['train'],task)
-    b_doccano_upload('dev.json',project_configs[task]['dev'],task)
+    b_doccano_upload_by_task('train.json',task,'train')
+    b_doccano_upload_by_task('dev.json',task,'dev')
     b_doccano_train_dev_update(task)
 
 # ——————————————————————————————————————————————————
