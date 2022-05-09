@@ -439,8 +439,8 @@ def b_save_list_datasets(data,file):
     d_save_list_datasets(data,ASSETS_PATH + file)
 
 # 读取最好ner模型
-def b_load_best_model():
-    return spacy.load("../training/model-best")
+def b_load_best_model(task):
+    return spacy.load("../training/{}/model-best".format(task))
 
 # 读取最好cats模型
 def b_load_best_cats():
@@ -714,22 +714,6 @@ def b_doccano_init_dataseet(task,num,ratio):
     df_train_dev = pd.concat([df_train,df_dev])
 
     b_updata_db_datasets(task,df_train_dev)
-
-
-# 标注数据集
-# b_label_dataset
-def b_label_dataset(file):
-    file_name = file.split('.')[0]
-    data = b_read_dataset(file)
-    nlp = b_load_best_model()
-    data_text = [ entry['text'] for entry in data ]
-    docs = nlp.pipe(data_text)
-    for doc,sample in zip(docs,data):
-        labels = []
-        for ent in doc.ents:
-            labels.append([ent.start_char,ent.end_char,ent.label_])
-        sample['label'] = labels
-    b_save_list_datasets(data,file_name + '_label.json')
 
 
 # 把demo的label更新到原来的file中
@@ -1031,31 +1015,7 @@ def p_doccano_download_tran_dev():
     b_save_df_datasets(train_dev,'train_dev.json')
 
 
-def b_doccano_train_dev_nlp_label():
-    """
-    从doccano中下载train,dev,并且用最好的模型标注，把标注结果放到mlabel中
-    保存成train_dev_mlabel.json文件
-    """
-    p_doccano_download_tran_dev()
-
-    train_dev = b_read_dataset('train_dev.json')
-
-    nlp = b_load_best_model()
-
-    train_dev_data = [ sample['data'] for sample in train_dev ]
-
-    docs = nlp.pipe(train_dev_data)
-
-    for doc,sample in zip(docs,train_dev):
-        labels = []
-        for ent in doc.ents:
-            labels.append([ent.start_char,ent.end_char,ent.label_])
-        sample['mlabel'] = labels
-
-    b_save_list_datasets(train_dev,'train_dev_mlabel.json')
-
-
-def b_label_dataset_mult(file,thread_num):
+def b_label_dataset_mult(task,file,thread_num):
     """
     指定文件和线程数，对文件进行标注，标注完成以后，保存成原文件。
     """
@@ -1077,7 +1037,7 @@ def b_label_dataset_mult(file,thread_num):
     file_name = file.split('.')[0]
     data = b_read_dataset(file)
 
-    nlp = b_load_best_model()
+    nlp = b_load_best_model(task)
 
     new_data = []
     q = queue.Queue()
@@ -1413,21 +1373,6 @@ def b_generate_cats_datasets_by_compare(org_file,cmp_file):
     p_generate_cats_datasets(org_data)
 
 
-def b_doccano_model_select_label_upload(num=300):
-    """
-    模型选择数据，label好以后上传到doccano中
-    """
-    data = b_select_data_by_model('tender',num)
-
-    b_save_df_datasets(data,'seleted.json')
-    b_label_dataset_mult('seleted.json',20)
-
-    imp = b_read_dataset('train_dev_label.json')
-
-    imp = pd.DataFrame(imp)
-
-    b_doccano_split_upload_sync(imp)
-
 def b_doccano_compare(org_file,cmp_file):
     """
     org_file 是人表的数据，cmp_file是机器标的数据。
@@ -1547,7 +1492,7 @@ def b_combine_compare_to_train_dev():
 
     b_save_list_datasets(train_dev,'train_dev.json')
 
-def b_label_dataset_multprocess(file):
+def b_label_dataset_multprocess(task,file):
     """
     读取文件，并且标注好，把标注好的文件存为新的_label.json文件    
     """
@@ -1558,7 +1503,7 @@ def b_label_dataset_multprocess(file):
     class PoolCorpus(object):
 
         def __init__(self):
-            self.nlp = b_load_best_model()
+            self.nlp = b_load_best_model(task)
             self.data = []
 
         def add(self, sample):
@@ -1691,9 +1636,9 @@ def b_devide_data_import(data,task,method,threads):
     b_save_df_datasets(data,'train_dev_imp.json')
 
     if method == 'process':
-        b_label_dataset_multprocess('train_dev_imp.json')
+        b_label_dataset_multprocess(task,'train_dev_imp.json')
     else:
-        b_label_dataset_mult('train_dev_imp.json',threads)
+        b_label_dataset_mult(task,'train_dev_imp.json',threads)
 
     train_dev = b_read_dataset('train_dev_imp_label.json')
 

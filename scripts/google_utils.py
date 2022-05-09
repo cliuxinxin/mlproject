@@ -158,14 +158,15 @@ def gdrive_download_best_model_cats():
     gdrive_find_file_under_folder_download_move(parent_id,file,target_path)
 
 
-def gdrive_download_best_model():
+def gdrive_download_best_model(task):
     """
     把ner训练最好的模型下载到本地的training目录下面
     
     """
-    parent_id = '1D4jgGQhuXbOfA15hZJAYaNgVKiisXNsW'
+    folder_id = '1D4jgGQhuXbOfA15hZJAYaNgVKiisXNsW'
+    parent_id = gdrvie_find_file_under_folder(task,folder_id)
     file = 'model-best'
-    target_path = '../training/' 
+    target_path = '../training/{}/'.format(task)
 
     gdrive_find_file_under_folder_download_move(parent_id,file,target_path)
 
