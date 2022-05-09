@@ -1544,14 +1544,22 @@ def b_anlysis_rule(text,label,predict):
     if label_text.strip() == pred_text.strip():
         if label_start == predict_start and label_end - predict_end >= 1:
             return '标签和预测结果相同，但是标签后面有空格'
-        elif label_start == predict_start and label_end - predict_end <= -1:
+        if label_start == predict_start and label_end - predict_end <= -1:
             return '标签和预测结果相同，但是预测后面有空格'
-        elif label_start - predict_start >= 1 and label_end == predict_end:
+        if label_start - predict_start >= 1 and label_end == predict_end:
             return '标签和预测结果相同，但是预测前面有空格'
-        elif label_start - predict_start <= -1 and label_end == predict_end:
+        if label_start - predict_start <= -1 and label_end == predict_end:
             return '标签和预测结果相同，但是标签前面有空格'
         else:
             return '标签和预测结果相同，但是标注位置不同'
+    if label_start == predict_start and label_end - predict_end >= 1:
+        return '预测后面少标' + str(label_end - predict_end) + '个字符'
+    if label_start == predict_start and label_end - predict_end <= -1:
+        return '预测后面多标' + str(predict_end - label_start) + '个字符'
+    if label_start - predict_start >= 1 and label_end == predict_end:
+        return '预测前面少标' + str(label_start - predict_start) + '个字符'
+    if label_start - predict_start <= -1 and label_end == predict_end:
+        return '预测前面多标' + str(predict_start - label_end) + '个字符'
     return result
 
 def b_generate_compare_refine(task,org_file,cmp_file):
@@ -1672,6 +1680,31 @@ def b_devide_data_import(data,task,method,threads):
     b_doccano_upload_by_task('train.json',task,'train')
     b_doccano_upload_by_task('dev.json',task,'dev')
     b_doccano_train_dev_update(task)
+
+def b_check_duplicate_labels(file):
+    """
+    查询重复标签数据，打印出来
+    """
+    train_dev = b_read_dataset(file)
+
+    for sample in train_dev:
+        labels = sample['label']
+        label_count = {}
+        for label in labels:
+            start = label[0]
+            end = label[1]
+            label_type = label[2]
+            if label_type not in label_count:
+                label_count[label_type] = 1
+            else:
+                label_count[label_type] += 1
+    # 如果label_count中有一个label_type的数量大于1，则说明有重复的label
+        for label_type in label_count:
+            if label_count[label_type] > 1:
+                print(sample['dataset'])
+                print(sample['md5'])
+                print(label_type + ':' + str(label_count[label_type]))
+                print("-" * 10)
 
 # ——————————————————————————————————————————————————
 # 调用
