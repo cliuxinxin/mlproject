@@ -1752,7 +1752,7 @@ def b_generate_compare_refine(task,org_file,cmp_file):
     b_save_list_datasets(results,'compare_results.json')
 
 
-def b_devide_data_import(data,task):
+def b_devide_data_import(data,task,method,threads):
     """
     标签标注数据集，并且划分为train和dev，最后上传到doccano，并且更新本地的数据库
     """
@@ -1761,7 +1761,10 @@ def b_devide_data_import(data,task):
 
     b_save_df_datasets(data,'train_dev_imp.json')
 
-    b_label_dataset_multprocess('train_dev_imp.json')
+    if method == 'process':
+        b_label_dataset_multprocess('train_dev_imp.json')
+    else:
+        b_label_dataset_mult('train_dev_imp.json',threads)
 
     train_dev = b_read_dataset('train_dev_imp_label.json')
 
