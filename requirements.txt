@@ -13,4 +13,5 @@ transformers
 tokenizers 
 flask_restx 
 torch
-pymysql
+pymysqls
+dbutils
