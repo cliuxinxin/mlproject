@@ -1,8 +1,15 @@
 spacy-streamlit>=1.0.0a0
-pydantic>=1.0.0,<2.0.0
+spacy-alignments 
+spacy-transformers 
+spacy
 fastapi>=0.65.2
 aiofiles
 uvicorn>=0.11.6,<0.12.0
 doccano-client
-spacy
 pandas
+pydantic==1.8.2 
+sacremoses 
+transformers 
+tokenizers 
+flask_restx 
+torch
