@@ -129,7 +129,7 @@ commands:
       - "corpus/dev.spacy"
       - "training/model-best"
     outputs:
-      - "training/${env.TASK}_${env.DATE}_metrics.json"
+      - "training/${env.task}_${env.date}_metrics.json"
 
   - name: package
     help: "Package the trained model as a pip package"
