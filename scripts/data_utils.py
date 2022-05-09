@@ -1659,12 +1659,15 @@ def b_label_dataset_multprocess(file):
     b_save_list_datasets(result,file_name+'_label.json')
 
 
-def b_generate_compare_refine(org_file,cmp_file):
+def b_generate_compare_refine(task,org_file,cmp_file):
     """
     通过train_dev.json,train_dev_label.json 生成compare_results 用于 google refine处理使用
     """
     org_data = b_read_dataset(org_file)
     cmp_data = b_read_dataset(cmp_file)
+
+    train_project_id = project_configs[task]['train']
+    dev_project_id = project_configs[task]['dev']
 
     def record_data(result,label_type,text,label,predect,wrong_type=''):
         result['human_start'] = label[0]
@@ -1676,7 +1679,7 @@ def b_generate_compare_refine(org_file,cmp_file):
         result['ai_label'] = text[predect[0]:predect[1]]
         if text[label[0]:label[1]] == text[predect[0]:predect[1]]:
             result['label_content'] = '一样' 
-        dataset = 2 if result['dataset'] == 'tender_train' else 3
+        dataset = train_project_id if result['dataset'] == task + '_train' else dev_project_id
         md5 = result['md5']
         
         if wrong_type:
@@ -1747,6 +1750,33 @@ def b_generate_compare_refine(org_file,cmp_file):
                         record_data(result,label_type,text,label,predect,'AI错标')
 
     b_save_list_datasets(results,'compare_results.json')
+
+
+def b_devide_data_import(data,task):
+    """
+    标签标注数据集，并且划分为train和dev，最后上传到doccano，并且更新本地的数据库
+    """
+    # text 改名 data
+    data.rename(columns={'text':'data'},inplace=True)
+
+    b_save_df_datasets(data,'train_dev_imp.json')
+
+    b_label_dataset_multprocess('train_dev_imp.json')
+
+    train_dev = b_read_dataset('train_dev_imp_label.json')
+
+    train_dev = pd.DataFrame(train_dev)
+
+    train,dev = b_split_train_test(train_dev,0.8)
+
+    b_save_df_datasets(train,'train.json')
+    b_save_df_datasets(dev,'dev.json')
+
+    task = 'tender'
+    b_doccano_upload('train.json',project_configs[task]['train'],task)
+    b_doccano_upload('dev.json',project_configs[task]['dev'],task)
+    b_doccano_train_dev_update(task)
+
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————

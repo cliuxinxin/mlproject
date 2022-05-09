@@ -61,6 +61,14 @@ def mysql_select_df(sql):
     df.columns = [i[0] for i in cursor.description]
     return df
 
+def mysql_select_data_by_ids(ids,table):
+    """
+    使用id批量查询数据
+    """
+    sql = "select * from {} where id in {}".format(table,tuple(ids))
+    df = mysql_select_df(sql)
+    return df
+
 def mysql_delete_data(df,task):
     """
     使用df的id，批量删除数据表中的数据
@@ -79,7 +87,6 @@ def mysql_delete_data_by_id(id,task):
     cursor = conn.cursor()
     cursor.execute(sql)
     db.commit()
-
 
 
 def mysql_insert_data(df,task):
