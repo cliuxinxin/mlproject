@@ -14,6 +14,10 @@ vars:
   host: "127.0.0.1"
   port: 5000
 
+env:
+  task: TASK
+  data: DATE
+
 # 文件夹检测
 directories: ["assets", "corpus", "configs", "training", "scripts", "packages"]
 
@@ -120,12 +124,12 @@ commands:
   - name: "evaluate"
     help: "Evaluate the model and export metrics"
     script:
-      - "python -m spacy evaluate training/model-best corpus/dev.spacy --output training/metrics.json"
+      - "python -m spacy evaluate training/model-best corpus/dev.spacy --output training/${env.TASK}_${env.DATE}_metrics.json"
     deps:
       - "corpus/dev.spacy"
       - "training/model-best"
     outputs:
-      - "training/metrics.json"
+      - "training/${env.TASK}_${env.DATE}_metrics.json"
 
   - name: package
     help: "Package the trained model as a pip package"
