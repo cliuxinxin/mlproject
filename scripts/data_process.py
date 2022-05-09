@@ -14,6 +14,10 @@ gdrive_download_best_model()
 # 从doccano上下载最新的train和dev，并且合并为train_dev
 b_doccano_train_dev_update(task)
 
+# 迭代解决空格问题
+b_remove_invalid_label('train_dev.json')
+b_generate_compare_refine(task,'train_dev.json','train_dev_remove.json')
+
 # 标注
 t1 = time.time()
 if method == 'process':
