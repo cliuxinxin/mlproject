@@ -24,7 +24,6 @@ if __name__ == '__main__':
         sql = "select * from %s  order by create_time desc limit %s" % (table,100)
     df = mysql_select_df(sql)
     for idx,i in enumerate(range(0,len(df),number)):
-        # 文件名为处理数据的时间戳,精确到厘秒
         file_name = task + '_' + str(int(time.time()*100000))
         df[i:(i + number)].to_json(DATA_PATH + file_name + '.json')
     
