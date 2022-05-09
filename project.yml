@@ -16,7 +16,7 @@ vars:
 
 env:
   task: TASK
-  data: DATE
+  date: DATE
 
 # 文件夹检测
 directories: ["assets", "corpus", "configs", "training", "scripts", "packages"]
