@@ -2,7 +2,6 @@ from data_utils import *
 from mysql_utils import *
 import time
 import glob
-import datacompy as dc
 from copy import deepcopy
 
 # files = glob.glob(DATA_PATH + '*.json')
@@ -17,7 +16,7 @@ from copy import deepcopy
 sql = 'select * from tender_test'
 
 new_df = mysql_select_df(sql)
-df = deepcopy(new_df)
+df = deepcopy(new_df)   
 
 nlp = b_load_best_model()
 task = 'tender'
@@ -38,6 +37,7 @@ for i in range(len(df)):
 comp = dc.Compare(df,new_df,join_columns=['id'])
 
 print(comp.report())
+
 
 
 

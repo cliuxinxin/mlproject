@@ -8,6 +8,7 @@ import os
 import pickle
 import random
 import re
+import shutil
 import time
 import warnings
 import zipfile
@@ -590,7 +591,7 @@ def b_doccano_export_project(project_id,path,task):
         for chunk in result.iter_content(chunk_size=8192): 
             f.write(chunk)
     zipfile.ZipFile(tmp_zip_path).extractall(path=ASSETS_PATH)
-    os.rename(ASSETS_PATH + 'all.jsonl', ASSETS_PATH + path)
+    shutil.move(ASSETS_PATH + 'all.jsonl', ASSETS_PATH + path)
     p_export_preprocess(path,task)
     os.remove(tmp_zip_path)
 
