@@ -2,12 +2,13 @@ import pymysql
 import configparser
 import pandas as pd
 from dbutils.persistent_db import PersistentDB
+import os
 
 MYSQL = 'mysql'
 
 def d_parse_config():
     config = configparser.ConfigParser()
-    config.read('config.ini')
+    config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
     return config
 
 project_configs = d_parse_config()
