@@ -22,7 +22,7 @@ def get_all_data(task,table,number):
     # 计算出每个文件的起始点
     start = 0
     end = number
-    for i in range(num):
+    for i in tqdm(range(num)):
         start = end
         end = start + number
         sql = 'select * from {} order by create_time desc limit {} , {}'.format(table, start, number)
