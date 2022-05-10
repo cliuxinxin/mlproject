@@ -137,43 +137,6 @@ def p_generate_md5(text) -> str:
 def p_html_text(df,column):
     df[column] = df[column].apply(p_filter_tags)
 
-# 返回新添加的文件
-def p_get_new_files(lock_files, files) -> list:
-    new_files = []
-    for file in files:
-        if file not in lock_files:
-            new_files.append(file)
-    return new_files
-
-# 随机选择100个样本
-def p_random_select(db,num=100) -> pd.DataFrame:
-    db = db.sample(n=num)
-    return db
-
-# 获得文件和index
-def p_get_data_index(db) -> pd.DataFrame:
-    # 根据文件名获得ids，得到{"file_name":file_name,"id":[1,2,3,4,5]}
-    db_selected = db.groupby('file_name').agg({'id':list})
-    # 去掉index
-    db_selected = db_selected.reset_index()
-    return db_selected
-
-# 抽取数据
-def p_extract_data(db_selected) -> pd.DataFrame:
-    # 循环db_selected，抽取数据
-    dfs = []
-    for idx,item in db_selected.iterrows():
-        file_name = item['file_name']
-        ids = item['id']
-        # 抽取数据
-        df = pd.read_csv('../assets/' + file_name)
-        df = df.loc[ids]
-        df['id'] = df.index
-        df['file_name'] = file_name
-        dfs.append(df)
-    # 合并dfs
-    df = pd.concat(dfs)
-    return df
 
 # 替换特殊字符
 def p_replaceCharEntity(text) -> str:
@@ -349,15 +312,6 @@ def b_save_list_file(data:list,path):
     path = ASSETS_PATH + path
     d_save_file(data,path)
 
-# 保存lockfile
-def b_save_lock_file(file):
-    d_save_file(file,path=LOCK_FILE_PATH)
-
-# 读取lockfile
-def b_read_lock_file() -> list:
-    return d_read_file(path=LOCK_FILE_PATH)
-
-
 def b_file_2_df(file_name,task) -> pd.DataFrame:
     """
     读取data里面的数据，清洗text文档，生成md5，根据configs.ini中的设置进行配置
@@ -376,18 +330,10 @@ def b_file_2_df(file_name,task) -> pd.DataFrame:
     df.drop_duplicates(subset=['md5'])
     return df
 
-# 合并数据集
-def b_combine_datasets(files:list) -> list:
-    datas = []
-    for file in files:
-        data = d_read_json(ASSETS_PATH + file)
-        datas.append(data)
-    # 把列表的列表合并成一个列表
-    return list(itertools.chain.from_iterable(datas))
-
 # 统计label个数
-def b_label_counts(data:list) -> dict:
+def b_label_counts(file) -> dict:
     # 统计train当中label的个数
+    data = b_read_dataset(file)
     label_count = {}
     for entry in data:
         label = entry['label']
@@ -400,37 +346,45 @@ def b_label_counts(data:list) -> dict:
     return label_count
 
 
-# 保存所有数据
-def b_save_db_all(df):
-    d_save_pkl(df,DATABASE_PATH + 'all.pkl')
-
-# 保存数据集分布
 def b_save_db_datasets(df):
+    """
+    整体保存数据集的情况
+    """
     d_save_pkl(df,DATABASE_PATH + 'datasets.pkl')
 
-# 读取数据集分布
+
 def b_read_db_datasets(task):
+    """
+    读取数据集的情况，如果传入task，可以取出该task的分布情况
+    """
     datasets = d_read_pkl(DATABASE_PATH + 'datasets.pkl')
     if task:
         return datasets[datasets['dataset'].str.contains(task)]
     return d_read_pkl(DATABASE_PATH + 'datasets.pkl')
 
-# 保存清洗成后的数据
+
 def b_save_db_basic(df):
+    """
+    整体保存基础数据
+    """
     d_save_pkl(df,DATABASE_PATH + 'basic.pkl')
 
-# 读取清洗好的数据
-def b_read_db_basic():
-    return d_read_pkl(DATABASE_PATH + 'basic.pkl')
+def b_read_db_basic(task=''):
+    """
+    整体读取基础数据，如果传入task，就取该task的数据
+    """
+    db = d_read_pkl(DATABASE_PATH + 'basic.pkl')
+    if task:
+        return db[db['task'] == task]
+    return db
 
-# 保存清洗成后的数据
+
 def b_save_db_labels(df):
   """
   保存label数据库
   """
   d_save_pkl(df,DATABASE_PATH + 'labels.pkl')
 
-# 读取清洗好的数据
 def b_read_db_labels(task=''):
   """
   读取label数据库
@@ -440,44 +394,47 @@ def b_read_db_labels(task=''):
     df = df[df['task'] == task]
   return df
 
-# 将df保存为datasets
+
 def b_save_df_datasets(df,file):
+    """
+    df保存为数据集
+    """
     d_save_df_datasets(df,ASSETS_PATH + file)
 
 # 将data保存为datasets
 def b_save_list_datasets(data,file):
+    """
+    list保存为数据集
+    """
     d_save_list_datasets(data,ASSETS_PATH + file)
 
-# 读取最好ner模型
+
 def b_load_best_model(task):
+    """
+    根据task读取模型
+    """
     return spacy.load("../training/{}/model-best".format(task))
 
-# 读取最好cats模型
+
 def b_load_best_cats():
+    """
+    读取cats模型
+    """
     return spacy.load("../training/cats/model-best")
 
-# 读取最好test模型
-def b_load_best_test():
-    return spacy.load('../training/model-best-test')
-
-# 读取文本文件到list当中
 def b_read_text_file(file):
+    """
+    读取文本文件到list当中
+    """
     data = d_read_file(ASSETS_PATH + file)
     return data
 
-# 读取文本文件转换成为json到list当中
 def b_read_dataset(file):
+    """
+    把dataset数据读取为list
+    """
     data = d_read_json(ASSETS_PATH + file)
     return data
-
-# 随机查看数据
-def b_check_random(data,num):
-    test = random.sample(data,num)
-    for entry in test:
-        labels = entry['label']
-        text = entry['data']
-        label = random.sample(labels,1)[0]
-        print(text[label[0]:label[1]],label[2])
 
 def b_updata_db_labels(task,df):
   """
@@ -487,20 +444,6 @@ def b_updata_db_labels(task,df):
   db = db[~db['task'].str.contains(task)]
   db = pd.concat([db,df])
   b_save_db_labels(db)
-
-
-
-# 读取训练集的标签情况
-def b_read_train_label_counts():
-    train = b_read_dataset('train.json')
-    label_counts = b_label_counts(train)
-    return label_counts
-
-# 读取训练集的labels并且保存
-def b_save_labels():
-    label_counts = b_read_train_label_counts()
-    l = list(label_counts.keys())
-    d_save_file(l, ASSETS_PATH + "labels.txt")
 
 # 分割数据集
 def b_cut_datasets_size_pipe(file):
@@ -540,21 +483,11 @@ def b_baidu_excel_format(file):
 
     df.to_excel(file.split('.')[0] + '_new.xlsx',index=False)
 
-# 读取新的文件进入到basic中
-def b_add_new_file_to_db_basic(file):
-    df = b_file_2_df(file)
-    db = b_read_db_basic()
-    df_db = pd.concat([db,df],axis=0)
-    # 根据md5排重
-    df_db = df_db.drop_duplicates(subset='md5',keep='first')
-    b_save_db_basic(df_db)
 
 # 从基础库中抽取未被业务未被抽样的数据
 def b_extrct_data_from_db_basic(task) -> pd.DataFrame:
-    db = b_read_db_basic()
-    db = db[db['task'] == task]
-    db_dataset = b_read_db_datasets()
-    db_dataset = db_dataset[db_dataset['dataset'].str.contains(task)]
+    db = b_read_db_basic(task)
+    db_dataset = b_read_db_datasets(task)
     return db[db['md5'].isin(db_dataset['md5']) == False]
 
 
@@ -595,8 +528,10 @@ def b_doccano_upload_by_task(file,task,task_type):
 
 
 
-    # 从doccano获取数据
 def b_doccano_export_project(project_id,path,task):
+    """
+    doccano 导出数据
+    """
     url = project_configs['doccano']['url']
     result = doccano_client.post(f'{url}/v1/projects/{project_id}/download', json={'exportApproved': False, 'format': 'JSONL'}) 
     task_id = result['task_id']
@@ -612,7 +547,8 @@ def b_doccano_export_project(project_id,path,task):
             f.write(chunk)
     zipfile.ZipFile(tmp_zip_path).extractall(path=ASSETS_PATH)
     shutil.move(ASSETS_PATH + 'all.jsonl', ASSETS_PATH + path)
-    p_export_preprocess(path,task)
+    if task:
+        p_export_preprocess(path,task)
     os.remove(tmp_zip_path)
 
 
@@ -826,12 +762,12 @@ def b_split_train_test(df_db,ratio):
     return df_train,df_test
 
 
-def b_bio_labels_generate_from(file='labels.txt'):
+def b_bio_labels_generate_from(task):
     """
-    从labels.txt中生成biolabels的列表,需要在assets目录下面有labels.txt文件
-    
+    通过task生成bio标签 
     """
-    labels = b_read_text_file(file)
+    labels = b_read_db_labels(task)
+    labels = labels['label'].to_list()
 
     bio_labels = []
     for label in labels:
@@ -1148,8 +1084,6 @@ def b_bio_datasets_trans_and_max():
     train_trf_maxlen 切断511长数据
     dev_trf_maxlen 切断511长数据
     """
-    b_save_labels()
-
     bio_labels = b_bio_labels_generate_from('labels.txt')
 
     b_bio_trans_dataset(bio_labels,'train.json')
@@ -1301,14 +1235,6 @@ def b_doccano_bak_train_dev(task):
     """
     b_doccano_export_project(project_configs[task]['train'],task + '_train_bak.json',task)
     b_doccano_export_project(project_configs[task]['dev'],task + '_dev_bak.json',task)
-
-def b_doccano_download_train_dev_label_view_wrong():
-    """
-    下载最新的数据，并且用最好的模型预测，将对不上的数据上传的demo项目进行查看。
-    可以根据错误类型+标签的方式查看对应标签的错误情况
-    """
-    b_doccano_train_dev_nlp_label()
-    b_compare_human_machine_label()
 
 
 def b_process_origin_data():
@@ -1768,6 +1694,8 @@ def b_select_data_by_mysql(task,label_name,num):
     df = df[df['md5'].isin(db_dataset['md5']) == False]
     df = df[:num]
     return df
+
+
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————

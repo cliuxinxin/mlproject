@@ -1,3 +1,110 @@
+def b_doccano_download_train_dev_label_view_wrong():
+    """
+    下载最新的数据，并且用最好的模型预测，将对不上的数据上传的demo项目进行查看。
+    可以根据错误类型+标签的方式查看对应标签的错误情况
+    """
+    b_doccano_train_dev_nlp_label()
+    b_compare_human_machine_label()
+
+# 读取新的文件进入到basic中
+def b_add_new_file_to_db_basic(file):
+    df = b_file_2_df(file)
+    db = b_read_db_basic()
+    df_db = pd.concat([db,df],axis=0)
+    # 根据md5排重
+    df_db = df_db.drop_duplicates(subset='md5',keep='first')
+    b_save_db_basic(df_db)
+
+# 随机查看数据
+def b_check_random(data,num):
+    test = random.sample(data,num)
+    for entry in test:
+        labels = entry['label']
+        text = entry['data']
+        label = random.sample(labels,1)[0]
+        print(text[label[0]:label[1]],label[2])
+
+# 读取最好test模型
+def b_load_best_test():
+    return spacy.load('../training/model-best-test')
+
+
+# 保存所有数据
+def b_save_db_all(df):
+    d_save_pkl(df,DATABASE_PATH + 'all.pkl')
+
+
+# 读取训练集的标签情况
+def b_read_train_label_counts():
+    train = b_read_dataset('train.json')
+    label_counts = b_label_counts(train)
+    return label_counts
+
+# 读取训练集的labels并且保存
+def b_save_labels():
+    label_counts = b_read_train_label_counts()
+    l = list(label_counts.keys())
+    d_save_file(l, ASSETS_PATH + "labels.txt")
+
+# 合并数据集
+def b_combine_datasets(files:list) -> list:
+    datas = []
+    for file in files:
+        data = d_read_json(ASSETS_PATH + file)
+        datas.append(data)
+    # 把列表的列表合并成一个列表
+    return list(itertools.chain.from_iterable(datas))
+
+# 读取lockfile
+def b_read_lock_file() -> list:
+    return d_read_file(path=LOCK_FILE_PATH)
+
+# 保存lockfile
+def b_save_lock_file(file):
+    d_save_file(file,path=LOCK_FILE_PATH)
+
+# 抽取数据
+def p_extract_data(db_selected) -> pd.DataFrame:
+    # 循环db_selected，抽取数据
+    dfs = []
+    for idx,item in db_selected.iterrows():
+        file_name = item['file_name']
+        ids = item['id']
+        # 抽取数据
+        df = pd.read_csv('../assets/' + file_name)
+        df = df.loc[ids]
+        df['id'] = df.index
+        df['file_name'] = file_name
+        dfs.append(df)
+    # 合并dfs
+    df = pd.concat(dfs)
+    return df
+
+# 获得文件和index
+def p_get_data_index(db) -> pd.DataFrame:
+    # 根据文件名获得ids，得到{"file_name":file_name,"id":[1,2,3,4,5]}
+    db_selected = db.groupby('file_name').agg({'id':list})
+    # 去掉index
+    db_selected = db_selected.reset_index()
+    return db_selected
+
+
+# 随机选择100个样本
+def p_random_select(db,num=100) -> pd.DataFrame:
+    db = db.sample(n=num)
+    return db
+
+
+
+# 返回新添加的文件
+def p_get_new_files(lock_files, files) -> list:
+    new_files = []
+    for file in files:
+        if file not in lock_files:
+            new_files.append(file)
+    return new_files
+
+
 def test():
     # 抽取已标注数据的标签情况
     b_doccano_dataset_label_view('train.json',['招标项目编号'],1)

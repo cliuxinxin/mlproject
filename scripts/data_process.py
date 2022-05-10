@@ -13,7 +13,6 @@ tread_num = 20
 # 下载最好的模型
 gdrive_download_best_model(task)
 
-
 # 从doccano上下载最新的train和dev，并且合并为train_dev
 b_doccano_train_dev_update(task)
 
