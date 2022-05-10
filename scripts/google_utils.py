@@ -140,10 +140,10 @@ def gdrive_del_move(orig_path,target_path):
     """
     将orig_path文件夹移到target_path下面，如果有，则强制覆盖
     """
-    try:
+    # 如果目标文件夹存在
+    if os.path.exists(target_path):
         shutil.rmtree(target_path)
-    finally:
-        shutil.move(orig_path, target_path)
+    shutil.move(orig_path, target_path)
 
 
 def gdrive_download_best_model_cats():
@@ -164,7 +164,7 @@ def gdrive_download_best_model(task):
     
     """
     folder_id = '1D4jgGQhuXbOfA15hZJAYaNgVKiisXNsW'
-    parent_id = gdrvie_find_file_under_folder(task,folder_id)
+    parent_id = gdrvie_find_file_under_folder(task,folder_id)['id']
     file = 'model-best'
     target_path = '../training/{}/'.format(task)
 

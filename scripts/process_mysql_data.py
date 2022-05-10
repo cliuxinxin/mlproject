@@ -1,5 +1,5 @@
 
-import tqdm
+from tqdm import tqdm
 from data_utils import *
 from mysql_utils import *
 import argparse
@@ -23,9 +23,14 @@ class PoolCorpus(object):
         id = self.df.iloc[i]['id']
         text = p_filter_tags(text)
         doc = self.nlp(text)
+        labels = []
         for ent in doc.ents:
+          label = {}
+          label['ent.label_'] = ent.text
           col = self.std_labels[self.std_labels['label'] == ent.label_].iloc[0]['col_idx']
           self.df.iloc[i,col] = ent.text
+          labels.append(label)
+        self.df.iloc[i]['labels'] = labels
         mysql_delete_data_by_id(id,self.task)
 
     def get(self):
