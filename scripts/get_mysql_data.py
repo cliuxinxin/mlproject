@@ -11,7 +11,7 @@ def get_parser():
     parser.add_argument('--number', default='100', help='save 100 records to a file')
     return parser
 
-def get_all_data(table,number):
+def get_all_data(task,table,number):
     sql = 'select count(1) from {} order by create_time desc '.format(table)
     df = mysql_select_df(sql)
     total = df.iloc[0][0]
@@ -25,9 +25,10 @@ def get_all_data(table,number):
     for i in range(num):
         start = end
         end = start + number
-        sql = 'select * from {} order by create_time desc limit {} , {}'.format(table, start, end)
+        sql = 'select * from {} order by create_time desc limit {} , {}'.format(table, start, number)
         df = mysql_select_df(sql)
-        df.to_json(DATA_PATH + '{}_{}.json'.format(table, i))
+        file_name = task + '_' + str(int(time.time()*100000))
+        df.to_json(DATA_PATH + file_name + '.json')
 
 
 
@@ -39,7 +40,7 @@ if __name__ == '__main__':
     number = int(args.number)
     table = project_configs[task]['table']
     if mode == 'all':
-        get_all_data(table,number) 
+        get_all_data(task,table,number) 
     else:
         sql = "select * from %s  order by create_time desc limit %s" % (table,20)
     df = mysql_select_df(sql)
