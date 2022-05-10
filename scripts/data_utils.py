@@ -1705,7 +1705,7 @@ def b_select_data_by_mysql(task,label_name,num):
     df = df[:num]
     return df
 
-def b_generate_cats_dataset_by_compare(org_data,compare_data,wrong_type):
+def b_generate_cats_dataset_by_refine(org_data,compare_data,wrong_type):
     """
     根据refine的报表生成cats数据集
     """
@@ -1726,6 +1726,31 @@ def b_generate_cats_dataset_by_compare(org_data,compare_data,wrong_type):
             sample['cats'] =  {"需要":1,"不需要":0}
 
     p_generate_cats_datasets(train_dev)
+
+def b_generate_metrics():
+    """
+    收集整理metrics
+    """
+    files = glob.glob('../training/metrics/*.json')
+    new_data = []
+    for file in files:
+        file_name = file.split('/')[-1]
+        task = file_name.split('_')[0]
+        date = file_name.split('_')[1]
+
+        metric = json.load(open(file))
+        for key in metric['ents_per_type']:
+            entry = {}
+            entry['task'] = task
+            entry['date'] = date
+            for key_2 in metric['ents_per_type'][key]:
+                entry['label'] = key
+                entry['metric'] = key_2
+                entry['value'] = metric['ents_per_type'][key][key_2]
+                new_data.append(entry)
+
+    df = pd.DataFrame(new_data)
+    df.to_csv(ASSETS_PATH + 'metrics.csv',index=False)
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————

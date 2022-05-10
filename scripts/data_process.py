@@ -1,3 +1,4 @@
+import glob
 from data_utils import *
 from google_utils import *
 from mysql_utils import *
@@ -30,17 +31,18 @@ else:
 t2 = time.time()
 t2 - t1
 
+# ------ 线下通过refine对比数据 -------------
+# 根据差异生成refine对比表
+b_generate_compare_refine(task,'train_dev.json','train_dev_label.json')
+
+# 根据差异生成cats对比表
+b_generate_cats_dataset_by_refine('train_dev.json','compare_results.json','AI错标')
+
 # 根据标注和AI的情况生成cats数据集
 b_generate_cats_datasets_by_compare('train_dev.json','train_dev_label.json')
 
 # 上传cats数据集
 gdrive_upload_cats_train_dev()
-
-# ------ 线下通过refine对比数据 -------------
-# 根据差异生成refine对比表
-b_generate_compare_refine(task,'train_dev.json','train_dev_label.json')
-
-
 
 # ----- DOJO 训练cats模型 --------------
 # 下载生成的cats模型
@@ -55,15 +57,8 @@ data = b_select_data_by_mysql(task,'项目名称',300)
 # 标注分割和上传
 b_devide_data_import(data,task,method,tread_num)
 
+# 下载metrics
+gdrive_download_metrics()
 
-
-
-
-
-
-
-
-
-
-
-
+# 收集整理metrics
+b_generate_metrics()
