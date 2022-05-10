@@ -3,6 +3,7 @@ import configparser
 import pandas as pd
 from dbutils.persistent_db import PersistentDB
 import os
+from threading import RLock
 
 MYSQL = 'mysql'
 
@@ -49,15 +50,18 @@ pool = mysql_connect_pool(MYSQL)
 
 conn = pool.connection()
 
+LOCK = RLock()
 
 def mysql_select_df(sql):
     """
     执行sql，返回的数据转换成dataframe，并且表头是列名
     """
     import pandas as pd
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    data = cursor.fetchall()
+    with LOCK:
+        cursor = conn.cursor()  
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        cursor.close()
     df = pd.DataFrame(data)
     df.columns = [i[0] for i in cursor.description]
     return df
@@ -85,9 +89,11 @@ def mysql_delete_data_by_id(id,task):
     使用id删除数据表中的数据
     """
     sql = "delete from {} where id = '{}'".format(project_configs[task]['target'],id)
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    db.commit()
+    with LOCK:
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        db.commit()
+        cursor.close()
 
 
 def mysql_insert_data(df,task):
@@ -95,15 +101,29 @@ def mysql_insert_data(df,task):
     使用df的表头和数据拼成批量更新的sql语句
     """
     sql = 'insert into {} ({}) values ({})'.format(project_configs[task]['target'],','.join(df.columns), ','.join(['%s'] * len(df.columns)))
-    cursor = conn.cursor()
+    
     values = df.values.tolist()
     # 将NaT 替换成 ''
     for i in range(len(values)):
         for j in range(len(values[i])):
             if pd.isnull(values[i][j]):
                 values[i][j] = None
-    cursor.executemany(sql, values)
-    db.commit()
+    with LOCK:
+        cursor = conn.cursor()
+        cursor.executemany(sql, values)
+        db.commit()
+        cursor.close()
+
+def mysql_delete_data_by_ids(ids,task):
+    """
+    使用ids删除对应的表格中的数据
+    """
+    sql = "delete from {} where id in {}".format(project_configs[task]['target'],tuple(ids))
+    with LOCK:
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        db.commit()
+        cursor.close()
 
 
 

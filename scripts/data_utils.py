@@ -106,8 +106,10 @@ def d_read_pkl(path) -> object:
         value = pickle.load(f)
     return value
 
-# 写入平板文件，每行一个数据，以\n分隔
 def d_save_file(files,path):
+    """
+    写入平板文件，每行一个数据，以\n分隔
+    """
     with open(path, 'w') as f:
         for file in files:
             f.write(file + '\n')
@@ -340,7 +342,12 @@ def p_upload_preprocess(file,task):
 # ——————————————————————————————————————————————————
 # 构建层
 # ——————————————————————————————————————————————————
-
+def b_save_list_file(data:list,path):
+    """
+    将文件保存在assest目录下
+    """
+    path = ASSETS_PATH + path
+    d_save_file(data,path)
 
 # 保存lockfile
 def b_save_lock_file(file):
@@ -402,7 +409,10 @@ def b_save_db_datasets(df):
     d_save_pkl(df,DATABASE_PATH + 'datasets.pkl')
 
 # 读取数据集分布
-def b_read_db_datasets():
+def b_read_db_datasets(task):
+    datasets = d_read_pkl(DATABASE_PATH + 'datasets.pkl')
+    if task:
+        return datasets[datasets['dataset'].str.contains(task)]
     return d_read_pkl(DATABASE_PATH + 'datasets.pkl')
 
 # 保存清洗成后的数据
@@ -1735,6 +1745,29 @@ def b_check_overlap(file):
                         print(sample['md5'])
                         print("{} {} {}".format(start, end, label_type))
                         print("{} {} {}".format(orig_start, orig_end, orig_type))
+
+def b_select_data_by_mysql(task,label_name,num):
+    """
+    在数据库中，查找num个标注为label_name为空的数据，并且在doccano中没用的数据
+    """
+    labels = b_read_db_labels(task)
+    label = labels[labels['label']==label_name]['col'].values[0]
+
+    col = project_configs[task]['col']
+    source = project_configs[task]['source']
+    table = project_configs[task]['target']
+
+    sql = 'select %s,%s from %s where %s is null' % (col,source,table,label)
+
+    df = mysql_select_df(sql)
+
+    df['text'] = df[col].apply(p_filter_tags)
+    df['md5'] = df['data'].apply(p_generate_md5)
+
+    db_dataset = b_read_db_datasets(task)
+    df = df[df['md5'].isin(db_dataset['md5']) == False]
+    df = df[:num]
+    return df
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————

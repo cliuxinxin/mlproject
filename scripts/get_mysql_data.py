@@ -42,7 +42,7 @@ if __name__ == '__main__':
     if mode == 'all':
         get_all_data(task,table,number) 
     else:
-        sql = "select * from %s  order by create_time desc limit %s" % (table,20)
+        sql = "select * from %s  order by create_time desc limit %s" % (table,2000)
     df = mysql_select_df(sql)
     for idx,i in tqdm(enumerate(range(0,len(df),number))):
         file_name = task + '_' + str(int(time.time()*100000))

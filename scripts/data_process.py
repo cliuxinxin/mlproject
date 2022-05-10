@@ -1,12 +1,13 @@
 from data_utils import *
 from google_utils import *
+from mysql_utils import *
 
 # 定义任务
 # task = 'tender'
 task = 'bid'
 method = 'process'
 # method = 'thread'
-# tread_num = 20
+tread_num = 20
 
 # ---- DOJO 训练完成模型 --------
 # 下载最好的模型
@@ -33,12 +34,14 @@ t2 - t1
 # 根据标注和AI的情况生成cats数据集
 b_generate_cats_datasets_by_compare('train_dev.json','train_dev_label.json')
 
+# 上传cats数据集
+gdrive_upload_cats_train_dev()
+
 # ------ 线下通过refine对比数据 -------------
 # 根据差异生成refine对比表
 b_generate_compare_refine(task,'train_dev.json','train_dev_label.json')
 
-# 上传cats数据集
-gdrive_upload_cats_train_dev()
+
 
 # ----- DOJO 训练cats模型 --------------
 # 下载生成的cats模型
@@ -47,8 +50,16 @@ gdrive_download_best_model_cats()
 # 选择数据
 data = b_select_data_by_model(task,300)
 
+# 在数据库中找到没有标注的数据
+data = b_select_data_by_mysql(task,'项目名称',300)
+
 # 标注分割和上传
 b_devide_data_import(data,task,method,tread_num)
+
+
+
+
+
 
 
 
