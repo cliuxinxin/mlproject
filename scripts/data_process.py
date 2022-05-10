@@ -6,10 +6,12 @@ from google_utils import *
 task = 'bid'
 method = 'process'
 # method = 'thread'
+# tread_num = 20
 
 # ---- DOJO 训练完成模型 --------
 # 下载最好的模型
-gdrive_download_best_model()
+gdrive_download_best_model(task)
+
 
 # 从doccano上下载最新的train和dev，并且合并为train_dev
 b_doccano_train_dev_update(task)
@@ -23,7 +25,7 @@ t1 = time.time()
 if method == 'process':
     b_label_dataset_multprocess('train_dev.json')
 else:
-    b_label_dataset_mult('train_dev.json',20)
+    b_label_dataset_mult('train_dev.json',tread_num)
 
 t2 = time.time()
 t2 - t1
@@ -46,7 +48,7 @@ gdrive_download_best_model_cats()
 data = b_select_data_by_model(task,300)
 
 # 标注分割和上传
-b_devide_data_import(data,task,method,20)
+b_devide_data_import(data,task,method,tread_num)
 
 
 

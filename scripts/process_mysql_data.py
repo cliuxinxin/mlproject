@@ -50,7 +50,7 @@ if __name__ == '__main__':
     BaseManager.register('PoolCorpus', PoolCorpus)
 
     for file in tqdm(files):
-        task = file.split('_')[0]
+        task = file.split('_')[0].split('/')[-1]
         with BaseManager() as manager:
             corpus = manager.PoolCorpus(task,file)
 
