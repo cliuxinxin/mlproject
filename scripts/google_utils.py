@@ -63,7 +63,8 @@ def gdrive_download_folder(file_id, download_path):
             os.makedirs(download_path + '/' + file1['title'], exist_ok=True)
             gdrive_download_folder(file1['id'], download_path + '/' + file1['title'])
         else:
-            # 下载文件
+            # 如果路径不存在，则创建路径
+            os.makedirs(os.path.dirname(download_path + '/' + file1['title']), exist_ok=True)
             gdrive_download_file(file1['id'], download_path + '/' + file1['title'])
 
 
@@ -126,6 +127,7 @@ def gdrive_find_and_download(folder_id,file_name):
     file = gdrvie_find_file_under_folder(file_name,gdrvie_training_folder_id)
 
     gdrive_download_folder(file['id'], file['title'])
+
 
 def gdrive_find_file_under_folder_download_move(parent_id,file,target_path):
     """

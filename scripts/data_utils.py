@@ -353,7 +353,7 @@ def b_save_db_datasets(df):
     d_save_pkl(df,DATABASE_PATH + 'datasets.pkl')
 
 
-def b_read_db_datasets(task):
+def b_read_db_datasets(task=''):
     """
     读取数据集的情况，如果传入task，可以取出该task的分布情况
     """
@@ -528,7 +528,7 @@ def b_doccano_upload_by_task(file,task,task_type):
 
 
 
-def b_doccano_export_project(project_id,path,task):
+def b_doccano_export_project(project_id,path,task=''):
     """
     doccano 导出数据
     """
@@ -1509,6 +1509,10 @@ def b_generate_compare_refine(task,org_file,cmp_file):
     dev_project_id = project_configs[task]['dev']
 
     def record_data(result,label_type,text,label,predict,wrong_type=''):
+        if wrong_type == 'AI多标':
+            label = [0,0,label_type]
+        if wrong_type == 'AI漏标':
+            predict = [0,0,label_type]
         result['human_start'] = label[0]
         result['human_end'] = label[1]
         result['ai_start'] = predict[0]
@@ -1517,6 +1521,8 @@ def b_generate_compare_refine(task,org_file,cmp_file):
         result['human_label'] = text[label[0]:label[1]]
         result['ai_label'] = text[predict[0]:predict[1]]
         result['rule_anlysis'] = b_anlysis_rule(text,label,predict)
+        if wrong_type == 'AI多标' or wrong_type == 'AI漏标':
+            result['rule_anlysis'] = wrong_type
         dataset = train_project_id if result['dataset'] == task + '_train' else dev_project_id
         md5 = result['md5']
         
@@ -1524,6 +1530,10 @@ def b_generate_compare_refine(task,org_file,cmp_file):
             result['wrong_type'] = wrong_type
         if wrong_type == 'AI错标' and abs(label[0] - predict[0]) < 5:
             result['wrong_type'] = 'AI错标位置'
+        if wrong_type == 'AI多标':
+            result['human_start'] = result['human_end'] = result['human_label'] = ''
+        if wrong_type == 'AI漏标':
+            result['ai_start'] = result['ai_end'] = result['ai_label'] = ''
 
         result['doccano_url'] = 'http://47.108.218.88:18000/projects/{}/sequence-labeling?page=1&q={}'.format(dataset,md5)
         result['url'] = result['data_source']
@@ -1695,7 +1705,27 @@ def b_select_data_by_mysql(task,label_name,num):
     df = df[:num]
     return df
 
+def b_generate_cats_dataset_by_compare(org_data,compare_data,wrong_type):
+    """
+    根据refine的报表生成cats数据集
+    """
+    compare = b_read_dataset(compare_data)
+    train_dev = b_read_dataset(org_data)
 
+    md5s = []
+
+    for entry in compare:
+        if entry['wrong_type'] == wrong_type:
+            md5s.append(entry['md5'])
+
+    md5s = set(md5s)
+
+    for sample in train_dev:
+        sample['cats'] =  {"需要":0,"不需要":1} 
+        if sample['md5'] in md5s:
+            sample['cats'] =  {"需要":1,"不需要":0}
+
+    p_generate_cats_datasets(train_dev)
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
