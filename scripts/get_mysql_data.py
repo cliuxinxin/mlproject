@@ -11,6 +11,25 @@ def get_parser():
     parser.add_argument('--number', default='100', help='save 100 records to a file')
     return parser
 
+def get_all_data(table,number):
+    sql = 'select count(1) from {} order by create_time desc '.format(table)
+    df = mysql_select_df(sql)
+    total = df.iloc[0][0]
+
+    # 按照100条划分个数
+    num = int(total / number)
+
+    # 计算出每个文件的起始点
+    start = 0
+    end = number
+    for i in range(num):
+        start = end
+        end = start + number
+        sql = 'select * from {} order by create_time desc limit {} , {}'.format(table, start, end)
+        df = mysql_select_df(sql)
+        df.to_json(DATA_PATH + '{}_{}.json'.format(table, i))
+
+
 
 if __name__ == '__main__':
     parser = get_parser()
@@ -20,13 +39,14 @@ if __name__ == '__main__':
     number = int(args.number)
     table = project_configs[task]['table']
     if mode == 'all':
-        sql = 'select * from {} order by create_time desc '.format(table)
+        get_all_data(table,number) 
     else:
         sql = "select * from %s  order by create_time desc limit %s" % (table,20)
     df = mysql_select_df(sql)
     for idx,i in tqdm(enumerate(range(0,len(df),number))):
         file_name = task + '_' + str(int(time.time()*100000))
         df[i:(i + number)].to_json(DATA_PATH + file_name + '.json')
+
     
 
 
