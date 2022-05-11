@@ -281,14 +281,10 @@ def p_upload_preprocess(file,task):
     std_labels = std_labels[std_labels['task'] == task]
     std_labels = std_labels['label'].tolist()
     for entry in data:
-        if 'data' in entry:
-            text = entry['data']
-            del entry['data']
-        else :
-            text = entry['text']
+        text = entry['data']
         md5 = entry['md5']
         text  = text + '@crazy@' + md5
-        entry['text'] = text
+        entry['data'] = text
         try:
             labels = entry['label']
         except:
@@ -496,6 +492,8 @@ def b_select_data_by_model(task,num) -> list:
     根据cats模型选择数据
     """
     db = b_extrct_data_from_db_basic(task)
+    # 随机打乱顺序
+    db = db.sample(frac=1).reset_index(drop=True)
     nlp = b_load_best_cats()
 
     sample_data = []
@@ -1220,13 +1218,7 @@ def b_eavl_dataset(org_dataset_file,prd_dataset_file):
     df = df.T
     return df
 
-def b_doccano_update_train_dev(task):
-    """
-    根据task将从doccano中下载到train.json和dev.json中
-    
-    """
-    b_doccano_export_project(project_configs[task]['train'],'train.json',task)
-    b_doccano_export_project(project_configs[task]['dev'],'dev.json',task)
+
 
 def b_doccano_bak_train_dev(task):
     """
@@ -1245,6 +1237,13 @@ def b_process_origin_data():
 
     b_save_db_basic(db)
 
+def b_doccano_update_train_dev(task):
+    """
+    根据task将从doccano中下载到train.json和dev.json中
+    
+    """
+    b_doccano_export_project(project_configs[task]['train'],'train.json',task)
+    b_doccano_export_project(project_configs[task]['dev'],'dev.json',task)
 
 
 def b_doccano_train_dev_update(task):
