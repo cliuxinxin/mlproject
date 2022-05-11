@@ -1704,7 +1704,7 @@ def b_select_data_by_mysql(task,label_name,num):
     df = df[:num]
     return df
 
-def b_generate_cats_dataset_by_refine(org_data,compare_data,wrong_type):
+def b_generate_cats_dataset_by_refine(org_data,compare_data,wrong_types):
     """
     根据refine的报表生成cats数据集
     """
@@ -1714,7 +1714,7 @@ def b_generate_cats_dataset_by_refine(org_data,compare_data,wrong_type):
     md5s = []
 
     for entry in compare:
-        if entry['wrong_type'] == wrong_type:
+        if entry['wrong_type'] in wrong_types:
             md5s.append(entry['md5'])
 
     md5s = set(md5s)

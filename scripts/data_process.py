@@ -35,7 +35,7 @@ t2 - t1
 b_generate_compare_refine(task,'train_dev.json','train_dev_label.json')
 
 # 根据差异生成cats对比表
-b_generate_cats_dataset_by_refine('train_dev.json','compare_results.json','AI错标')
+b_generate_cats_dataset_by_refine('train_dev.json','compare_results.json',['AI错标'])
 
 # 根据标注和AI的情况生成cats数据集
 b_generate_cats_datasets_by_compare('train_dev.json','train_dev_label.json')
