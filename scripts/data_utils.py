@@ -1222,7 +1222,7 @@ def b_eavl_dataset(org_dataset_file,prd_dataset_file):
 
 def b_doccano_update_train_dev(task):
     """
-    根据task将的数据到train.json和dev中
+    根据task将从doccano中下载到train.json和dev.json中
     
     """
     b_doccano_export_project(project_configs[task]['train'],'train.json',task)
@@ -1249,7 +1249,7 @@ def b_process_origin_data():
 
 def b_doccano_train_dev_update(task):
     """
-    从doccano下载项目2的数据到train.json,项目3的数据到dev.json，并且合并到train_dev.json
+    根据task从doccano的数据下载到train.json,项目3的数据到dev.json，并且合并到train_dev.json
     """
     b_doccano_update_train_dev(task)
 
@@ -1698,7 +1698,7 @@ def b_select_data_by_mysql(task,label_name,num):
     df = mysql_select_df(sql)
 
     df['text'] = df[col].apply(p_filter_tags)
-    df['md5'] = df['data'].apply(p_generate_md5)
+    df['md5'] = df['text'].apply(p_generate_md5)
 
     db_dataset = b_read_db_datasets(task)
     df = df[df['md5'].isin(db_dataset['md5']) == False]
