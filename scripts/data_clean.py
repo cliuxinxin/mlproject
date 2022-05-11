@@ -43,3 +43,10 @@ def clean_bid_project_name(data):
     """
     data = d_general_process(data)
     return data
+
+def clean_bid_notice_num(data):
+    """
+    清洗出中标公告号
+    """
+    data = d_general_process(data)
+    return data

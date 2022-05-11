@@ -29,10 +29,11 @@ class PoolCorpus(object):
         for ent in doc.ents:
           label = {}
           label[ent.label_] = ent.text.strip()
-          col_idx = self.std_labels[self.std_labels['label'] == ent.label_].iloc[0]['col_idx']
-          col = self.std_labels[self.std_labels['label'] == ent.label_].iloc[0]['col'] 
-          clean_label = clean_manager(self.task,col,ent.text)
-          self.df.iloc[i,col_idx] = clean_label
+          if ent.label_ in self.std_labels['label'].to_list():
+            col_idx = self.std_labels[self.std_labels['label'] == ent.label_].iloc[0]['col_idx']
+            col = self.std_labels[self.std_labels['label'] == ent.label_].iloc[0]['col'] 
+            clean_label = clean_manager(self.task,col,ent.text)
+            self.df.iloc[i,col_idx] = clean_label
           labels.append(label)
         self.df.iloc[i,-1] = json.dumps(labels,ensure_ascii=False)  
 
