@@ -50,7 +50,7 @@ gdrive_download_best_model_cats()
 # 选择数据
 data = b_select_data_by_model(task,300)
 
-# 在数据库中找到没有标注的数据
+# 在数据库中找到没有项目名称的数据
 data = b_select_data_by_mysql(task,'项目名称',300)
 
 # 标注分割和上传

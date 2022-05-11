@@ -1760,6 +1760,27 @@ def b_generate_metrics():
 
     df = pd.DataFrame(new_data)
     df.to_csv(ASSETS_PATH + 'metrics.csv',index=False)
+
+def b_get_label_values(file):
+    """
+    找出所有label的value，并且保存到label_value.json文件中
+    
+    """
+    data = b_read_dataset(file)
+
+    new_data = []
+
+    for sample in data:
+        text = sample['data']
+        labels = sample['label']
+        for label in labels:
+            entry = {'type':label[2],
+                    'value':text[label[0]:label[1]],
+                    'md5':sample['md5'],
+                    'dataset':sample['dataset']}
+            new_data.append(entry)
+
+    b_save_list_datasets(new_data,'label_value.json')
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
