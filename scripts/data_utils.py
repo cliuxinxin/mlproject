@@ -515,7 +515,7 @@ def b_doccano_upload(file,project_id):
     """
     把文件上传到doccano的项目中
     """
-    doccano_client.post_doc_upload(project_id,file,ASSETS_PATH)
+    doccano_client.post_doc_upload(project_id,file,ASSETS_PATH,column_data="data")
 
 
 def b_doccano_upload_by_task(file,task,task_type):
@@ -524,7 +524,7 @@ def b_doccano_upload_by_task(file,task,task_type):
     """
     p_upload_preprocess(file,task)
     project_id = project_configs[task][task_type]
-    doccano_client.post_doc_upload(project_id,file,ASSETS_PATH)
+    b_doccano_upload(file,project_id)
 
 
 
@@ -578,7 +578,7 @@ def b_doccano_dataset_label_view(file,labels,project_id):
             end = label[1]
             s_start = start - 200 if start - 200 > 0 else 0
             s_end = end + 200 if end + 200 < len(text) else len(text)
-            new_entry['text'] = text[s_start:s_end]
+            new_entry['data'] = text[s_start:s_end]
             label_ = [[start - s_start,end - s_start,label[2]]]
             new_entry['label'] = label_
             new_entry['s_start'] = s_start
@@ -1025,7 +1025,7 @@ def b_compare_human_machine_label():
         s_start = start - 200 if start - 200 > 0 else 0
         s_end = end + 200 if end + 200 < len(text) else len(text)
 
-        new_sample['text'] = text[s_start:s_end] + '\n' + '错误类型'+label[2]
+        new_sample['data'] = text[s_start:s_end] + '\n' + '错误类型'+label[2]
         label_ = [[start - s_start,end - s_start,label[2]]]
         new_sample['label'] = label_
         new_sample['s_start'] = s_start
@@ -1333,7 +1333,7 @@ def b_doccano_compare(org_file,cmp_file):
         s_start = start - 200 if start - 200 > 0 else 0
         s_end = end + 200 if end + 200 < len(text) else len(text)
 
-        new_sample['text'] = text[s_start:s_end] + '\n' + '错误类型'+label[2] + '错误种类' + wrong_type
+        new_sample['data'] = text[s_start:s_end] + '\n' + '错误类型'+label[2] + '错误种类' + wrong_type
         label_ = [[start - s_start,end - s_start,label[2]]]
         new_sample['label'] = label_
         new_sample['s_start'] = s_start
@@ -1604,8 +1604,6 @@ def b_devide_data_import(data,task,method,threads):
     """
     标签标注数据集，并且划分为train和dev，最后上传到doccano，并且更新本地的数据库
     """
-    # text 改名 data
-    data.rename(columns={'text':'data'},inplace=True)
 
     b_save_df_datasets(data,'train_dev_imp.json')
 
