@@ -1,4 +1,3 @@
-import glob
 from data_utils import *
 from google_utils import *
 from mysql_utils import *
@@ -62,3 +61,6 @@ gdrive_download_metrics()
 
 # 收集整理metrics
 b_generate_metrics()
+
+
+

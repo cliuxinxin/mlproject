@@ -1,7 +1,6 @@
 import configparser
 import copy
 import hashlib
-import itertools
 import json
 import math
 import os
@@ -14,6 +13,7 @@ import warnings
 import zipfile
 import queue
 import threading
+import glob
 from copy import deepcopy
 
 
@@ -1731,23 +1731,33 @@ def b_generate_metrics():
     """
     收集整理metrics
     """
+
+    def record_metrics(task,date,item,metric,value):
+        entry = {}
+        entry['task'] = task
+        entry['date'] = date
+        entry['item'] = item
+        entry['metric'] = metric
+        entry['value'] = value
+        new_data.append(entry)
+
     files = glob.glob('../training/metrics/*.json')
     new_data = []
     for file in files:
         file_name = file.split('/')[-1]
         task = file_name.split('_')[0]
         date = file_name.split('_')[1]
-
+        entry = {}
+        entry['task'] = task
+        entry['date'] = date
         metric = json.load(open(file))
+        record_metrics(task,date,'总体','p',metric['ents_p'])
+        record_metrics(task,date,'总体','r',metric['ents_r'])
+        record_metrics(task,date,'总体','f',metric['ents_f'])
+        record_metrics(task,date,'速度','speed',metric['speed'])
         for key in metric['ents_per_type']:
-            entry = {}
-            entry['task'] = task
-            entry['date'] = date
             for key_2 in metric['ents_per_type'][key]:
-                entry['label'] = key
-                entry['metric'] = key_2
-                entry['value'] = metric['ents_per_type'][key][key_2]
-                new_data.append(entry)
+                record_metrics(task,date,key,key_2,metric['ents_per_type'][key][key_2])
 
     df = pd.DataFrame(new_data)
     df.to_csv(ASSETS_PATH + 'metrics.csv',index=False)
