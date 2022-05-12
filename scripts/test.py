@@ -12,5 +12,9 @@ db = db[~db['data_source'].isnull()]
 b_save_db_basic(db)
 
 
+from refine_utils import * 
 
+file = '../assets/compare_results.json'
+
+create(file)
 
