@@ -1789,6 +1789,28 @@ def b_get_label_values(file):
             new_data.append(entry)
 
     b_save_list_datasets(new_data,'label_value.json')
+
+def b_gpu_label(task,file):
+    """
+    服务器GPU直接标注
+    """
+    file_name = file.split('.')[0]
+    data = b_read_dataset(file)
+
+    nlp = b_load_best_model(task)
+
+    data_data = [sample['data'] for sample in data]
+
+    docs = nlp.pipe(data_data)
+
+    for doc,sample in zip(docs,data):
+        labels = []
+        for ent in doc.ents:
+            label = [ent.start_char,ent.end_char,ent.label_]
+            labels.append(label)
+        sample['label'] = labels
+
+    b_save_list_datasets(data,file_name + '_label.json')
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
