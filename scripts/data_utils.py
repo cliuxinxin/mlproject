@@ -309,6 +309,7 @@ def p_process_df(df,task):
     data_source_col = project_configs[task]['source']
     # 去掉空白行
     df = df[df[data_col].notnull()]
+    df = df[df[data_source_col].notnull()]
     # 清洗html标签
     p_html_text(df,data_col)
     # 改名
@@ -509,7 +510,7 @@ def b_select_data_by_model(task,num) -> list:
 
     sample_data = []
     for index,row in db.iterrows():
-        text = row['text']
+        text = row['data']
         if len(text) > 500:
             doc = nlp(text)
             print(doc.cats['需要'])
