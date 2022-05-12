@@ -13,8 +13,14 @@ tread_num = 20
 # 下载最好的模型
 gdrive_download_best_model(task)
 
+# 下载标注好的文件,train_dev_label.json
+gdrive_download_labeled_data()
+
 # 从doccano上下载最新的train和dev，并且合并为train_dev
 b_doccano_train_dev_update(task)
+
+# 上传train.json,dev.json和train_dev.json到google
+gdrive_upload_train_dev()
 
 # 迭代解决空格问题
 b_remove_invalid_label('train_dev.json')
@@ -23,7 +29,7 @@ b_generate_compare_refine(task,'train_dev.json','train_dev_remove.json')
 # 标注
 t1 = time.time()
 if method == 'process':
-    b_label_dataset_multprocess('train_dev.json')
+    b_label_dataset_multprocess(task,'train_dev.json')
 else:
     b_label_dataset_mult('train_dev.json',tread_num)
 

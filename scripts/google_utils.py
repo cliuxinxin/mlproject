@@ -97,14 +97,16 @@ def gdrive_del_and_upload(file,folder_id):
 
 def gdrive_upload_train_dev():
     """
-    上传本地的train.json,dev.json到dojo的assets文件夹下
+    上传本地的train.json,dev.json,train_dev.json到dojo的assets文件夹下
     """
     gdrive_assets_id = '1C88ng_CyJW_zzD1Bp7Sr_A9OCs128sbr'
     train_file = '../assets/train.json'
     dev_file = '../assets/dev.json'
+    train_dev_file = '../assets/train_dev.json'
 
     gdrive_del_and_upload(train_file,gdrive_assets_id)
     gdrive_del_and_upload(dev_file,gdrive_assets_id)
+    gdrive_del_and_upload(train_dev_file,gdrive_assets_id)
 
 def gdrive_upload_cats_train_dev():
     """
@@ -179,6 +181,16 @@ def gdrive_download_metrics():
     parent_id = '1D4jgGQhuXbOfA15hZJAYaNgVKiisXNsW'
     file = 'metrics'
     target_path = '../training/'
+
+    gdrive_find_file_under_folder_download_move(parent_id,file,target_path)
+
+def gdrive_download_labeled_data():
+    """
+    下载标注好的数据
+    """
+    parent_id = '1D4jgGQhuXbOfA15hZJAYaNgVKiisXNsW'
+    file = 'train_dev_label.json'
+    target_path = '../assets/'
 
     gdrive_find_file_under_folder_download_move(parent_id,file,target_path)
 
