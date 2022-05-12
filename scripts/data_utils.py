@@ -15,6 +15,8 @@ import queue
 import threading
 import glob
 from copy import deepcopy
+from datetime import datetime
+
 
 
 import pandas as pd
@@ -298,6 +300,25 @@ def p_upload_preprocess(file,task):
                     temp_list.append(label_text)
             entry[label] = ','.join(temp_list)
     b_save_list_datasets(data,file)
+
+def p_process_df(df,task):
+    """
+    df 标准化文件处理
+    """
+    data_col = project_configs[task]['col']
+    data_source_col = project_configs[task]['source']
+    # 去掉空白行
+    df = df[df[data_col].notnull()]
+    # 清洗html标签
+    p_html_text(df,data_col)
+    # 改名
+    df.rename(columns={data_col:'data'},inplace=True)
+    df.rename(columns={data_source_col:'source'},inplace=True)
+    df['task'] = task
+    df['md5'] = df[data_col].apply(p_generate_md5)
+    df['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    df.drop_duplicates(subset=['md5'],inplace=True)
+    return df
 # ——————————————————————————————————————————————————
 # 构建层
 # ——————————————————————————————————————————————————
@@ -312,18 +333,8 @@ def b_file_2_df(file_name,task) -> pd.DataFrame:
     """
     读取data里面的数据，清洗text文档，生成md5，根据configs.ini中的设置进行配置
     """
-    text_col = project_configs[task]['col']
     df = pd.read_csv(DATA_PATH + file_name)
-    df.dropna(subset=[text_col],inplace=True)
-    p_html_text(df,text_col)
-    df.rename(columns={project_configs[task]['source']:'data_source'},inplace=True)
-    df['task'] = task
-    df['md5'] = df[text_col].apply(p_generate_md5)
-    df['time'] = pd.to_datetime('now')
-    df['time'] = pd.to_datetime(df['time'], format='%Y-%m-%d %H:%M:%S') + pd.Timedelta(hours=8)
-    df['time'] = df['time'].dt.strftime('%Y-%m-%d %H:%M:%S')
-    df.rename(columns={text_col:'text'},inplace=True)
-    df.drop_duplicates(subset=['md5'])
+    df = p_process_df(df,task)
     return df
 
 # 统计label个数
@@ -1694,11 +1705,7 @@ def b_select_data_by_mysql(task,label_name,num):
 
     df = mysql_select_df(sql)
 
-    df['text'] = df[col].apply(p_filter_tags)
-    df['md5'] = df['text'].apply(p_generate_md5)
-    df['task'] = task
-    df['data_source'] = df[source]
-    df.drop(columns=[col,source],inplace=True)
+    df = p_process_df(df,task)
 
     db_dataset = b_read_db_datasets(task)
     df = df[df['md5'].isin(db_dataset['md5']) == False]
