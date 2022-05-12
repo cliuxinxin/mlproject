@@ -1,37 +1,25 @@
+from data_utils import *
+from data_clean import *
 
-from data_utils import * 
+task = 'bid'
 
-import re
-import datetime
+b_doccano_train_dev_update(task)
 
-sample = {'type':'报名结束时间','value':'2022年3月22日'}
+train = b_read_dataset('train.json')
+dev = b_read_dataset('dev.json')
 
-new_data = [sample]
+col = project_configs[task]['col']
+data_source = project_configs[task]['source']
 
-for sample in new_data:
-    value = sample['value']
-    value = re.findall(r'\d+', value)
-    if sample['type'] in ['报名开始时间','报名结束时间','招标文件领取开始时间','招标文件领取结束时间','投标截止时间','开标时间']:
-        if value:
-            # 如果第一位不是年
-            if len(value[0]) != 4:
-                year = datetime.datetime.now().strftime('%Y')
-                if len(value[0]) == 2 and int(value[0]) > 12:
-                    value[0] = '20' + value[0]
-                    break
-                value.insert(0,year)
-            if len(value) < 6:
-                    for i in range(6 - len(value)):
-                        value.append(0)
-            # 全部转换成数字
-            value = [int(i) for i in value]
-            # 如果24点
-            if value[3] == 24:
-                value[3] = 23
-                value[4] = 59
-                value[5] = 59
-            value = datetime.datetime(value[0], value[1], value[2], value[3], value[4], value[5])
-            # 转换成标准时间格式
-            value = value.strftime('%Y-%m-%d %H:%M:%S')
-            sample['time'] = value
+cmp = b_read_dataset('compare.json')
 
+for sample in cmp:
+    sample['task'] = task
+    # 如果sample[data_source] 不等于 NaN
+    if len(sample[data_source]) <= 5 :
+        sample['data_source'] = sample[data_source]
+        sample['url'] = sample[data_source]
+        del sample[data_source]
+
+cmp = pd.DataFrame(cmp)
+b_save_list_datasets(cmp,'compare_results.json')

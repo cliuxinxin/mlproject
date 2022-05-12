@@ -1696,7 +1696,9 @@ def b_select_data_by_mysql(task,label_name,num):
 
     df['text'] = df[col].apply(p_filter_tags)
     df['md5'] = df['text'].apply(p_generate_md5)
-    df.drop(columns=[col],inplace=True)
+    df['task'] = task
+    df['data_source'] = df[source]
+    df.drop(columns=[col,source],inplace=True)
 
     db_dataset = b_read_db_datasets(task)
     df = df[df['md5'].isin(db_dataset['md5']) == False]
