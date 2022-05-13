@@ -146,7 +146,11 @@ def gdrive_del_move(orig_path,target_path):
     """
     # 如果目标文件夹存在
     if os.path.exists(target_path):
-        shutil.rmtree(target_path)
+        # 如果是文件，就删除文件
+        if os.path.isfile(target_path):
+            os.remove(target_path)
+        else:
+            shutil.rmtree(target_path)
     shutil.move(orig_path, target_path)
 
 
@@ -188,7 +192,7 @@ def gdrive_download_labeled_data():
     """
     下载标注好的数据
     """
-    parent_id = '1D4jgGQhuXbOfA15hZJAYaNgVKiisXNsW'
+    parent_id = '1C88ng_CyJW_zzD1Bp7Sr_A9OCs128sbr'
     file = 'train_dev_label.json'
     target_path = '../assets/'
 

@@ -1562,7 +1562,7 @@ def b_generate_compare_refine(task,org_file,cmp_file):
         md5 = sample['md5']
         text = sample['data']
         for entry in cmp_data:
-            if entry['id'] == id and entry['md5'] == md5:
+            if entry['md5'] == md5:
                 break
     
         labels = sample['label']
