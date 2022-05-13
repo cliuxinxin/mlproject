@@ -12,7 +12,7 @@ def get_parser():
     return parser
 
 def get_all_data(task,table,number):
-    sql = 'select count(1) from {} order by create_time '.format(table)
+    sql = 'select count(1) from {} order by create_time'.format(table)
     df = mysql_select_df(sql)
     total = df.iloc[0][0]
 
@@ -25,7 +25,7 @@ def get_all_data(task,table,number):
     for i in tqdm(range(num)):
         start = end
         end = start + number
-        sql = 'select * from {} order by create_time desc limit {} , {}'.format(table, start, number)
+        sql = 'select * from {} order by create_time limit {} , {}'.format(table, start, number)
         df = mysql_select_df(sql)
         file_name = task + '_' + str(int(time.time()*100000))
         df.to_json(DATA_PATH + file_name + '.json')
