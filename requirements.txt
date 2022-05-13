@@ -1,3 +1,4 @@
+click
 spacy-streamlit>=1.0.0a0
 spacy-alignments 
 spacy-transformers 
