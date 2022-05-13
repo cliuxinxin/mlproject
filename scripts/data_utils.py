@@ -1547,7 +1547,7 @@ def b_generate_compare_refine(task,org_file,cmp_file):
             result['ai_start'] = result['ai_end'] = result['ai_label'] = ''
 
         result['doccano_url'] = 'http://47.108.218.88:18000/projects/{}/sequence-labeling?page=1&q={}'.format(dataset,md5)
-        result['url'] = result['data_source']
+        result['url'] = result['data_source'] + "#:~:text=" + (result['ai_label'] if result['ai_label'] else result['human_label'])
         results.append(result)
 
 

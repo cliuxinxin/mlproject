@@ -12,7 +12,7 @@ def get_parser():
     return parser
 
 def get_all_data(task,table,number):
-    sql = 'select count(1) from {} order by create_time desc '.format(table)
+    sql = 'select count(1) from {} order by create_time '.format(table)
     df = mysql_select_df(sql)
     total = df.iloc[0][0]
 
