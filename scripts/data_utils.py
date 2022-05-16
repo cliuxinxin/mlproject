@@ -846,10 +846,9 @@ def b_remove_invalid_label(file):
 
     cleaned_datas = []
     for sample in data:
-        cleaned_data = {}
-        text = sample['data']
-        cleaned_data['data'] = text
-        labels = sample['label']
+        cleaned_data = deepcopy(sample)
+        text = cleaned_data['data']
+        labels = cleaned_data['label']
         clean_labels = []
         for start,end,label in labels:
             valid_start = start
@@ -863,10 +862,9 @@ def b_remove_invalid_label(file):
                 valid_end -= 1
             clean_labels.append([valid_start, valid_end, label])
         cleaned_data['label'] = clean_labels
-        sample['label'] = clean_labels
         cleaned_datas.append(cleaned_data)  
 
-    b_save_list_datasets(data,file_name + '_remove.json')
+    b_save_list_datasets(cleaned_datas,file_name + '_remove.json')
 
 # 把bio数据集划分成最长的数据集,并且保存为train_trf_max.json
 #split_dataset_by_max('train_trf.json',510) 
@@ -1546,9 +1544,14 @@ def b_generate_compare_refine(task,org_file,cmp_file):
         if wrong_type == 'AI漏标':
             result['ai_start'] = result['ai_end'] = result['ai_label'] = ''
 
-        result['doccano_url'] = 'http://47.108.218.88:18000/projects/{}/sequence-labeling?page=1&q={}'.format(dataset,md5)
+        result['is_human_correct'] = ''
+        result['doccano_url'] = 'http://47.108.218.88:18000/projects/{}/sequence-labeling?page=1&q={}'.format(dataset,md5) 
         result['url'] = result['data_source'] + "#:~:text=" + (result['ai_label'] if result['ai_label'] else result['human_label'])
-        results.append(result)
+        new_result = deepcopy(result)
+        del new_result['data_source']
+        del new_result['id']
+    
+        results.append(new_result)
 
 
 
@@ -1607,8 +1610,8 @@ def b_generate_compare_refine(task,org_file,cmp_file):
                 for predect in predicts:
                     if predect[2] == label_type:
                         record_data(result,label_type,text,label,predect,'AI错标')
-
-    b_save_list_datasets(results,'compare_results.json')
+    
+    b_save_list_datasets(results,'compare_results_' + time.strftime('%Y%m%d%H',time.localtime(time.time())) + '.json')
 
 
 def b_devide_data_import(data,task,method,threads):
