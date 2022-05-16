@@ -6,6 +6,21 @@ import argparse
 import glob
 from data_clean import clean_manager
 
+def datetime_process(df,task):
+    """
+    处理日期
+    """
+    if task == 'bid':
+        datetime_columns = ['publish_time','publish_stime','publish_etime']
+    elif task == 'tender':
+        datetime_columns = ['publish_time','quote_stime','quote_etime','publish_stime','publish_etime']
+    else:
+        datetime_columns = []
+    for colum in datetime_columns:
+        # 转换为datetime格式
+        df[colum] = df[colum].apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
+    return df
+
 def preprocess_df(df,task):
     """
     根据task做一些预处理
@@ -15,6 +30,7 @@ def preprocess_df(df,task):
     std_labels['col_idx'] = std_labels['col'].apply(lambda x: cols.index(x))
     html_col = project_configs[task]['col']
     df['labels'] = ''
+    df = datetime_process(df,task)
     return df,std_labels,html_col
 
 def process_df(i,df,html_col,nlp,std_labels,task):
