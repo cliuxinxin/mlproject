@@ -6,6 +6,14 @@ import argparse
 import glob
 from data_clean import clean_manager
 
+def d_date_clean(value):
+    """
+    清洗日期
+    """
+    # 如果value是datetime.datetime类型，则直接返回
+    if isinstance(value,datetime):
+        return datetime.fromtimestamp(value.timestamp())
+
 def datetime_process(df,task):
     """
     处理日期
@@ -18,7 +26,7 @@ def datetime_process(df,task):
         datetime_columns = []
     for colum in datetime_columns:
         # 转换为datetime格式
-        df[colum] = df[colum].apply(lambda x: x.strptime('%Y-%m-%d %H:%M:%S'))
+         df[colum] = df[colum].apply(lambda x: d_date_clean(x))
         # 转换为时间戳
 
     return df
@@ -85,7 +93,7 @@ def work(q,df,html_col,nlp,std_labels,task):
 
 def get_parser():
     parser = argparse.ArgumentParser(description="Process data and insert to mysql")
-    parser.add_argument('--mode', default='process', choices=['process', 'thread'],help='all or newest')
+    parser.add_argument('--mode', default='thread', choices=['process', 'thread'],help='all or newest')
     parser.add_argument('--thread_num', default=5 ,help='if mode is thread, set thread num')
     return parser
 
