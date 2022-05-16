@@ -12,7 +12,8 @@ def d_date_clean(value):
     """
     # 如果value是datetime.datetime类型，则直接返回
     if isinstance(value,datetime):
-        return datetime.fromtimestamp(value.timestamp())
+        if type(value) != pd._libs.tslibs.nattype.NaTType:
+            return datetime.fromtimestamp(value.timestamp())
 
 def datetime_process(df,task):
     """
