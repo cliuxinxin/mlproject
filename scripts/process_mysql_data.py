@@ -100,6 +100,7 @@ if __name__ == '__main__':
     BaseManager.register('PoolCorpus', PoolCorpus)
 
     for file in tqdm(files):
+        print(file)
         task = file.split('_')[0].split('/')[-1]
         if mode == 'process':
             with BaseManager() as manager:
