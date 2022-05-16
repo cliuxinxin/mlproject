@@ -18,7 +18,7 @@ def datetime_process(df,task):
         datetime_columns = []
     for colum in datetime_columns:
         # 转换为datetime格式
-        df[colum] = df[colum].apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
+        df[colum] = df[colum].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
     return df
 
 def preprocess_df(df,task):
