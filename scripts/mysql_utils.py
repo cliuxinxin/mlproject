@@ -12,13 +12,14 @@ def d_parse_config():
     config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
     return config
 
-def d_log_error(sql):
+def d_log_error(error):
     """
     打印错误日志
     """
-    with open('..assets/error.log','a+') as f:
-        f.write(sql)
-
+    with open('../assets/error.log','a+') as f:
+        f.write(str(error))
+        f.write('\n')
+        
 project_configs = d_parse_config()
 
 def mysql_connect(config='mysql'):
@@ -123,8 +124,9 @@ def mysql_insert_data(df,task):
             for value in values:
                 try:
                     cursor.execute(sql, value)
-                except:
-                    d_log_error(sql)
+                except Exception as e:
+                    error = {'error':e,'sql':sql}
+                    d_log_error(error)
         db.commit()
         cursor.close()
 
