@@ -1,7 +1,7 @@
 import re
 import datetime
 
-def d_general_process(value):
+def d_general_process(value,max_len):
     """
     一般符号处理
     """
@@ -10,7 +10,7 @@ def d_general_process(value):
     value = value.replace('\r','')
     value = value.replace('\t','')
     value = value.replace(' ','')
-    return value
+    return value[:max_len]
 
 def d_amount_process(value):
     """
@@ -71,7 +71,8 @@ def d_date_clean(value):
 
 def clean_manager(task,col,value):
     func_name = 'clean_' + task + '_' + col
-    value = d_general_process(value)
+    max_len = 1000
+    value = d_general_process(value,max_len)
     if func_name in globals():
         return globals()[func_name](value)
     return value
