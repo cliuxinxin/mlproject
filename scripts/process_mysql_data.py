@@ -148,6 +148,8 @@ if __name__ == '__main__':
         else:
             df = pd.read_json(file)
             df,std_labels,html_col = preprocess_df(df,task)
+            # 将为none的替换成空
+            df[html_col] = df[html_col].fillna('')
             df[html_col] = df[html_col].apply(p_filter_tags)
             data = df[html_col].to_list()
             nlp = b_load_best_model(task)
