@@ -165,8 +165,6 @@ def p_replaceCharEntity(text) -> str:
 # 去掉网页标签
 def p_filter_tags(text) -> str:
     # 先过滤CDATA
-    if text == None:
-        return ''
     re_cdata = re.compile('//<!\[CDATA\[[^>]*//\]\]>', re.I)  # 匹配CDATA
     re_script = re.compile('<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', re.I)  # Script
     re_style = re.compile('<\s*style[^>]*>[^<]*<\s*/\s*style\s*>', re.I)  # style
@@ -454,6 +452,24 @@ def b_updata_db_labels(task,df):
   db = db[~db['task'].str.contains(task)]
   db = pd.concat([db,df])
   b_save_db_labels(db)
+
+def b_save_db_compare(df):
+    """
+    整体错题集的情况
+    """
+    d_save_pkl(df,DATABASE_PATH + 'compare.pkl')
+
+b_save_db_compare(df)
+
+def b_read_db_compare(task=''):
+    """
+    整体读取错题数据，如果传入task，就取该task的数据
+    """
+    db = d_read_pkl(DATABASE_PATH + 'compare.pkl')
+    if task:
+        return db[db['task'] == task]
+    return db
+
 
 # 分割数据集
 def b_cut_datasets_size_pipe(file):

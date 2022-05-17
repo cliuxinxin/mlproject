@@ -49,6 +49,8 @@ def process_df(i,df,html_col,nlp,std_labels,task):
     处理数据
     """
     text = df.iloc[i][html_col]
+    if text is None:
+        return
     text = p_filter_tags(text)
     doc = nlp(text)
     labels = []
