@@ -153,7 +153,7 @@ if __name__ == '__main__':
             df[html_col] = df[html_col].apply(p_filter_tags)
             data = df[html_col].to_list()
             nlp = b_load_best_model(task)
-            docs = nlp.pipe(data,n_process=3)
+            docs = nlp.pipe(data)
             for idx,doc in enumerate(docs):
                 process_df(idx,df,html_col,nlp,std_labels,task,doc)
         
