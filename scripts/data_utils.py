@@ -459,7 +459,6 @@ def b_save_db_compare(df):
     """
     d_save_pkl(df,DATABASE_PATH + 'compare.pkl')
 
-b_save_db_compare(df)
 
 def b_read_db_compare(task=''):
     """
