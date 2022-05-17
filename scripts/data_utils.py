@@ -1832,6 +1832,65 @@ def b_gpu_label(task,file):
         sample['label'] = labels
 
     b_save_list_datasets(data,file_name + '_label.json')
+
+def b_combine_compare(files = ['1.xlsx','2.xlsx','3.xlsx']):
+    """
+    根据refine到处compare，合成compare文件
+    """
+
+    dfs = []
+
+    for file in files:
+        df = pd.read_excel(ASSETS_PATH + file)
+        df.columns = [x.replace('_ - ', ' ').strip() for x in df.columns]
+        dfs.append(df)
+
+    df = pd.concat(dfs)
+
+    b_generate_label_md5(df)
+
+    df = df[df['is_human_correct'].str.upper() == 'Y']
+
+    db = b_read_db_compare()
+    # 合并
+    df = pd.concat([db,df])
+    
+    df = df.drop_duplicates(subset=['label_md5'])
+
+    b_save_db_compare(df)
+
+    return df
+
+def b_generate_label_md5(df):
+    """
+    设定排重列
+    """
+    # 设定排重列
+    md5_columns = ['task','md5','human_start','human_end','human_label','ai_start','ai_end','ai_label','label_type']
+    # md5 列组合生成md5值
+    # 如果数字有.0，则去掉.0
+    df['label_md5'] = df[md5_columns].apply(lambda x: ''.join(x.astype(str).apply(lambda x: x.replace('.0',''))),axis=1).apply(p_generate_md5)
+
+
+
+
+def b_process_compare(file):
+    """
+    读取错题库并且处理
+    """
+    
+    df = b_read_db_compare()
+
+    compare = b_read_dataset(file)
+
+    compare = pd.DataFrame(compare)
+
+    b_generate_label_md5(compare)
+
+    # 根据 label_md5 的值，将df中的is_human_correct的值填入到compare中
+    compare['is_human_correct'] = compare['label_md5'].apply(lambda x: df[df['label_md5'] == x]['is_human_correct'].values[0] if x in df['label_md5'].values else None)
+    
+    b_save_df_datasets(compare,file)
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
