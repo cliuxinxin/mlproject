@@ -165,6 +165,8 @@ def p_replaceCharEntity(text) -> str:
 # 去掉网页标签
 def p_filter_tags(text) -> str:
     # 先过滤CDATA
+    if text == None:
+        return ''
     re_cdata = re.compile('//<!\[CDATA\[[^>]*//\]\]>', re.I)  # 匹配CDATA
     re_script = re.compile('<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', re.I)  # Script
     re_style = re.compile('<\s*style[^>]*>[^<]*<\s*/\s*style\s*>', re.I)  # style
