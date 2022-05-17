@@ -44,15 +44,17 @@ def preprocess_df(df,task):
     df = datetime_process(df,task)
     return df,std_labels,html_col
 
-def process_df(i,df,html_col,nlp,std_labels,task):
+def process_df(i,df,html_col,nlp,std_labels,task,doc=None):
     """
     处理数据
     """
-    text = df.iloc[i][html_col]
+    
     if text is None:
         return
-    text = p_filter_tags(text)
-    doc = nlp(text)
+    if doc == None:
+        text = df.iloc[i][html_col]
+        text = p_filter_tags(text)
+        doc = nlp(text)
     labels = []
     for ent in doc.ents:
         label = {}
@@ -96,7 +98,7 @@ def work(q,df,html_col,nlp,std_labels,task):
 
 def get_parser():
     parser = argparse.ArgumentParser(description="Process data and insert to mysql")
-    parser.add_argument('--mode', default='single', choices=['process', 'thread','single'],help='all or newest')
+    parser.add_argument('--mode', default='pipe', choices=['process', 'thread','single','pipe'],help='all or newest')
     parser.add_argument('--thread_num', default=5 ,help='if mode is thread, set thread num')
     return parser
 
@@ -137,12 +139,22 @@ if __name__ == '__main__':
             
             for t in threads:
                 t.join()
-        else:
+        elif mode == 'single':
             df = pd.read_json(file)
             df,std_labels,html_col = preprocess_df(df,task) 
             nlp = b_load_best_model(task)
             for idx in range(len(df)):
                 process_df(idx,df,html_col,nlp,std_labels,task)
+
+        else:
+            df = pd.read_json(file)
+            df,std_labels,html_col = preprocess_df(df,task)
+            df[html_col] = df[html_col].apply(p_filter_tags)
+            data = df[html_col].to_list()
+            nlp = b_load_best_model(task)
+            docs = nlp.pipe(data)
+            for idx,doc in enumerate(docs):
+                process_df(idx,df,html_col,nlp,std_labels,task,doc)
         
         ids = df['id'].to_list()
         mysql_delete_data_by_ids(ids,task)
