@@ -51,7 +51,7 @@ def process_df(i,df,html_col,nlp,std_labels,task):
     text = df.iloc[i][html_col]
     if text is None:
         return
-    text = p_filter_    tags(text)
+    text = p_filter_tags(text)
     doc = nlp(text)
     labels = []
     for ent in doc.ents:
