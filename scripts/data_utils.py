@@ -1562,6 +1562,7 @@ def b_generate_compare_refine(task,org_file,cmp_file):
             result['ai_start'] = result['ai_end'] = result['ai_label'] = ''
 
         result['is_human_correct'] = ''
+        result['is_checked'] = ''
         result['doccano_url'] = 'http://47.108.218.88:18000/projects/{}/sequence-labeling?page=1&q={}'.format(dataset,md5) 
         result['url'] = result['data_source'] + "#:~:text=" + (result['ai_label'] if result['ai_label'] else result['human_label'])
         new_result = deepcopy(result)
@@ -1855,21 +1856,22 @@ def b_combine_compare(files = ['1.xlsx','2.xlsx','3.xlsx']):
     # 合并
     df = pd.concat([db,df])
     
-    df = df.drop_duplicates(subset=['label_md5'])
+    df = df.drop_duplicates(subset=['checked_md5'])
 
     b_save_db_compare(df)
 
-    return df
 
 def b_generate_label_md5(df):
     """
     设定排重列
     """
     # 设定排重列
-    md5_columns = ['task','md5','human_start','human_end','human_label','ai_start','ai_end','ai_label','label_type']
+    checked_columns = ['task','md5','human_start','human_end','human_label','ai_start','ai_end','ai_label','label_type']
+    human_columns = ['task','md5','human_start','human_end','human_label'] 
     # md5 列组合生成md5值
     # 如果数字有.0，则去掉.0
-    df['label_md5'] = df[md5_columns].apply(lambda x: ''.join(x.astype(str).apply(lambda x: x.replace('.0',''))),axis=1).apply(p_generate_md5)
+    df['checked_md5'] = df[checked_columns].apply(lambda x: ''.join(x.astype(str).apply(lambda x: x.replace('.0',''))),axis=1).apply(p_generate_md5)
+    df['human_md5'] = df[human_columns].apply(lambda x: ''.join(x.astype(str).apply(lambda x: x.replace('.0',''))),axis=1).apply(p_generate_md5)
 
 
 
@@ -1888,9 +1890,33 @@ def b_process_compare(file):
     b_generate_label_md5(compare)
 
     # 根据 label_md5 的值，将df中的is_human_correct的值填入到compare中
-    compare['is_human_correct'] = compare['label_md5'].apply(lambda x: df[df['label_md5'] == x]['is_human_correct'].values[0] if x in df['label_md5'].values else None)
+    compare['is_human_correct'] = compare['human_md5'].apply(lambda x: df[df['human_md5'] == x]['is_human_correct'].values[0] if x in df['human_md5'].values else None)
+    compare['is_checked'] = compare['checked_md5'].apply(lambda x: df[df['checked_md5'] == x]['is_human_correct'].values[0] if x in df['checked_md5'].values else None)
     
     b_save_df_datasets(compare,file)
+
+
+def b_convert_baidu_dataset(file,num):
+    """
+    将数据集转换成百度的模型能够处理的数据
+    """
+    data = b_read_dataset(file)
+    new_data = []
+
+    for sample in data:
+        new_sample = {}
+        new_sample['id'] = sample['id']
+        new_sample['text'] = sample['data']
+        new_sample['relations'] = []
+        new_sample['entities'] = []
+        for idx,label in enumerate(sample['label']):
+            new_sample['entities'].append({'id': idx, 'start_offset': label[0], 'end_offset': label[1], 'label': label[2]})
+        if len(new_sample['entities']) > 0:
+            new_data.append(new_sample)
+            if len(new_data) == num:
+                break
+            
+    b_save_list_datasets(new_data, 'doccano_ext.json')
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————

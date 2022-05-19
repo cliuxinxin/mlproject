@@ -128,7 +128,11 @@ def gdrive_find_and_download(folder_id,file_name):
 
     file = gdrvie_find_file_under_folder(file_name,gdrvie_training_folder_id)
 
-    gdrive_download_folder(file['id'], file['title'])
+    # 如果是文件，就下载文件
+    if file['mimeType'] != 'application/vnd.google-apps.folder':
+        gdrive_download_file(file['id'],file_name)
+    else:
+        gdrive_download_folder(file['id'], file['title'])
 
 
 def gdrive_find_file_under_folder_download_move(parent_id,file,target_path):
