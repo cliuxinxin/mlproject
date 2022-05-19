@@ -1252,8 +1252,9 @@ def b_doccano_bak_train_dev(task):
     根据task将的数据到task_train_bak.json和task_dev_bak.json中
     
     """
-    b_doccano_export_project(project_configs[task]['train'],task + '_train_bak.json',task)
-    b_doccano_export_project(project_configs[task]['dev'],task + '_dev_bak.json',task)
+    b_doccano_train_dev_update(task)
+    data = b_read_dataset('train_dev.json')
+    b_save_list_datasets(data, task + '_train_dev.json')
 
 
 def b_process_origin_data():
@@ -1903,7 +1904,7 @@ def b_convert_baidu_dataset(file,num):
     data = b_read_dataset(file)
     new_data = []
 
-    for sample in data:
+    for sample in data[:num]:
         new_sample = {}
         new_sample['id'] = sample['id']
         new_sample['text'] = sample['data']
@@ -1911,11 +1912,7 @@ def b_convert_baidu_dataset(file,num):
         new_sample['entities'] = []
         for idx,label in enumerate(sample['label']):
             new_sample['entities'].append({'id': idx, 'start_offset': label[0], 'end_offset': label[1], 'label': label[2]})
-        if len(new_sample['entities']) > 0:
-            new_data.append(new_sample)
-            if len(new_data) == num:
-                break
-            
+        new_data.append(new_sample)
     b_save_list_datasets(new_data, 'doccano_ext.json')
 # ——————————————————————————————————————————————————
 # 调用

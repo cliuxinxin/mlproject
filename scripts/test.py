@@ -1,5 +1,6 @@
 from data_utils import *
 from google_utils import *
 from mysql_utils import *
+from langdetect import detect
 
-gdrive_download_labeled_data()
+

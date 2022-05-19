@@ -41,7 +41,7 @@ t2 - t1
 b_generate_compare_refine(task,'train_dev.json','train_dev_label.json')
 
 # 机器核对一遍,注意修改compare_results的名字
-b_process_compare('compare_results_2022051808.json')
+b_process_compare('compare_results_2022051908.json')
 
 # 根据差异生成cats数据集
 b_generate_cats_dataset_by_refine('train_dev.json','compare_results.json',['AI错标'])

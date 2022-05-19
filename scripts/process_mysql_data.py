@@ -44,17 +44,38 @@ def preprocess_df(df,task):
     df = datetime_process(df,task)
     return df,std_labels,html_col
 
-def process_df(i,df,html_col,nlp,std_labels,task,doc=None):
+def process_df(i,df,html_col,nlp,std_labels,task,label_data,doc=None):
     """
     处理数据
     """
     text = df.iloc[i][html_col]
+    md5 = p_generate_md5(text)
+    try:
+        labeled = label_data[label_data['md5'] == md5].iloc[0]['label']
+    except:
+        labeled = []
     if text is None:
         return
     if doc == None:
         text = p_filter_tags(text)
         doc = nlp(text)
     labels = []
+    if labeled != []:
+        for single_label in labeled:
+            start = single_label[0]
+            end = single_label[1]
+            label_ = single_label[2]
+            label = {}
+            label_text = text[start:end]
+            label[label_] = label_text
+            if label_ in std_labels['label'].to_list():
+                col_idx = std_labels[std_labels['label'] == label_].iloc[0]['col_idx']
+                col = std_labels[std_labels['label'] == label_].iloc[0]['col']
+                clean_label = clean_manager(task,col,label_text)
+                df.iloc[i,col_idx] = clean_label
+            labels.append(label)
+        df.iloc[i,-1] = json.dumps(labels,ensure_ascii=False)   
+        return
     for ent in doc.ents:
         label = {}
         label[ent.label_] = ent.text.strip()
@@ -63,7 +84,7 @@ def process_df(i,df,html_col,nlp,std_labels,task,doc=None):
             col = std_labels[std_labels['label'] == ent.label_].iloc[0]['col'] 
             clean_label = clean_manager(task,col,ent.text)
             df.iloc[i,col_idx] = clean_label
-        labels.append(label)
+        labels.append(label)        
     df.iloc[i,-1] = json.dumps(labels,ensure_ascii=False)  
 
 
@@ -114,6 +135,8 @@ if __name__ == '__main__':
     for file in tqdm(files):
         print(file)
         task = file.split('_')[0].split('/')[-1]
+        label_data = b_read_dataset(task + '_train_dev.json')
+        label_data = pd.DataFrame(label_data)
         if mode == 'process':
             with BaseManager() as manager:
                 corpus = manager.PoolCorpus(task,file)
@@ -132,7 +155,7 @@ if __name__ == '__main__':
             thread_num = thread_num
             threads = []
             for j in range(thread_num):
-                t = threading.Thread(target=work, args=(q,df,html_col,nlp,std_labels,task))
+                t = threading.Thread(target=work, args=(q,df,html_col,nlp,std_labels,task,label_data))
                 threads.append(t)
                 t.start()
             
@@ -143,7 +166,7 @@ if __name__ == '__main__':
             df,std_labels,html_col = preprocess_df(df,task) 
             nlp = b_load_best_model(task)
             for idx in range(len(df)):
-                process_df(idx,df,html_col,nlp,std_labels,task)
+                process_df(idx,df,html_col,nlp,std_labels,task,label_data)
 
         else:
             df = pd.read_json(file)
@@ -155,7 +178,7 @@ if __name__ == '__main__':
             nlp = b_load_best_model(task)
             docs = nlp.pipe(data)
             for idx,doc in enumerate(docs):
-                process_df(idx,df,html_col,nlp,std_labels,task,doc)
+                process_df(idx,df,html_col,nlp,std_labels,task,label_data,doc)
         
         ids = df['id'].to_list()
         mysql_delete_data_by_ids(ids,task)
