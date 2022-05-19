@@ -316,7 +316,7 @@ def p_process_df(df,task):
     df.rename(columns={data_col:'data'},inplace=True)
     df.rename(columns={data_source_col:'source'},inplace=True)
     df['task'] = task
-    df['md5'] = df[data_col].apply(p_generate_md5)
+    df['md5'] = df['data'].apply(p_generate_md5)
     df['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     df.drop_duplicates(subset=['md5'],inplace=True)
     return df
@@ -1903,6 +1903,9 @@ def b_convert_baidu_dataset(file,num):
     """
     data = b_read_dataset(file)
     new_data = []
+
+    # 随机排序data
+    random.shuffle(data)
 
     for sample in data[:num]:
         new_sample = {}

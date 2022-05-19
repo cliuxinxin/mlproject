@@ -181,7 +181,11 @@ if __name__ == '__main__':
                 process_df(idx,df,html_col,nlp,std_labels,task,label_data,doc)
         
         ids = df['id'].to_list()
-        mysql_delete_data_by_ids(ids,task)
+        if len(ids) == 1:
+            id = ids[0]
+            mysql_delete_data_by_id(id,task)
+        else:
+            mysql_delete_data_by_ids(ids,task)
         mysql_insert_data(df,task)
         file_name = file.split('/')[-1]
         os.rename(file,DATA_PATH + 'processed/' + file_name)
