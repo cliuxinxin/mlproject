@@ -25,10 +25,11 @@ if __name__ == '__main__':
     table = project_configs[task]['table']
     col = project_configs[task]['col']
     source = project_configs[task]['source']
-    sql = "select c%,source from %s where id = '%s'" % (table,id)
+    sql = "select * from %s where id = '%s'" % (col,source,table,id)
     df = mysql_select_df(sql)
     if len(df) >= 1:
         df.to_json(DATA_PATH + task + '_' + id + '.json')
+        df = df[[col,source]]
         df = p_process_df(df,task)
         nlp = b_load_best_model(task)
         df['label'] = df['data'].apply(lambda x:label_data(nlp,x))

@@ -71,6 +71,9 @@ gdrive_download_metrics()
 # 收集整理metrics
 b_generate_metrics()
 
+# 增加核对数据
+b_combine_compare(['5.xlsx'])
+
 
 
 

@@ -17,3 +17,4 @@ torch
 pymysql
 dbutils
 tqdm
+redis
