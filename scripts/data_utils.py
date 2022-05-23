@@ -1837,7 +1837,7 @@ def b_gpu_label(task,file):
 
 def b_combine_compare(files = ['1.xlsx','2.xlsx','3.xlsx']):
     """
-    根据refine到处compare，合成compare文件
+    根据refine导出compare，合成compare文件
     """
 
     dfs = []
