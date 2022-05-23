@@ -4,6 +4,7 @@ import pandas as pd
 from dbutils.persistent_db import PersistentDB
 import os
 from threading import RLock
+import json
 
 MYSQL = 'mysql'
 
@@ -16,8 +17,8 @@ def d_log_error(error):
     """
     打印错误日志
     """
-    with open('../assets/error.log','a+') as f:
-        f.write(str(error))
+    with open('../assets/error.log','a+',encoding='utf-8') as f:
+        json.dump(error,f,ensure_ascii=False)
         f.write('\n')
         
 project_configs = d_parse_config()
@@ -125,7 +126,7 @@ def mysql_insert_data(df,task):
                 try:
                     cursor.execute(sql, value)
                 except Exception as e:
-                    error = {'error':e,'sql':sql}
+                    error = {'error':e,'sql':sql,'value':value}
                     d_log_error(error)
         db.commit()
         cursor.close()
