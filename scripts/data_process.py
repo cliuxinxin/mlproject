@@ -3,8 +3,8 @@ from google_utils import *
 from mysql_utils import *
 
 # 定义任务
-# task = 'tender'
-task = 'bid'
+task = 'tender'
+# task = 'bid'
 method = 'process'
 # method = 'thread'
 tread_num = 20

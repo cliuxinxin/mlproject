@@ -1290,6 +1290,7 @@ def b_doccano_train_dev_update(task):
     dev['dataset'] = task + '_dev'
 
     train_dev = pd.concat([train,dev])
+    train_dev['task'] = task
 
     b_updata_db_datasets(task,train_dev)
     b_save_df_datasets(train_dev,'train_dev.json')
