@@ -72,7 +72,11 @@ def mysql_select_df(sql):
         data = cursor.fetchall()
         cursor.close()
     df = pd.DataFrame(data)
-    df.columns = [i[0] for i in cursor.description]
+    try:
+        df.columns = [i[0] for i in cursor.description]
+    except:
+        # 为空
+        pass
     return df
 
 def mysql_select_data_by_ids(ids,table):

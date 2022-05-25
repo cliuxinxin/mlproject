@@ -135,6 +135,8 @@ if __name__ == '__main__':
     for file in tqdm(files):
         print(file)
         task = file.split('#')[0].split('/')[-1]
+        origin_table = file.split('#')[1]
+        target_table = b_get_target_table(origin_table)
         label_data = b_read_dataset(task + '_train_dev.json')
         label_data = pd.DataFrame(label_data)
         if mode == 'process':
@@ -183,10 +185,10 @@ if __name__ == '__main__':
         ids = df['id'].to_list()
         if len(ids) == 1:
             id = ids[0]
-            mysql_delete_data_by_id(id,task)
+            mysql_delete_data_by_id(id,target_table)
         else:
-            mysql_delete_data_by_ids(ids,task)
-        mysql_insert_data(df,task)
+            mysql_delete_data_by_ids(ids,target_table)
+        mysql_insert_data(df,target_table)
         file_name = file.split('/')[-1]
         os.rename(file,DATA_PATH + 'processed/' + file_name)
 

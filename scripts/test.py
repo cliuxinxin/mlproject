@@ -5,6 +5,9 @@ from mysql_utils import *
 project_configs['tender']
 
 
+b_get_target_table()
+
+
 
 
 b_get_dataprocess()
