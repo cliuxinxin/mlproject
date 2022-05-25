@@ -18,7 +18,13 @@ def d_log_error(error):
     打印错误日志
     """
     with open('../assets/error.log','a+',encoding='utf-8') as f:
-        f.write(json.dumps(error))
+        for key,value in error.items():
+            if key == 'error':
+                f.write(str(value))
+                f.write('#')
+            if key == 'value':
+                f.write(str(value))
+                f.write('#')
         f.write('\n')
         
 project_configs = d_parse_config()
@@ -130,7 +136,7 @@ def mysql_insert_data(df,table):
                 try:
                     cursor.execute(sql, value)
                 except Exception as e:
-                    error = {'error':e,'sql':sql,'value':value[0]}
+                    error = {'error':e,'value':value[0]}
                     d_log_error(error)
         db.commit()
         cursor.close()
