@@ -25,6 +25,8 @@ def d_log_error(error):
             if key == 'value':
                 f.write(str(value))
                 f.write('#')
+            if key == 'table':
+                f.write(str(value))
         f.write('\n')
         
 project_configs = d_parse_config()
@@ -136,7 +138,7 @@ def mysql_insert_data(df,table):
                 try:
                     cursor.execute(sql, value)
                 except Exception as e:
-                    error = {'error':e,'value':value[0]}
+                    error = {'error':e,'value':value[0],'table':table}
                     d_log_error(error)
         db.commit()
         cursor.close()
