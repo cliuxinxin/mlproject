@@ -130,7 +130,7 @@ def mysql_insert_data(df,table):
                 try:
                     cursor.execute(sql, value)
                 except Exception as e:
-                    error = {'error':e,'sql':sql,'value':value}
+                    error = {'error':e,'sql':sql,'value':value[0]}
                     d_log_error(error)
         db.commit()
         cursor.close()
