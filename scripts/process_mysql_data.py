@@ -92,17 +92,18 @@ def process_df(i,df,html_col,nlp,std_labels,task,label_data,doc=None):
 
 class PoolCorpus(object):
 
-    def __init__(self,task,file):
+    def __init__(self,task,file,label_data):
         df = pd.read_json(file)
         self.task = task
         df,std_labels,html_col = preprocess_df(df,task)
         self.html_col = html_col
         self.df = df
         self.std_labels = std_labels
+        self.label_data = label_data
         self.nlp = b_load_best_model(task)
 
     def add(self, i):
-        process_df(i,self.df,self.html_col,self.nlp,self.std_labels,self.task) 
+        process_df(i,self.df,self.html_col,self.nlp,self.std_labels,self.task,self.label_data) 
 
 
     def get(self):
@@ -116,6 +117,7 @@ def work(q,df,html_col,nlp,std_labels,task):
             else:
                 idx = q.get()
                 process_df(idx,df,html_col,nlp,std_labels,task)
+
                 
 
 def get_parser():
@@ -143,7 +145,7 @@ if __name__ == '__main__':
         label_data = pd.DataFrame(label_data)
         if mode == 'process':
             with BaseManager() as manager:
-                corpus = manager.PoolCorpus(task,file)
+                corpus = manager.PoolCorpus(task,file,label_data)
 
                 with Pool() as pool:
                     pool.map(corpus.add, (i for i in range(len(corpus.get()))))
