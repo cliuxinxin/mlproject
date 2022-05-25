@@ -18,7 +18,7 @@ def d_log_error(error):
     打印错误日志
     """
     with open('../assets/error.log','a+',encoding='utf-8') as f:
-        json.dump(error,f,ensure_ascii=False)
+        json.dumps(error,f,ensure_ascii=False)
         f.write('\n')
         
 project_configs = d_parse_config()
