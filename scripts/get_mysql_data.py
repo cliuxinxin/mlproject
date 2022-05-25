@@ -55,7 +55,6 @@ def get_new_data(task,origin_table,target_table,number):
         max_time = df.iloc[0][0]
     except:
         get_all_data(task,origin_table,number)
-        return
     print('max_time:',max_time)
 
     # 查找最新数据以后生成的数据
