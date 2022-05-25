@@ -39,6 +39,8 @@ def preprocess_df(df,task):
     cols = df.columns.tolist()
     std_labels = b_read_db_labels(task)
     std_labels['col_idx'] = std_labels['col'].apply(lambda x: cols.index(x))
+    # 保留col_idx中有数的行
+    std_labels = std_labels[std_labels['col_idx'].notnull()]
     html_col = project_configs[task]['col']
     df['labels'] = ''
     df = datetime_process(df,task)
