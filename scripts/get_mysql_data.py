@@ -78,8 +78,12 @@ if __name__ == '__main__':
         target_table = entry['target_table']
         if entry['task'] == task:
             if mode == 'all':
+                print('get all data')
+                print('origin_table:',origin_table)
                 get_all_data(task,origin_table,number)
             if mode == 'new':
+                print('get new data')
+                print('origin_table:',origin_table)
                 get_new_data(task,origin_table,target_table,number)
             break
 
