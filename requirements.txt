@@ -18,3 +18,5 @@ pymysql
 dbutils
 tqdm
 redis
+pdfminer3k
+python-docx

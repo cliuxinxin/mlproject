@@ -30,39 +30,37 @@ def get_data_divide_to_number(task, number, source, total,mode,max_time=''):
         end = start + number
         sql = generate_sql(number, source, start,mode,max_time)
         df = mysql_select_df(sql)
-        file_name = task + '_' + str(int(time.time()*100000))
+        file_name = task + '_' + source + str(int(time.time()*100000))
         df.to_json(DATA_PATH + file_name + '.json')
 
 
-def get_all_data(task,number):
-    source = project_configs[task]['table']
+def get_all_data(task,origin_table,number):
 
-    sql = 'select count(1) from {} order by create_time'.format(source)
+    sql = 'select count(1) from {} order by update_time'.format(origin_table)
     df = mysql_select_df(sql)
     total = df.iloc[0][0]
     print('total:',total)
 
-    get_data_divide_to_number(task, number, source, total,mode='all')
+    get_data_divide_to_number(task, number, origin_table, total,mode='all')
 
 
 
-def get_new_data(task,number):
-    source = project_configs[task]['table']
-    target = project_configs[task]['target']
+def get_new_data(task,origin_table,target_table,number):
+
 
     # 找到最新处理的数据
-    sql = 'select create_time from {} order by create_time desc limit 1'.format(target)
+    sql = 'select update_time from {} order by update_time desc limit 1'.format(target_table)
     df = mysql_select_df(sql)
     max_time = df.iloc[0][0]
     print('max_time:',max_time)
 
     # 查找最新数据以后生成的数据
-    sql = 'select count(1) from {} where create_time > "{}" order by create_time'.format(source, max_time)
+    sql = 'select count(1) from {} where update_time > "{}" order by update_time'.format(origin_table, max_time)
     df = mysql_select_df(sql)
     total = df.iloc[0][0]
     print('total:',total)
 
-    get_data_divide_to_number(task, number, source, total,mode='new',max_time=max_time)
+    get_data_divide_to_number(task, number, origin_table, total,mode='new',max_time=max_time)
 
 
 if __name__ == '__main__':
@@ -71,13 +69,19 @@ if __name__ == '__main__':
     task = args.task
     mode = args.mode
     number = int(args.number)
+    process = b_get_dataprocess()
     print('task:',task)
     print('mode:',mode)
     print('number:',number)
-    if mode == 'all':
-        get_all_data(task,number) 
-    else:
-        get_new_data(task,number)
+    for entry in process:
+        origin_table = entry['origin_table']
+        target_table = entry['target_table']
+        if entry['task'] == task:
+            if mode == 'all':
+                get_all_data(task,origin_table,number)
+            if mode == 'new':
+                get_new_data(task,origin_table,target_table,number)
+            break
 
     
 

@@ -71,7 +71,7 @@ def d_date_clean(value):
 
 def clean_manager(task,col,value):
     func_name = 'clean_' + task + '_' + col
-    max_len = 1000
+    max_len = 300
     value = d_general_process(value,max_len)
     if func_name in globals():
         return globals()[func_name](value)

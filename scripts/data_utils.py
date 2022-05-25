@@ -32,6 +32,12 @@ from multiprocessing import Pool
 from multiprocessing.managers import BaseManager
 
 
+from pdfminer.pdfinterp import PDFResourceManager, process_pdf
+from pdfminer.converter import TextConverter
+from pdfminer.layout import  LAParams
+from io import StringIO
+
+
 def d_parse_config():
     config = configparser.ConfigParser()
     config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
@@ -73,6 +79,23 @@ doccano_client = DoccanoClient(
     project_configs['doccano']['user'],
     project_configs['doccano']['password']
 )
+
+def d_read_pdf(path):
+    """
+    读取pdf文件
+    """
+    rsrcmgr = PDFResourceManager()
+    retstr = StringIO()
+    laparams = LAParams()
+    device = TextConverter(rsrcmgr=rsrcmgr, outfp=retstr, laparams=laparams)
+    pdf_file = open(path, 'rb')
+    process_pdf(rsrcmgr=rsrcmgr, device=device, fp=pdf_file)
+    device.close()
+
+    content = retstr.getvalue()
+    retstr.close()
+
+    return content
 
 
 # df保存jsonl文件
@@ -1918,6 +1941,33 @@ def b_convert_baidu_dataset(file,num):
             new_sample['entities'].append({'id': idx, 'start_offset': label[0], 'end_offset': label[1], 'label': label[2]})
         new_data.append(new_sample)
     b_save_list_datasets(new_data, 'doccano_ext.json')
+
+def b_read_pdf(path):
+    """
+    读取pdf文件
+    """
+    path = ASSETS_PATH + path
+    content = d_read_pdf(path)
+    return content
+
+def b_get_dataprocess():
+    """
+    得到数据流程的中的情况
+    """
+    origin_tables = eval(project_configs['data_process']['origin_tables'])
+    target_tables = eval(project_configs['data_process']['target_tables'])
+    tasks = eval(project_configs['data_process']['tasks'])
+
+    data = []
+
+    for o_table,t_table,task in zip(origin_tables,target_tables,tasks):
+        entry = {}
+        entry['origin_table'] = o_table
+        entry['target_table'] = t_table
+        entry['task'] = task
+        data.append(entry)
+
+    return data
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
