@@ -30,7 +30,7 @@ def get_data_divide_to_number(task, number, source, total,mode,max_time=''):
         end = start + number
         sql = generate_sql(number, source, start,mode,max_time)
         df = mysql_select_df(sql)
-        file_name = task + '_' + source + str(int(time.time()*100000))
+        file_name = task + '#' + source + '#' + str(int(time.time()*100000))
         df.to_json(DATA_PATH + file_name + '.json')
 
 
