@@ -1968,6 +1968,21 @@ def b_get_dataprocess():
         data.append(entry)
 
     return data
+
+def b_get_target_table(origin_table):
+    """
+    得到目标表
+    """
+    process = b_get_dataprocess()
+
+
+    for entry in process:
+        if entry['origin_table'] == origin_table:
+            target_table = entry['target_table']
+            break
+
+    return target_table
+
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————

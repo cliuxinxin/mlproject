@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
     for file in tqdm(files):
         print(file)
-        task = file.split('_')[0].split('/')[-1]
+        task = file.split('#')[0].split('/')[-1]
         label_data = b_read_dataset(task + '_train_dev.json')
         label_data = pd.DataFrame(label_data)
         if mode == 'process':

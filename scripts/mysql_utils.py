@@ -93,11 +93,11 @@ def mysql_delete_data(df,task):
     db.commit()
 
 
-def mysql_delete_data_by_id(id,task):
+def mysql_delete_data_by_id(id,table):
     """
     使用id删除数据表中的数据
     """
-    sql = "delete from {} where id = '{}'".format(project_configs[task]['target'],id)
+    sql = "delete from {} where id = '{}'".format(table,id)
     with LOCK:
         cursor = conn.cursor()
         cursor.execute(sql)
@@ -105,11 +105,11 @@ def mysql_delete_data_by_id(id,task):
         cursor.close()
 
 
-def mysql_insert_data(df,task):
+def mysql_insert_data(df,table):
     """
     使用df的表头和数据拼成批量更新的sql语句
     """
-    sql = 'insert into {} ({}) values ({})'.format(project_configs[task]['target'],','.join(df.columns), ','.join(['%s'] * len(df.columns)))
+    sql = 'insert into {} ({}) values ({})'.format(table,','.join(df.columns), ','.join(['%s'] * len(df.columns)))
     
     values = df.values.tolist()
     # 将NaT 替换成 ''
@@ -131,11 +131,11 @@ def mysql_insert_data(df,task):
         db.commit()
         cursor.close()
 
-def mysql_delete_data_by_ids(ids,task):
+def mysql_delete_data_by_ids(ids,table):
     """
     使用ids删除对应的表格中的数据
     """
-    sql = "delete from {} where id in {}".format(project_configs[task]['target'],tuple(ids))
+    sql = "delete from {} where id in {}".format(table,tuple(ids))
     with LOCK:
         cursor = conn.cursor()
         cursor.execute(sql)

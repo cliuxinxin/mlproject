@@ -51,7 +51,10 @@ def get_new_data(task,origin_table,target_table,number):
     # 找到最新处理的数据
     sql = 'select update_time from {} order by update_time desc limit 1'.format(target_table)
     df = mysql_select_df(sql)
-    max_time = df.iloc[0][0]
+    try:
+        max_time = df.iloc[0][0]
+    except:
+        max_time = ''
     print('max_time:',max_time)
 
     # 查找最新数据以后生成的数据
