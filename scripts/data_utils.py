@@ -70,7 +70,6 @@ project_configs = d_parse_config()
 ROOT_PATH = '../'
 ASSETS_PATH = ROOT_PATH + 'assets/'
 DATA_PATH = ROOT_PATH + 'data/'
-LOCK_FILE_PATH = ROOT_PATH + 'files_lock'
 DATABASE_PATH = ROOT_PATH + 'database/'
 
 # instantiate a client and log in to a Doccano instance

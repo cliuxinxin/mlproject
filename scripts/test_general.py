@@ -1,7 +1,9 @@
-from data_utils import * 
+from data_utils import b_read_db_compare
 import pytest
+import os
+
 
 def test_compare_have_tender():
+    print(os.getcwd())
     compare = b_read_db_compare()
-    # 确保compare 的 task 中 有tender
-    assert compare.groupby('task').count()['tender'] > 0
+    assert compare.have_tender() is True

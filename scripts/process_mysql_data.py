@@ -32,13 +32,19 @@ def datetime_process(df,task):
 
     return df
 
+def find_idx(cols,x):
+    try:
+        return cols.index(x)
+    except:
+        return None
+
 def preprocess_df(df,task):
     """
     根据task做一些预处理
     """
     cols = df.columns.tolist()
     std_labels = b_read_db_labels(task)
-    std_labels['col_idx'] = std_labels['col'].apply(lambda x: cols.index(x))
+    std_labels['col_idx'] = std_labels['col'].apply(lambda x: find_idx(cols,x))
     # 保留col_idx中有数的行
     std_labels = std_labels[std_labels['col_idx'].notnull()]
     html_col = project_configs[task]['col']
@@ -176,6 +182,10 @@ if __name__ == '__main__':
 
         else:
             df = pd.read_json(file)
+            if df.empty:
+                file_name = file.split('/')[-1]
+                os.rename(file,DATA_PATH + 'processed/' + file_name)
+                continue 
             df,std_labels,html_col = preprocess_df(df,task)
             # 将为none的替换成空
             df[html_col] = df[html_col].fillna('')
