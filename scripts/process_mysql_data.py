@@ -159,7 +159,7 @@ if __name__ == '__main__':
         target_table = b_get_target_table(origin_table)
 
         label_data = helper.get_label(task)
-        nlp = helper.get_model(task)
+        nlp = b_load_best_model(task)
 
         df,std_labels,html_col = preprocess_df(df,task)
         df[html_col] = df[html_col].fillna('')
