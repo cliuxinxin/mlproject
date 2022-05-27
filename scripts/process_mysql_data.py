@@ -9,9 +9,7 @@ from data_clean import clean_manager
 class Helper():
     def __init__(self) -> None:
         self.tender = b_load_best_model('tender')
-        self.tender.max_length = 1500000
         self.bid = b_load_best_model('bid')
-        self.bid.max_length = 1500000
         self.tender_label = pd.DataFrame(b_read_dataset('tender_train_dev.json'))
         self.bid_label = pd.DataFrame(b_read_dataset('bid_train_dev.json'))
 
@@ -167,7 +165,7 @@ if __name__ == '__main__':
         df[html_col] = df[html_col].fillna('')
         df[html_col] = df[html_col].apply(p_filter_tags)
         # 限制html_col最长为 1400000
-        max_len = 1400000
+        max_len = 50000
         df[html_col] = df[html_col].str[:max_len]
         data = df[html_col].to_list()
         docs = nlp.pipe(data)
