@@ -27,7 +27,10 @@ def datetime_process(df,task):
         datetime_columns = []
     for colum in datetime_columns:
         # 转换为datetime格式
-         df[colum] = df[colum].apply(lambda x: d_date_clean(x))
+        try:
+            df[colum] = df[colum].apply(lambda x: d_date_clean(x))
+        except:
+            pass
         # 转换为时间戳
 
     return df
