@@ -105,7 +105,7 @@ if __name__ == '__main__':
                 print('origin_table:',origin_table)
                 print('target_table:',target_table)
                 get_diff_data(task,origin_table,target_table,number)
-            break
+            continue
 
     
 
