@@ -5,6 +5,9 @@ import argparse
 from tqdm import tqdm
 
 def get_parser():
+    """
+    脚本文件参数解析
+    """
     parser = argparse.ArgumentParser(description="Read data from mysql and save to json")
     parser.add_argument('--task', default='bid', help='task name')
     parser.add_argument('--mode', default='diff', choices=['all', 'new','diff'],help='all or newest')
@@ -12,6 +15,9 @@ def get_parser():
     return parser
 
 def generate_sql(number, source, start,mode,max_time,target):
+    """
+    生成对应抽取sql
+    """
     if mode == 'all':
         sql = 'select * from {} order by update_time limit {} , {}'.format(source, start, number)
     if mode == 'new':
@@ -21,7 +27,9 @@ def generate_sql(number, source, start,mode,max_time,target):
     return sql
 
 def get_data_divide_to_number(task, number, source,total,mode,max_time='',target=''):
-    # 按照100条划分个数
+    """
+    按照指定数量分割数据
+    """
     num = int(total / number)
 
     # 计算出每个文件的起始点
@@ -37,6 +45,9 @@ def get_data_divide_to_number(task, number, source,total,mode,max_time='',target
 
 
 def get_all_data(task,origin_table,number):
+    """
+    抽取所有数据
+    """
 
     sql = 'select count(1) from {} order by update_time'.format(origin_table)
     df = mysql_select_df(sql)
@@ -46,7 +57,9 @@ def get_all_data(task,origin_table,number):
     get_data_divide_to_number(task, number, origin_table, total,mode='all')
 
 def get_diff_data(task,origin_table,target_table,number):
-
+    """
+    抽取未处理数据
+    """
     sql = 'select count(1) from {} where  Not Exists (SELECT id from {} where {}.id = {}.id) limit 100'.format(origin_table, target_table,target_table,origin_table)
     df = mysql_select_df(sql)
     total = df.iloc[0][0]
@@ -57,9 +70,9 @@ def get_diff_data(task,origin_table,target_table,number):
 
 
 def get_new_data(task,origin_table,target_table,number):
-
-
-    # 找到最新处理的数据
+    """
+    抽取最新数据
+    """
     sql = 'select update_time from {} order by update_time desc limit 1'.format(target_table)
     df = mysql_select_df(sql)
     try:
@@ -106,13 +119,3 @@ if __name__ == '__main__':
                 print('target_table:',target_table)
                 get_diff_data(task,origin_table,target_table,number)
             continue
-
-    
-
-
-
-
-
-
-
-

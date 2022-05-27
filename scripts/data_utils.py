@@ -328,8 +328,8 @@ def p_process_df(df,task):
     """
     df 标准化文件处理
     """
-    data_col = project_configs[task]['col']
-    data_source_col = project_configs[task]['source']
+    data_col = 'detail_content'
+    data_source_col = 'source_website_address'
     # 去掉空白行
     df = df[df[data_col].notnull()]
     df = df[df[data_source_col].notnull()]
@@ -1744,8 +1744,8 @@ def b_select_data_by_mysql(task,label_name,num):
     labels = b_read_db_labels(task)
     label = labels[labels['label']==label_name]['col'].values[0]
 
-    col = project_configs[task]['col']
-    source = project_configs[task]['source']
+    col = 'detail_content'
+    source = 'source_website_address'
     table = project_configs[task]['target']
 
     sql = 'select %s,%s from %s where %s is null' % (col,source,table,label)
@@ -1975,13 +1975,24 @@ def b_get_target_table(origin_table):
     """
     process = b_get_dataprocess()
 
-
     for entry in process:
         if entry['origin_table'] == origin_table:
             target_table = entry['target_table']
             break
 
     return target_table
+
+def b_get_process(origin_table):
+    """
+    得到流程
+    """
+    process = b_get_dataprocess()
+
+    for entry in process:
+        if entry['origin_table'] == origin_table:
+            break
+
+    return entry
 
 # ——————————————————————————————————————————————————
 # 调用

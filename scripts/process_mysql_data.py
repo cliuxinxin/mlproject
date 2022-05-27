@@ -133,6 +133,7 @@ def get_parser():
     parser = argparse.ArgumentParser(description="Process data and insert to mysql")
     parser.add_argument('--mode', default='pipe', choices=['process', 'thread','single','pipe'],help='all or newest')
     parser.add_argument('--thread_num', default=5 ,help='if mode is thread, set thread num')
+    parser.add_argument('--test', default='N', choices=['Y','N'],help='test')
     return parser
 
 
@@ -140,6 +141,7 @@ if __name__ == '__main__':
     parser = get_parser()
     args = parser.parse_args()
     mode = args.mode
+    test = args.test
     thread_num = int(args.thread_num)
     files = glob.glob(DATA_PATH + '*.json')
 
@@ -189,6 +191,8 @@ if __name__ == '__main__':
                 file_name = file.split('/')[-1]
                 os.rename(file,DATA_PATH + 'processed/' + file_name)
                 continue 
+            if test == 'Y':
+                df = df[:5]
             df,std_labels,html_col = preprocess_df(df,task)
             # 将为none的替换成空
             df[html_col] = df[html_col].fillna('')
