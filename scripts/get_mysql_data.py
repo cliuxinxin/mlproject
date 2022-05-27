@@ -7,18 +7,20 @@ from tqdm import tqdm
 def get_parser():
     parser = argparse.ArgumentParser(description="Read data from mysql and save to json")
     parser.add_argument('--task', default='bid', help='task name')
-    parser.add_argument('--mode', default='new', choices=['all', 'new'],help='all or newest')
+    parser.add_argument('--mode', default='all', choices=['all', 'new','diff'],help='all or newest')
     parser.add_argument('--number', default='100', help='save 100 records to a file')
     return parser
 
-def generate_sql(number, source, start,mode,max_time):
+def generate_sql(number, source, start,mode,max_time,target):
     if mode == 'all':
-        sql = 'select * from {} order by create_time limit {} , {}'.format(source, start, number)
+        sql = 'select * from {} order by update_time limit {} , {}'.format(source, start, number)
     if mode == 'new':
-        sql = 'select * from {} where create_time > "{}" order by create_time limit {} , {}'.format(source, max_time, start, number)
+        sql = 'select * from {} where update_time > "{}" order by update_time limit {} , {}'.format(source, max_time, start, number)
+    if mode == 'diff':
+        sql = 'select * from {} where  Not Exists (SELECT id from {} where {}.id = {}.id) order by update_time limit {} , {}'.format(source, target,target,source, start, number)
     return sql
 
-def get_data_divide_to_number(task, number, source, total,mode,max_time=''):
+def get_data_divide_to_number(task, number, source,total,mode,max_time='',target=''):
     # 按照100条划分个数
     num = int(total / number)
 
@@ -28,7 +30,7 @@ def get_data_divide_to_number(task, number, source, total,mode,max_time=''):
     for i in tqdm(range(num)):
         start = end
         end = start + number
-        sql = generate_sql(number, source, start,mode,max_time)
+        sql = generate_sql(number, source, start,mode,max_time,target)
         df = mysql_select_df(sql)
         file_name = task + '#' + source + '#' + str(int(time.time()*100000))
         df.to_json(DATA_PATH + file_name + '.json')
@@ -42,6 +44,15 @@ def get_all_data(task,origin_table,number):
     print('total:',total)
 
     get_data_divide_to_number(task, number, origin_table, total,mode='all')
+
+def get_diff_data(task,origin_table,target_table,number):
+
+    sql = 'select count(1) from {} where  Not Exists (SELECT id from {} where {}.id = {}.id) limit 100'.format(origin_table, target_table,target_table,origin_table)
+    df = mysql_select_df(sql)
+    total = df.iloc[0][0]
+    print('total:',total)
+
+    get_data_divide_to_number(task, number, origin_table, total,mode='diff',target=target_table)
 
 
 
@@ -87,7 +98,13 @@ if __name__ == '__main__':
             if mode == 'new':
                 print('get new data')
                 print('origin_table:',origin_table)
+                print('target_table:',target_table)
                 get_new_data(task,origin_table,target_table,number)
+            if mode == 'diff':
+                print('get diff data')
+                print('origin_table:',origin_table)
+                print('target_table:',target_table)
+                get_diff_data(task,origin_table,target_table,number)
             break
 
     

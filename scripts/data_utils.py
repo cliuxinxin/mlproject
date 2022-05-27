@@ -68,6 +68,7 @@ project_configs = d_parse_config()
 # ——————————————————————————————————————————————————
 
 ROOT_PATH = '../'
+# ROOT_PATH = os.path.dirname(os.path.abspath(__file__)) + '/'
 ASSETS_PATH = ROOT_PATH + 'assets/'
 DATA_PATH = ROOT_PATH + 'data/'
 DATABASE_PATH = ROOT_PATH + 'database/'

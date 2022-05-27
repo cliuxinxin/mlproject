@@ -4,6 +4,13 @@ from mysql_utils import *
 
 project_configs['tender']
 
+files = glob.glob(DATA_PATH + '*.json')
+file = files[0]
+df = pd.read_json(file)
+
+# 判断df是不是为空
+ df.empty
+
 
 b_get_target_table()
 
