@@ -48,7 +48,6 @@ def get_all_data(task,origin_table,number):
     """
     抽取所有数据
     """
-
     sql = 'select count(1) from {} order by update_time'.format(origin_table)
     df = mysql_select_df(sql)
     total = df.iloc[0][0]

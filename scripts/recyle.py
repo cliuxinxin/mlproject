@@ -1,5 +1,69 @@
 
 
+        elif mode == 'single':
+            df = pd.read_json(file)
+            df,std_labels,html_col = preprocess_df(df,task) 
+            nlp = b_load_best_model(task)
+            for idx in range(len(df)):
+                process_df(idx,df,html_col,nlp,std_labels,task,label_data)
+
+        elif mode == 'thread':
+            df = pd.read_json(file)
+            df,std_labels,html_col = preprocess_df(df,task) 
+            nlp = b_load_best_model(task)
+            q = queue.Queue()
+            for idx in range(len(df)):
+                q.put(idx)
+            thread_num = thread_num
+            threads = []
+            for j in range(thread_num):
+                t = threading.Thread(target=work, args=(q,df,html_col,nlp,std_labels,task,label_data))
+                threads.append(t)
+                t.start()
+            
+            for t in threads:
+                t.join()
+
+
+        if mode == 'process':
+            with BaseManager() as manager:
+                corpus = manager.PoolCorpus(task,file,label_data)
+
+                with Pool() as pool:
+                    pool.map(corpus.add, (i for i in range(len(corpus.get()))))
+
+                df = corpus.get()
+
+    BaseManager.register('PoolCorpus', PoolCorpus)
+
+class PoolCorpus(object):
+
+    def __init__(self,task,file,label_data):
+        df = pd.read_json(file)
+        self.task = task
+        df,std_labels,html_col = preprocess_df(df,task)
+        self.html_col = html_col
+        self.df = df
+        self.std_labels = std_labels
+        self.label_data = label_data
+        self.nlp = b_load_best_model(task)
+
+    def add(self, i):
+        process_df(i,self.df,self.html_col,self.nlp,self.std_labels,self.task,self.label_data) 
+
+
+    def get(self):
+        return self.df
+
+
+def work(q,df,html_col,nlp,std_labels,task):
+        while True:
+            if q.empty():
+                return
+            else:
+                idx = q.get()
+                process_df(idx,df,html_col,nlp,std_labels,task)
+
 def b_doccano_download_train_dev_label_view_wrong():
     """
     下载最新的数据，并且用最好的模型预测，将对不上的数据上传的demo项目进行查看。
