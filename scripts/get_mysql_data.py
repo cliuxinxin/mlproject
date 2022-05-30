@@ -12,7 +12,7 @@ def get_parser():
     parser.add_argument('--task', default='bid', help='task name')
     parser.add_argument('--mode', default='diff', choices=['all', 'new','diff'],help='all or newest')
     parser.add_argument('--number', default='100', help='save 100 records to a file')
-    parser.add_argument('--table', default='test_other_tender_bid_result', help='save 100 records to a file')
+    parser.add_argument('--table', default='test_tender_bid_result', help='save 100 records to a file')
     return parser
 
 def generate_sql(number, source, start,mode,max_time,target):
