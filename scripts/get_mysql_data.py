@@ -12,7 +12,7 @@ def get_parser():
     parser.add_argument('--task', default='bid', help='task name')
     parser.add_argument('--mode', default='diff', choices=['all', 'new','diff'],help='all or newest')
     parser.add_argument('--number', default='100', help='save 100 records to a file')
-    parser.add_argument('--table', default='test_tender_bid_result', help='save 100 records to a file')
+    parser.add_argument('--table', default='test_other_tender_bid', help='save 100 records to a file')
     return parser
 
 def generate_sql(number, source, start,mode,max_time,target):
@@ -108,19 +108,19 @@ if __name__ == '__main__':
         if origin_table == table:
            get_diff_data(task,origin_table,target_table,number)
            break 
-        if entry['task'] == task:
-            if mode == 'all':
-                print('get all data')
-                print('origin_table:',origin_table)
-                get_all_data(task,origin_table,number)
-            if mode == 'new':
-                print('get new data')
-                print('origin_table:',origin_table)
-                print('target_table:',target_table)
-                get_new_data(task,origin_table,target_table,number)
-            if mode == 'diff':
-                print('get diff data')
-                print('origin_table:',origin_table)
-                print('target_table:',target_table)
-                get_diff_data(task,origin_table,target_table,number)
-            continue
+        # if entry['task'] == task:
+        #     if mode == 'all':
+        #         print('get all data')
+        #         print('origin_table:',origin_table)
+        #         get_all_data(task,origin_table,number)
+        #     if mode == 'new':
+        #         print('get new data')
+        #         print('origin_table:',origin_table)
+        #         print('target_table:',target_table)
+        #         get_new_data(task,origin_table,target_table,number)
+        #     if mode == 'diff':
+        #         print('get diff data')
+        #         print('origin_table:',origin_table)
+        #         print('target_table:',target_table)
+        #         get_diff_data(task,origin_table,target_table,number)
+        #     continue
