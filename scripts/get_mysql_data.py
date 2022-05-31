@@ -96,7 +96,7 @@ if __name__ == '__main__':
     task = args.task
     mode = args.mode
     number = int(args.number)
-    table = args.table
+    # table = args.table
     process = b_get_dataprocess()
     print('task:',task)
     print('mode:',mode)
@@ -105,24 +105,24 @@ if __name__ == '__main__':
     for entry in process:
         origin_table = entry['origin_table']
         target_table = entry['target_table']
-        if origin_table == table:
-           get_diff_data(task,origin_table,target_table,number)
-        #    get_new_data(task,origin_table,target_table,number)
-        #    get_all_data(task,origin_table,number)
-           break 
-        # if entry['task'] == task:
-        #     if mode == 'all':
-        #         print('get all data')
-        #         print('origin_table:',origin_table)
-        #         get_all_data(task,origin_table,number)
-        #     if mode == 'new':
-        #         print('get new data')
-        #         print('origin_table:',origin_table)
-        #         print('target_table:',target_table)
-        #         get_new_data(task,origin_table,target_table,number)
-        #     if mode == 'diff':
-        #         print('get diff data')
-        #         print('origin_table:',origin_table)
-        #         print('target_table:',target_table)
-        #         get_diff_data(task,origin_table,target_table,number)
-        #     continue
+        # if origin_table == table:
+        #    get_diff_data(task,origin_table,target_table,number)
+        # #    get_new_data(task,origin_table,target_table,number)
+        # #    get_all_data(task,origin_table,number)
+        #    break 
+        if entry['task'] == task:
+            if mode == 'all':
+                print('get all data')
+                print('origin_table:',origin_table)
+                get_all_data(task,origin_table,number)
+            if mode == 'new':
+                print('get new data')
+                print('origin_table:',origin_table)
+                print('target_table:',target_table)
+                get_new_data(task,origin_table,target_table,number)
+            if mode == 'diff':
+                print('get diff data')
+                print('origin_table:',origin_table)
+                print('target_table:',target_table)
+                get_diff_data(task,origin_table,target_table,number)
+            continue
