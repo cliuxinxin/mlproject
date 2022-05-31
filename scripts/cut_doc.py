@@ -1,11 +1,14 @@
-from data_utils import ASSETS_PATH
-from docx import Document
-import time
 import glob
-from docx.table import _Cell, Table
+import time
+
+from docx import Document
 from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
+from docx.table import Table
 from docx.text.paragraph import Paragraph
+
+from data_utils import ASSETS_PATH,DATA_PATH
+
 
 def get_table_data(output_doc_name, table):
     """
@@ -60,9 +63,15 @@ def get_para_data(output_doc_name, paragraph):
 
 
 cuts = [
-    {'name':'投标函及投标函附录'
-    ,'start':'投标函及投标函附录'
-    ,'end':'法定代表人身份证明'},
+    {
+        'name':'投标函及投标函附录',
+        'start':'一、投标函及投标函附录',
+        'end':'二、法定代表人身份证明'},
+    {
+        'name':'法定代表人身份证明',
+        'start':'二、法定代表人身份证明',
+        'end':'三、授权委托书'
+    }
 ]
 
 files = glob.glob(ASSETS_PATH + '*.docx')
@@ -76,12 +85,12 @@ for file in files:
         for child in document.element.body.iterchildren():
             if isinstance(child, CT_P):
                 paragraph = Paragraph(child, document)
-                if head in paragraph.text:
+                if head == paragraph.text:
                     new_doc = Document()
                     get_para_data(new_doc,paragraph)
                     start = True
-                if tail in paragraph.text:
-                    new_doc.save(cut['name'] + str(int(time.time()*100000))  + '.docx') 
+                if tail == paragraph.text:
+                    new_doc.save(DATA_PATH + cut['name'] + str(int(time.time()*100000))  + '.docx') 
                     start = False
                 if start == True:
                     get_para_data(new_doc,paragraph) 

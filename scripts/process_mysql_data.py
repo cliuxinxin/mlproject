@@ -168,7 +168,7 @@ if __name__ == '__main__':
         max_len = 50000
         df[html_col] = df[html_col].str[:max_len]
         data = df[html_col].to_list()
-        docs = nlp.pipe(data,n_process=8)
+        docs = nlp.pipe(data)
 
         for idx,doc in enumerate(docs):
             process_df(idx,df,html_col,nlp,std_labels,task,label_data,doc)
