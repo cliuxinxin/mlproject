@@ -10,9 +10,9 @@ def get_parser():
     """
     parser = argparse.ArgumentParser(description="Read data from mysql and save to json")
     parser.add_argument('--task', default='bid', help='task name')
-    parser.add_argument('--mode', default='diff', choices=['all', 'new','diff'],help='all or newest')
+    parser.add_argument('--mode', default='new', choices=['all', 'new','diff'],help='all or newest')
     parser.add_argument('--number', default='100', help='save 100 records to a file')
-    parser.add_argument('--table', default='test_other_tender_bid', help='save 100 records to a file')
+    parser.add_argument('--table', default='test_procurement_bid', help='save 100 records to a file')
     return parser
 
 def generate_sql(number, source, start,mode,max_time,target):
@@ -107,6 +107,8 @@ if __name__ == '__main__':
         target_table = entry['target_table']
         if origin_table == table:
            get_diff_data(task,origin_table,target_table,number)
+        #    get_new_data(task,origin_table,target_table,number)
+        #    get_all_data(task,origin_table,number)
            break 
         # if entry['task'] == task:
         #     if mode == 'all':
