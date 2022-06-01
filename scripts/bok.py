@@ -7,6 +7,7 @@ def preprocess(df):
     # 增加长度项目
     df['length'] = df.apply(lambda x: len(x['content']), axis=1)
 
+
 def read_data(file_path):
     """
     读取assets目录下的文件
@@ -17,12 +18,14 @@ def read_data(file_path):
     df.columns = ['content']
     return df 
 
+
 def clean_text(text):
     """
     清洗文本
     """
     text = [x.strip() for x in text]
     return text
+
 
 def is_chapter(text):
     """
@@ -34,6 +37,7 @@ def is_chapter(text):
     else:
         return False
 
+
 def count_words(text, words):
     """
     统计每个专业名词的频数
@@ -42,6 +46,7 @@ def count_words(text, words):
     for word in words:
         word_count[word] = text.count(word)
     return word_count
+
 
 def get_context(text,word):
     """
