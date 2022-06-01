@@ -10,7 +10,7 @@ def get_parser():
     """
     parser = argparse.ArgumentParser(description="Read data from mysql and save to json")
     parser.add_argument('--task', default='bid', help='task name')
-    parser.add_argument('--mode', default='new', choices=['all', 'new','diff'],help='all or newest')
+    parser.add_argument('--mode', default='diff', choices=['all', 'new','diff'],help='all or newest')
     parser.add_argument('--number', default='200', help='save 100 records to a file')
     parser.add_argument('--table', default='test_procurement_bid_result', help='save 100 records to a file')
     return parser
