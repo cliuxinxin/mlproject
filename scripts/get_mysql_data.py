@@ -101,7 +101,7 @@ if __name__ == '__main__':
     print('task:',task)
     print('mode:',mode)
     print('number:',number)
-    print('table:',table)
+    # print('table:',table)
     for entry in process:
         origin_table = entry['origin_table']
         target_table = entry['target_table']
