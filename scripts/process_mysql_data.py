@@ -43,7 +43,7 @@ def datetime_process(df,task):
     if task == 'bid':
         datetime_columns = ['publish_time','publish_stime','publish_etime']
     elif task == 'tender':
-        datetime_columns = ['publish_time','quote_stime','quote_etime','publish_stime','publish_etime']
+        datetime_columns = ['publish_time','quote_stime','quote_etime','publish_stime','publish_etime','tender_etime']
     else:
         datetime_columns = []
     for colum in datetime_columns:

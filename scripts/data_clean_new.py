@@ -1,6 +1,14 @@
 import re
 import datetime
 
+def clean_manager(task,label,value):
+    func_name = 'clean_' + task + '_' + label
+    max_len = 300
+    value = d_general_process(value,max_len)
+    if func_name in globals():
+        return globals()[func_name](value)
+    return value
+
 def d_general_process(value,max_len):
     """
     一般符号处理
@@ -69,15 +77,9 @@ def d_date_clean(value):
     
 
 
-def clean_manager(task,col,value):
-    func_name = 'clean_' + task + '_' + col
-    max_len = 300
-    value = d_general_process(value,max_len)
-    if func_name in globals():
-        return globals()[func_name](value)
-    return value
 
-def clean_bid_amount(value):
+
+def clean_bid_中标金额(value):
     """
     清洗出中标金额
     """
@@ -86,49 +88,49 @@ def clean_bid_amount(value):
     
 
 
-def clean_tender_budget(value):
+def clean_tender_预算(value):
     """
     清洗出招标预算
     """
     value = d_amount_process(value) 
     return value
 
-def clean_tender_sign_up_stime(value):
+def clean_tender_报名开始时间(value):
     """
     清洗出招标开始时间
     """
     value = d_date_clean(value)
     return value
 
-def clean_tender_sign_up_etime(value):
+def clean_tender_报名结束时间(value):
     """
     清洗出招标结束时间
     """
     value = d_date_clean(value)
     return value
 
-def clean_tender_tender_document_stime(value):
+def clean_tender_招标文件领取开始时间(value):
     """
     清洗出招标文件领取开始时间
     """
     value = d_date_clean(value)
     return value
 
-def clean_tender_tender_document_etime(value):
+def clean_tender_招标文件领取结束时间(value):
     """
     清洗出招标文件领取结束时间
     """
     value = d_date_clean(value)
     return value
 
-def clean_tender_bid_opening_time(value):
+def clean_tender_开标时间(value):
     """
     清洗出开标时间
     """
     value = d_date_clean(value)
     return value
 
-def clean_tender_tender_etime(value):
+def clean_tender_投标截止时间(value):
     """
     清洗出投标截止时间
     """

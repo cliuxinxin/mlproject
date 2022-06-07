@@ -74,11 +74,11 @@ DATA_PATH = ROOT_PATH + 'data/'
 DATABASE_PATH = ROOT_PATH + 'database/'
 
 # instantiate a client and log in to a Doccano instance
-# doccano_client = DoccanoClient(
-#     project_configs['doccano']['url'],
-#     project_configs['doccano']['user'],
-#     project_configs['doccano']['password']
-# )
+doccano_client = DoccanoClient(
+    project_configs['doccano']['url'],
+    project_configs['doccano']['user'],
+    project_configs['doccano']['password']
+)
 
 def d_read_pdf(path):
     """
