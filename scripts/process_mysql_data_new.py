@@ -28,7 +28,7 @@ class Helper():
         elif task == 'bid':
             return self.bid_label
 
-def change_unit(x):
+def change_unit(x:str):
     """
     换算单位
     """
@@ -43,7 +43,7 @@ def cal_amount(x,unit):
     """
     return x * unit
 
-def after_process(collector,task):
+def after_process(collector:pd.DataFrame,task):
     """
     label之间数据处理
     """

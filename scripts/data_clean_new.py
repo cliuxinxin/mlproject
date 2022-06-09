@@ -85,6 +85,15 @@ def clean_bid_中标金额(value):
     """
     value = d_amount_process(value)
     return value
+
+def clean_bid_中标金额单位(value):
+    """
+    清洗出中标金额
+    """
+    ten_thousand = re.findall(r'万',value)
+    if ten_thousand:
+        return 10000
+    return 1
     
 
 

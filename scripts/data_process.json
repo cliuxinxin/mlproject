@@ -1,0 +1,33 @@
+{
+    "bid":{
+            "中标公告编号": "notice_num",
+            "项目名称": "project_name",
+            "中标单位": "winning_bidder",
+            "项目负责人": "project_leader",
+            "中标金额": "amount"
+    },
+    "tender":{
+            "项目名称": "project_name",
+            "项目招标编号": "notice_num",
+            "预算": "budget",
+            "报名开始时间": "sign_up_stime",
+            "报名结束时间": "sign_up_etime",
+            "招标文件领取开始时间": "tender_document_stime",
+            "招标文件领取结束时间": "tender_document_etime",
+            "投标截止时间": "tender_etime",
+            "开标时间": "bid_opening_time",
+            "招标单位": "tenderee",
+            "招标单位地址": "tenderee_address",
+            "招标单位联系人": "tenderee_liaison",
+            "招标单位联系电话": "tenderee_pnumber",
+            "招标代理机构": "agency",
+            "招标代理机构地址": "agency_address",
+            "代理机构联系人": "agency_liaison",
+            "代理联系人电话": "agency_pnumber"
+    },
+    "test_other_tender_bid_result":{
+        "target": "final_other_tender_bid_result",
+        "task": "bid"
+    }
+
+}
