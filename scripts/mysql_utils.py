@@ -102,7 +102,7 @@ def mysql_delete_data(df,task):
     sql = 'delete from %s where id in %s'
     cursor = conn.cursor()
     cursor.executemany(sql,(project_configs[task]['target'],df['id'].values.tolist()))
-    db.commit()
+    db.commit() 
 
 
 def mysql_delete_data_by_id(id,table):
@@ -116,6 +116,27 @@ def mysql_delete_data_by_id(id,table):
         db.commit()
         cursor.close()
 
+def mysql_delete_win_by_id(id,table_name,table):
+    """
+    使用id删除数据表中的数据
+    """
+    sql  = f"delete from {table} where table_name = '{table_name}' and announcement_id = '{id}'"
+    with LOCK:
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        db.commit()
+        cursor.close()
+
+def mysql_delete_win_by_ids(ids,table_name,table):
+    """
+    使用ids删除对应的表格中的数据
+    """
+    sql = f"delete from {table} where table_name = '{table_name}' and announcement_id in {tuple(ids)}"
+    with LOCK:
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        db.commit()
+        cursor.close()
 
 def mysql_insert_data(df,table):
     """
