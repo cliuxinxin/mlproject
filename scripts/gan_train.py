@@ -13,6 +13,7 @@ Example:
         python train.py --dataroot ./datasets/maps --name maps_cyclegan --model cycle_gan
     Train a pix2pix model:
         python train.py --dataroot ./datasets/facades --name facades_pix2pix --model pix2pix --direction BtoA
+        python3 gan_train.py --dataroot ../assets/dora --name dora --model colorization --dataset_mode colorization 
 
 See options/base_options.py and options/train_options.py for more training options.
 See training and test tips at: https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/blob/master/docs/tips.md
@@ -20,8 +21,8 @@ See frequently asked questions at: https://github.com/junyanz/pytorch-CycleGAN-a
 """
 import time
 from gan_utils.train_options import TrainOptions
-from data import create_dataset
-from models import create_model
+from gan_utils.data import create_dataset
+from gan_utils.models import create_model
 from gan_utils.visualizer import Visualizer
 
 if __name__ == '__main__':
