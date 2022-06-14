@@ -20,3 +20,4 @@ tqdm
 redis
 pdfminer3k
 python-docx
+skimage
