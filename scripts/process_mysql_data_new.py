@@ -180,24 +180,21 @@ def process_save(data_process, task, origin_table, df):
         df_labels.columns = new_columns
         df_labels['md5'] = md5
         if task == 'bid':
-            df_labels['winning_bidder'] = df_labels['winning_bidder'].apply(lambda x: x.split('#'))
-            split_df_labels = df_labels.explode('winning_bidder')
-            split_df_labels['announcement_id'] = id
-            split_df_labels['table_name'] = origin_table
-            if 'amount' in split_df_labels.columns:
-        # 保留第一行amount,其他行清空
-                mask = [0] * len(split_df_labels['amount'])
-                mask[0] = 1
-                split_df_labels['amount'] = split_df_labels['amount'] * mask
-            df_labels['winning_bidder'] = ''
-            df_labels['amount'] = ''
-            sub_data.append(split_df_labels)
+            if 'winning_bidder' in df_labels.columns:
+                df_labels['winning_bidder'] = df_labels['winning_bidder'].apply(lambda x: x.split('#'))
+                split_df_labels = df_labels.explode('winning_bidder')
+                split_df_labels[['announcement_id','table_name']] = [id,origin_table]
+                if 'amount' in split_df_labels.columns:
+                # 保留第一行amount,其他行清空
+                    split_df_labels[1:,'amount'] = 0
+                sub_data.append(split_df_labels)
+            df_labels[['winning_bidder','amount']] = ''
         data.append(df_labels)
         
     label_df = pd.concat(data)
     if task == 'bid':
         sub_label_df = pd.concat(sub_data)
-        sub_label_df = sub_label_df[['winning_bidder','amount','announcement_id','table_name']] 
+        sub_label_df = sub_label_df[['winning_bidder','amount','table_name','announcement_id']]
     else:
         sub_label_df = pd.DataFrame()
     return label_df,sub_label_df

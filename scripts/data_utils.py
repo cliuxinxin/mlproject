@@ -1994,11 +1994,10 @@ def b_get_process(origin_table):
 
     return entry
 
-def b_sample_label_data():
+def b_sample_label_data(task):
     """
-    根据条件筛选标签数据
+    将所有标签提取出来
     """
-    task ='bid'
 
     b_doccano_train_dev_update(task)
 
@@ -2018,16 +2017,17 @@ def b_sample_label_data():
             human_label = text[human_start:human_end]
             new_entry['human_start'] = human_start
             new_entry['human_end'] = human_end
+            new_entry['label_type'] = label_
             new_entry['human_label'] = human_label
+            new_entry['label_len'] = len(human_label)
             new_entry['is_human_correct'] = ''
-            new_entry['url'] = entry['data_source'] + "#:~:text=" + human_label
+            new_entry['url'] = entry['data_source'] + "#:~:text=" + str(human_label)
             dataset = train_project_id if entry['dataset'] == task + '_train' else dev_project_id
             new_entry['doccano_url'] = 'http://47.108.218.88:18000/projects/{}/sequence-labeling?page=1&q={}'.format(dataset,md5) 
-            if label_ == '中标单位' and len(human_label) > 10:
-                new_data.append(new_entry)
+            new_data.append(new_entry)
 
-# 写入文件
-    b_save_list_datasets(new_data,'中标单位.json')
+    # 写入文件
+    b_save_list_datasets(new_data,'所有标签.json')
 
 # ——————————————————————————————————————————————————
 # 调用
