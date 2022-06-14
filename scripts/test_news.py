@@ -36,9 +36,12 @@ data = data[~data.md5.isin(news.md5)]
 b_save_df_datasets(data, 'news_test.json')
 
 b_doccano_upload('news_test.json',14)
+b_doccano_upload('news_test_label.json',14)
 
 news = news[:52]
 news = news[52:]
+
+b_save_list_datasets(news, 'news_test.json')
 
 # 重新随机排序
 news = news.sample(frac=1)
@@ -68,10 +71,22 @@ for entry in train_dev_label:
         new_entry = {}
         new_entry['md5'] = md5
         new_entry['start'] = start
-        new_entry['label_'] = text[start:end]
+        new_entry['label'] = label_
+        new_entry['value'] = text[start:end]
         data.append(new_entry)
 
 data = pd.DataFrame(data)
 
-data.loc(data.md5)
+
+md5 = '395d0e9746196e0c3dbb5e2da1047211'
+data.loc[data.md5 == md5]
+
+task = 'bid'
+b_doccano_train_dev_update(task)
+
+train_dev_label = b_read_dataset('train_dev.json')
+
+data = data[(data.label == '中标金额单位')]
+
+data[data.value.str.contains('%')]
 
