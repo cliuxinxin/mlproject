@@ -442,9 +442,15 @@ def b_save_list_datasets(data,file):
 
 def b_load_best_model(task):
     """
-    根据task读取模型
+    根据task读取最好模型
     """
     return spacy.load("../training/{}/model-best".format(task))
+
+def b_load_last_model(task):
+    """
+    根据task读取最新模型
+    """
+    return spacy.load("../training/{}/model-last".format(task))
 
 
 def b_load_best_cats():
