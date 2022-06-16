@@ -194,6 +194,8 @@ def process_save(data_process, task, origin_table, df):
     label_df = pd.concat(data)
     if task == 'bid':
         sub_label_df = pd.concat(sub_data)
+        if 'amount' not in sub_label_df.columns:
+            sub_label_df['amount'] = 0
         sub_label_df = sub_label_df[['winning_bidder','amount','table_name','announcement_id']]
     else:
         sub_label_df = pd.DataFrame()

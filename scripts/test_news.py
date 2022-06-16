@@ -23,7 +23,11 @@ def move_htmls(files):
     移动到ASSETS_PATH/htmls目录下
     """
     for file in files:
-        shutil.move(file, ASSETS_PATH + 'htmls/')
+        # 如果目录有重名的文件，则修改文件名
+        if os.path.exists(os.path.join(ASSETS_PATH, 'htmls', file.split('/')[-1])):
+            os.rename(file, os.path.join(ASSETS_PATH, 'htmls', file.split('/')[-1] + '_' + str(random.randint(0, 100))))
+        else:
+            os.rename(file, os.path.join(ASSETS_PATH, 'htmls', file.split('/')[-1]))
 
 def label_data(data):
     """
