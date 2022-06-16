@@ -84,6 +84,7 @@ def clean_bid_中标金额(value):
     清洗出中标金额
     """
     value = d_amount_process(value)
+    value = 0 if value == '' else value
     return value
 
 def clean_bid_中标金额单位(value):
