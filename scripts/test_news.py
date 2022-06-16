@@ -58,7 +58,7 @@ for file in files:
     entry = {}
     try:
         html = open(file, 'r').read()
-        result = extractor.extract(html)
+        result = extractor.extract(html,use_visiable_info=True)
         title = result['title']
         entry['title'] = title
         content = result['content']
