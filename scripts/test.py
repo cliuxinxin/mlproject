@@ -2,8 +2,12 @@ from data_utils import *
 from mysql_utils import *
 from data_clean_new import clean_manager
 
+import pandas as pd
 
+data = range(6)
 
-data = b_read_dataset('unknown.jsonl')
+df = pd.DataFrame(data)
 
-data[0]
+df = df + 1
+
+df.loc[1:,0] = 0
