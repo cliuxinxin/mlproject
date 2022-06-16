@@ -58,7 +58,7 @@ for file in files:
     entry = {}
     try:
         html = open(file, 'r').read()
-        result = extractor.extract(html,use_visiable_info=True)
+        result = extractor.extract(html)
         title = result['title']
         entry['title'] = title
         content = result['content']
@@ -91,6 +91,3 @@ b_save_df_datasets(dev, 'dev.json')
 b_save_df_datasets(news, 'train_dev.json')
 
 gdrive_upload_train_dev()
-
-
-

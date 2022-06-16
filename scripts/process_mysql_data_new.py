@@ -125,6 +125,8 @@ def process_labels(labels,task):
             label_,text = list(label.items())[0]
             new_label[label_] = text
             if label_ == '中标金额':
+                if amount == '':
+                    amount = 0
                 new_label[label_] = float(amount) * float(unit)
             new_labels.append(new_label)
         return new_labels
