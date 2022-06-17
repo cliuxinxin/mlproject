@@ -190,6 +190,9 @@ def process_save(data_process, task, origin_table, df):
                     split_df_labels.reset_index().loc[1:,'amount'] = 0
                 sub_data.append(split_df_labels)
             df_labels[['winning_bidder','amount']] = ''
+            # 如果有中标金额单位，则删除
+            if '中标金额单位' in df_labels.columns:
+                df_labels.drop('中标金额单位',axis=1,inplace=True)
         data.append(df_labels)
         
     label_df = pd.concat(data)
@@ -281,6 +284,8 @@ if __name__ == '__main__':
 
         # 清理df数据
         df['labels'] = df['labels'].apply(lambda x: json.dumps(x,ensure_ascii=False))
+        # 设置labels最长长度1000
+        df['labels'] = df['labels'].apply(lambda x: x[:1000])
         df = df.drop(columns=['md5','data','clean_labels'])
         df = datetime_process(df,task)
 
