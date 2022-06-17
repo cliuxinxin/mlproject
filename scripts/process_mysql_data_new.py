@@ -278,7 +278,7 @@ if __name__ == '__main__':
             for md5,value in label_df[label_df[col].notnull()][['md5',col]].values:
                 df.loc[df.md5 == md5,col] = value
         # 填充子表
-        if task == 'bid':
+        if task == 'bid' and len(sub_label_df) > 0:
             delete_win_by_df('final_winning_bidder',sub_label_df,origin_table)
             mysql_insert_data(sub_label_df,'final_winning_bidder')
 
