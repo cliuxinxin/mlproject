@@ -184,6 +184,8 @@ def process_save(data_process, task, origin_table, df):
             if 'winning_bidder' in df_labels.columns:
                 df_labels['winning_bidder'] = df_labels['winning_bidder'].apply(lambda x: x.split('#'))
                 split_df_labels = df_labels.explode('winning_bidder')
+                # 根据winner_bidder排重
+                split_df_labels = split_df_labels.drop_duplicates(subset=['winning_bidder'])
                 split_df_labels[['announcement_id','table_name']] = [id,origin_table]
                 if 'amount' in split_df_labels.columns and len(split_df_labels) > 1:
                 # 保留第一行amount,其他行清空
