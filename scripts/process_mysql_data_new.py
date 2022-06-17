@@ -196,7 +196,7 @@ def process_save(data_process, task, origin_table, df):
         data.append(df_labels)
         
     label_df = pd.concat(data)
-    if task == 'bid':
+    if task == 'bid' and len(sub_data) > 0:
         sub_label_df = pd.concat(sub_data)
         if 'amount' not in sub_label_df.columns:
             sub_label_df['amount'] = 0
