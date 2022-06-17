@@ -76,9 +76,6 @@ def d_date_clean(value):
         return value
     
 
-
-
-
 def clean_bid_中标金额(value):
     """
     清洗出中标金额
