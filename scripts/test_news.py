@@ -90,4 +90,7 @@ b_save_df_datasets(train, 'train.json')
 b_save_df_datasets(dev, 'dev.json')
 b_save_df_datasets(news, 'train_dev.json')
 
+b_remove_invalid_label('train.json')
+b_remove_invalid_label('dev.json')
+
 gdrive_upload_train_dev()

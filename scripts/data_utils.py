@@ -910,7 +910,7 @@ def b_remove_invalid_label(file):
         cleaned_data['label'] = clean_labels
         cleaned_datas.append(cleaned_data)  
 
-    b_save_list_datasets(cleaned_datas,file_name + '_remove.json')
+    b_save_list_datasets(cleaned_datas,file_name + '.json')
 
 # 把bio数据集划分成最长的数据集,并且保存为train_trf_max.json
 #split_dataset_by_max('train_trf.json',510) 
