@@ -6,16 +6,9 @@ import rarfile
 
 import pandas as pd
 
-files = glob.glob(ASSETS_PATH + 'dora_b/*')
+path = ASSETS_PATH + 'dorab/*'
 
-files
-file = files[0]
-file
+# 找出path和子目录下所有的jpg文件
+files = glob.glob(path)
 
-# 解压rar文件
-def unrar(file):
-    rar_file = rarfile.RarFile(file)
-    rar_file.extractall(ASSETS_PATH + 'dora_b/')
-    rar_file.close()
 
-unrar(file)
