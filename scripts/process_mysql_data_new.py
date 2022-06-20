@@ -5,7 +5,15 @@ import argparse
 import glob
 from data_clean_new import clean_manager
 
-
+def all_labels_is_empty(labels):
+    """
+    检查所有labels是否为空
+    """
+    for label in labels:
+        # 判断list是否为空
+        if len(label) > 5:
+            return False
+    return True
 
 def d_date_clean(value):
     """
@@ -245,6 +253,8 @@ if __name__ == '__main__':
         nlp = helper.get_model(task)
 
         df = pd.read_json(file)
+        if len(df) == 0:
+            continue
         df['data'] = df['detail_content'].fillna('')
         df['data'] = df['data'].apply(p_filter_tags)
         df['md5'] = df['data'].apply(p_generate_md5)
@@ -264,6 +274,11 @@ if __name__ == '__main__':
         df['labels'] = labels
         # 替换正确标签
         df[df.md5.isin(label_data.index)]['labels'] = df['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
+        if all_labels_is_empty(df['labels']):
+            delete_mysql_by_df(target_table, df)
+            mysql_insert_data(df,target_table)
+            move_file(file)
+
         # 得到label内容
         df['labels'] = df.apply(get_labels,axis=1)
         # label根据任务做清洗
