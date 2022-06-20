@@ -2,12 +2,18 @@ from data_utils import *
 from mysql_utils import *
 from data_clean_new import clean_manager
 
+import rarfile
+
 import pandas as pd
 
-data = range(6)
+files = glob.glob(ASSETS_PATH + 'dora_b/*')
 
-df = pd.DataFrame(data)
+files
+file = files[0]
+file
 
-df = df + 1
-
-df.loc[1:,0] = 0
+# 解压rar文件
+def unrar(file):
+    rar_file = rarfile.RarFile(file)
+    rar_file.extractall(ASSETS_PATH + 'dora_b/')
+    rar_file.close()
