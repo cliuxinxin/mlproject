@@ -17,3 +17,5 @@ def unrar(file):
     rar_file = rarfile.RarFile(file)
     rar_file.extractall(ASSETS_PATH + 'dora_b/')
     rar_file.close()
+
+unrar(file)

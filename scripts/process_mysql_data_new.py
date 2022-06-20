@@ -227,6 +227,9 @@ class Helper():
             return self.tender
         elif task == 'bid':
             return self.bid
+        else:
+            # 报错
+            raise Exception('没有指定任务')
 
     def get_label(self,task):
         if task == 'tender':
