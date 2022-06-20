@@ -245,7 +245,8 @@ if __name__ == '__main__':
 
     for file in tqdm(files):
         print(file)
-        task = file.split('#')[0].split('/')[-1]
+        # task = file.split('#')[0].split('/')[-1]
+        task = 'bid'
         origin_table = file.split('#')[1]
         target_table = data_process.get(origin_table).get('target')
 
