@@ -28,7 +28,7 @@ if __name__ == '__main__':
     id = 'ah-anqing-003002009b59354df-0305-4164-b6e1-a4427cbd9716zbgs_002'
     col = 'detail_content'
     source = 'source_website_address'
-    sql = "select * from %s where id = '%s'" % (col,source,table,id)
+    sql = f"select * from {table} where id = '{id}'"
     df = mysql_select_df(sql)
     if len(df) >= 1:
         df.to_json(DATA_PATH + task + '_' + id + '.json')
