@@ -32,12 +32,12 @@ if __name__ == '__main__':
     df = mysql_select_df(sql)
     if len(df) >= 1:
         df.to_json(DATA_PATH + task + '_' + id + '.json')
-        df = df[[col,source]]
-        df = p_process_df(df,task)
-        nlp = b_load_best_model(task)
-        df['label'] = df['data'].apply(lambda x:label_data(nlp,x))
-        b_save_df_datasets(df,'one_data.json')
-        b_doccano_upload_by_task('one_data.json',task,'train')
+        # df = df[[col,source]]
+        # df = p_process_df(df,task)
+        # nlp = b_load_best_model(task)
+        # df['label'] = df['data'].apply(lambda x:label_data(nlp,x))
+        # b_save_df_datasets(df,'one_data.json')
+        # b_doccano_upload_by_task('one_data.json',task,'train')
         print("Get %s data from mysql and save to json" % len(df))
     else:
         print("No data")

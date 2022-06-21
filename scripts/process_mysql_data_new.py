@@ -1,7 +1,6 @@
 from tqdm import tqdm
 from data_utils import *
 from mysql_utils import *
-import argparse
 import glob
 from data_clean_new import clean_manager
 
@@ -10,7 +9,6 @@ def all_labels_is_empty(labels):
     检查所有labels是否为空
     """
     for label in labels:
-        # 判断list是否为空
         if len(label) > 0:
             return False
     return True
@@ -241,6 +239,11 @@ class Helper():
             return bid_label
     
    
+def delete_and_insert_target(file, target_table, df):
+    delete_mysql_by_df(target_table, df)
+    mysql_insert_data(df,target_table)
+    move_file(file)
+
 if __name__ == '__main__':
     files = glob.glob(DATA_PATH + '*.json')
     helper = Helper()
@@ -279,9 +282,7 @@ if __name__ == '__main__':
         # 替换正确标签
         df[df.md5.isin(label_data.index)]['labels'] = df['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
         if all_labels_is_empty(df['labels']):
-            delete_mysql_by_df(target_table, df)
-            mysql_insert_data(df,target_table)
-            move_file(file)
+            delete_and_insert_target(file, target_table, df)
             continue
 
         # 得到label内容
@@ -312,7 +313,5 @@ if __name__ == '__main__':
         df = datetime_process(df,task)
 
         # 填写数据
-        delete_mysql_by_df(target_table, df)
-        mysql_insert_data(df,target_table)
-        move_file(file)
+        delete_and_insert_target(file, target_table, df)
 
