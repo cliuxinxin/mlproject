@@ -11,7 +11,7 @@ def all_labels_is_empty(labels):
     """
     for label in labels:
         # 判断list是否为空
-        if len(label) > 3:
+        if len(label) > 0:
             return False
     return True
 
