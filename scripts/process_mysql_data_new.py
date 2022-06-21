@@ -282,6 +282,7 @@ if __name__ == '__main__':
             delete_mysql_by_df(target_table, df)
             mysql_insert_data(df,target_table)
             move_file(file)
+            continue
 
         # 得到label内容
         df['labels'] = df.apply(get_labels,axis=1)
