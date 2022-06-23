@@ -197,7 +197,7 @@ commands:
   - name: "train_spancats"
     help: "Train the NER model"
     script:
-      - "python -m spacy train configs/config_spancats.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
+      - "python -m spacy train configs/config_spancat.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
     deps:
       - "configs/config.cfg"
       - "corpus/train.spacy"

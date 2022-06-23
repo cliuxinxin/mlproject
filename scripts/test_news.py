@@ -81,10 +81,10 @@ b_doccano_upload('news_test.json',14)
 
 
 # 重新随机排序
-news = news[:1280]
+news = news[:1513]
 news = news.sample(frac=1)
 
-train = news
+train = news[:int(len(news)*0.9)]
 dev = news[int(len(news)*0.9):]
 
 b_save_df_datasets(train, 'train.json')
