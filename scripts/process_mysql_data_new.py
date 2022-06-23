@@ -3,6 +3,7 @@ from data_utils import *
 from mysql_utils import *
 import glob
 from data_clean_new import clean_manager
+from decimal import Decimal
 
 def all_labels_is_empty(labels):
     """
@@ -131,7 +132,7 @@ def process_labels(labels,task):
             label_,text = list(label.items())[0]
             new_label[label_] = text
             if label_ == '中标金额':
-                new_label[label_] = float(amount) * float(unit)
+                new_label[label_] = Decimal(amount) * Decimal(str(unit))
             new_labels.append(new_label)
         return new_labels
     return labels
