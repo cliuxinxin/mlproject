@@ -4,6 +4,7 @@ description: "整合所有我们需要的东西进入到系统"
 vars:
   name: "tender"
   lang: "zh"
+  spans_key: "sc"
   train: "train.json"
   dev: "dev.json"
   version: "0.0.1"
@@ -13,6 +14,7 @@ vars:
   vectors_model: "zh_core_web_lg"
   host: "127.0.0.1"
   port: 5000
+  
 
 env:
   task: TASK
@@ -34,6 +36,10 @@ workflows:
     - convert
     - train
     - evaluate
+  all_spancats:
+    - corpus
+    - train
+    - evaluate   
   start:
     - install
     - serve
@@ -171,4 +177,19 @@ commands:
       - "corpus/train.spacy"
       - "corpus/dev.spacy"
     outputs:
-      - "training/model_best" 
+      - "training/model_best"
+
+  - name: "corpus"
+    help: "convert to spancat data"
+    script:
+      - "python scripts/convert.py ${vars.lang} assets/${vars.train} corpus/train.spacy"
+      - "python scripts/convert.py ${vars.lang} assets/${vars.dev} corpus/dev.spacy"
+      - "python scripts/add_ents_to_spans_dict.py corpus/train.spacy ${vars.lang} ${vars.spans_key}"
+      - "python scripts/add_ents_to_spans_dict.py corpus/dev.spacy ${vars.lang} ${vars.spans_key}"
+    deps:
+      - "assets/${vars.train}"
+      - "assets/${vars.dev}"
+      - "scripts/convert.py"
+    outputs:
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy" 
