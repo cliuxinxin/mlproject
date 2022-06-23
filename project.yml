@@ -38,7 +38,7 @@ workflows:
     - evaluate
   all_spancats:
     - corpus
-    - train
+    - train_spancats
     - evaluate   
   start:
     - install
@@ -192,4 +192,15 @@ commands:
       - "scripts/convert.py"
     outputs:
       - "corpus/train.spacy"
-      - "corpus/dev.spacy" 
+      - "corpus/dev.spacy"
+
+  - name: "train_spancats"
+    help: "Train the NER model"
+    script:
+      - "python -m spacy train configs/config_spancats.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
+    deps:
+      - "configs/config.cfg"
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+    outputs:
+      - "training/model_best" 
