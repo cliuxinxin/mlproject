@@ -81,10 +81,11 @@ b_doccano_upload('news_test.json',14)
 
 
 # 重新随机排序
+news = news[:1280]
 news = news.sample(frac=1)
 
-train = news[:int(len(news)*0.8)]
-dev = news[int(len(news)*0.8):]
+train = news
+dev = news[int(len(news)*0.9):]
 
 b_save_df_datasets(train, 'train.json')
 b_save_df_datasets(dev, 'dev.json')
@@ -94,3 +95,7 @@ b_remove_invalid_label('train.json')
 b_remove_invalid_label('dev.json')
 
 gdrive_upload_train_dev()
+
+len(dev)
+
+len(train)
