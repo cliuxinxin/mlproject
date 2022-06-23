@@ -4,7 +4,7 @@ description: "整合所有我们需要的东西进入到系统"
 vars:
   name: "tender"
   lang: "zh"
-  spans_key: "sc"
+  spans_key: "grit" # "sc"
   train: "train.json"
   dev: "dev.json"
   version: "0.0.1"
