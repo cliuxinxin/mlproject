@@ -86,13 +86,13 @@ def label_data(nlp,data):
     doc = nlp(data)
     return [[ent.start_char,ent.end_char,ent.label_] for ent in doc.ents]
 
-df = pd.read_excel(ASSETS_PATH + 'test_bid.xlsx')
+df = pd.read_excel(ASSETS_PATH + 'test_other.xlsx')
 
 # test_tender_bid_result test_bid
 # test_other_tender_bid_result test_other
 
 ids = df['announcement_id'].tolist()
-table = 'test_tender_bid_result' 
+table = 'test_other_tender_bid_result' 
 col = 'detail_content'
 source = 'source_website_address'
 task = 'bid'
