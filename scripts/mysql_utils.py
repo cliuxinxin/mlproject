@@ -7,6 +7,7 @@ from threading import RLock
 import json
 
 MYSQL = 'mysql'
+test = False
 
 def d_parse_config():
     config = configparser.ConfigParser()
@@ -152,15 +153,18 @@ def mysql_insert_data(df,table):
                 values[i][j] = None
     with LOCK:
         cursor = conn.cursor()
-        try:
-            cursor.executemany(sql, values)
-        except:
-            for value in values:
-                try:
-                    cursor.execute(sql, value)
-                except Exception as e:
-                    error = {'error':e,'value':value[0],'table':table}
-                    d_log_error(error)
+        if test:
+            cursor.executemany(sql,values)
+        else:
+            try:
+                cursor.executemany(sql, values)
+            except:
+                for value in values:
+                    try:
+                        cursor.execute(sql, value)
+                    except Exception as e:
+                        error = {'error':e,'value':value[0],'table':table}
+                        d_log_error(error)
         db.commit()
         cursor.close()
 
