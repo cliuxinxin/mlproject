@@ -153,13 +153,13 @@ def mysql_insert_data(df,table):
                 values[i][j] = None
     with LOCK:
         cursor = conn.cursor()
-        if test:
-            cursor.executemany(sql,values)
-        else:
-            try:
-                cursor.executemany(sql, values)
-            except:
-                for value in values:
+        try:
+            cursor.executemany(sql, values)
+        except:
+            for value in values:
+                if test:
+                    cursor.execute(sql, value) 
+                else:
                     try:
                         cursor.execute(sql, value)
                     except Exception as e:
