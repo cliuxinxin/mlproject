@@ -252,8 +252,8 @@ if __name__ == '__main__':
 
     for file in tqdm(files):
         print(file)
-        # task = file.split('#')[0].split('/')[-1]
-        task = 'bid'
+        task = file.split('#')[0].split('/')[-1]
+        # task = 'bid'
         origin_table = file.split('#')[1]
         target_table = data_process.get(origin_table).get('target')
 
@@ -283,6 +283,8 @@ if __name__ == '__main__':
         # 替换正确标签
         df[df.md5.isin(label_data.index)]['labels'] = df['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
         if all_labels_is_empty(df['labels']):
+            df = df.drop(columns=['md5','data'])
+            df['labels'] = ''
             delete_and_insert_target(file, target_table, df)
             continue
 

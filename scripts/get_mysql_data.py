@@ -96,20 +96,20 @@ if __name__ == '__main__':
     task = args.task
     mode = args.mode
     number = int(args.number)
-    # table = args.table
+    table = args.table
     process = b_get_dataprocess()
     print('task:',task)
     print('mode:',mode)
     print('number:',number)
-    # print('table:',table)
+    print('table:',table)
     for entry in process:
         origin_table = entry['origin_table']
         target_table = entry['target_table']
-        # if origin_table == table:
+        if origin_table == table:
         #    get_diff_data(task,origin_table,target_table,number)
-        # #    get_new_data(task,origin_table,target_table,number)
-        # #    get_all_data(task,origin_table,number)
-        #    break 
+        #    get_new_data(task,origin_table,target_table,number)
+           get_all_data(task,origin_table,number)
+           break 
         if entry['task'] == task:
             if mode == 'all':
                 print('get all data')
