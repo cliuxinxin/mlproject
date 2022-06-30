@@ -10,6 +10,9 @@ sql2 = 'select a.announcement_id,a.amount,a.winning_bidder,b.source_website_addr
 sql3 = 'select a.announcement_id,a.amount,a.winning_bidder,b.source_website_address,b.labels,"final_other_tender_bid_result" as tabel_name from final_winning_bidder a left join final_other_tender_bid_result b on a.announcement_id = b.id and b.source_website_address is not null order by a.amount limit 2000'
 sql4 = 'select a.announcement_id,a.amount,a.winning_bidder,b.source_website_address,b.labels,"final_other_tender_bid_result" as tabel_name from final_winning_bidder a left join final_other_tender_bid_result b on a.announcement_id = b.id and b.source_website_address is not null order by a.amount limit 2000'
 
+sql1 = 'select a.announcement_id,a.amount,a.winning_bidder,b.source_website_address,b.labels,"final_procurement_bid_result" as tabel_name from final_winning_bidder a left join final_procurement_bid_result b on a.announcement_id = b.id and b.source_website_address is not null order by a.amount desc limit 1000'
+
+
 
 
 df1 = pd.read_sql(sql1, con=conn)
@@ -18,6 +21,8 @@ df3 = pd.read_sql(sql3, con=conn)
 df4 = pd.read_sql(sql4, con=conn)
 
 df = pd.concat([df1,df2,df3,df4])
+
+df = df1
 
 df = df[df.source_website_address.notnull()]
 
@@ -28,9 +33,9 @@ df = df.drop_duplicates(subset=['announcement_id'], keep='first')
 
 df['human_check'] = ''
 
-df_db = pd.read_csv(ASSETS_PATH + '20220621.csv')
+df_db = pd.read_csv(ASSETS_PATH + '20220627.csv')
 
-df.to_csv(ASSETS_PATH + 'BIG_AMOUNT.csv', index=False)
+df.to_csv(ASSETS_PATH + '20220627.csv', index=False)
 
 df[~df.announcement_id.isin(df_db.announcement_id)].to_csv(ASSETS_PATH + '20220622.csv', index=False)
 
@@ -86,7 +91,7 @@ def label_data(nlp,data):
     doc = nlp(data)
     return [[ent.start_char,ent.end_char,ent.label_] for ent in doc.ents]
 
-df = pd.read_excel(ASSETS_PATH + 'test_other.xlsx')
+df = pd.read_excel(ASSETS_PATH + '20220628.xlsx')
 
 # test_tender_bid_result test_bid
 # test_other_tender_bid_result test_other
@@ -99,7 +104,8 @@ task = 'bid'
 file_name = task + '#' + table + '#' + str(int(time.time()*100000))
 
 
-sql = "select * from {} where id in {}".format(table,tuple(ids))
+# sql = "select * from {} where id in {}".format(table,tuple(ids))
+sql = "select * from final_other_tender_bid_result where id='zzlh-328322'"
 
 df = pd.read_sql(sql, con=conn)
 
@@ -154,4 +160,43 @@ df.to_json(DATA_PATH + file_name + '.json')
 
 
 
+import pandas as pd
 
+files = glob.glob(DATA_PATH + '*.json')
+
+dfs = []
+
+for file in files:
+    df = pd.read_json(file)
+    dfs.append(df)
+
+df = pd.concat(dfs)
+
+df['labels']
+df['data'] = df['detail_content'].fillna('')
+df['data'] = df['data'].apply(p_filter_tags)
+df['md5'] = df['data'].apply(p_generate_md5)
+
+bid_label = pd.DataFrame(b_read_dataset('bid_train_dev.json'))
+bid_label = bid_label[['md5','label']]
+bid_label.columns = ['md5','labels']
+bid_label.set_index('md5',inplace=True)
+label_data = bid_label
+
+def find_labels_by_md5(md5,label_data):
+    """
+    根据md5查找标签，填充到label里面
+    """
+    try:
+        labels = label_data.loc[md5]['labels']
+    except:
+        labels = []
+    return labels
+
+df[df.md5.isin(label_data.index)]['labels'] = df[df.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
+
+df['labels']
+
+df[df.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
+
+df.loc[df.md]

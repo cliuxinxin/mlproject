@@ -281,7 +281,8 @@ if __name__ == '__main__':
 
         df['labels'] = labels
         # 替换正确标签
-        df[df.md5.isin(label_data.index)]['labels'] = df['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
+        # df[df.md5.isin(label_data.index)]['labels'] = df['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
+        df[df.md5.isin(label_data.index)]['labels'] = df[df.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
         if all_labels_is_empty(df['labels']):
             df = df.drop(columns=['md5','data'])
             df['labels'] = ''

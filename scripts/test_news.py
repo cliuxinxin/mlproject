@@ -1,5 +1,4 @@
 from data_utils import *
-from google_utils import *
 
 from gne import GeneralNewsExtractor
 extractor = GeneralNewsExtractor()
@@ -136,8 +135,19 @@ b_save_df_datasets(news, 'train_dev.json')
 b_remove_invalid_label('train.json')
 b_remove_invalid_label('dev.json')
 
-gdrive_upload_train_dev()
 
 len(dev)
 
 len(train)
+
+task = "bid"
+b_doccano_update_train_dev(task)
+
+data = b_read_dataset('train_dev.json')
+
+df = pd.DataFrame(data)
+
+
+df5 = pd.DataFrame(df.md5.value_counts())
+
+df[df.md5.isin(df5[df5.md5 > 1].index)][['md5','dataset']].sort_values(by='md5')
