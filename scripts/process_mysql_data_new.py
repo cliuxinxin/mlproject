@@ -282,6 +282,8 @@ if __name__ == '__main__':
         df['labels'] = labels
         # 替换正确标签
         df.loc[df.md5.isin(label_data.index),'labels'] = df[df.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
+        df = datetime_process(df,task)
+        
         if all_labels_is_empty(df['labels']):
             df = df.drop(columns=['md5','data'])
             df['labels'] = ''
@@ -313,7 +315,6 @@ if __name__ == '__main__':
         # 设置labels最长长度1000
         df['labels'] = df['labels'].apply(lambda x: x[:1000])
         df = df.drop(columns=['md5','data','clean_labels'])
-        df = datetime_process(df,task)
 
         # 填写数据
         delete_and_insert_target(file, target_table, df)
