@@ -37,6 +37,46 @@ def label_data(data):
     label = [[ent.start_char, ent.end_char, ent.label_] for ent in doc.ents]
     return label
 
+def clear_data(data):
+    if data == '访问:':
+        return ''
+    # 如果信息中包含 阿里云 
+    if '阿里云' in data:
+        return ''
+    if '来自FT中文网的温馨提示' in data:
+        return ''
+    return data
+
+def combine_data(data):
+    """
+    合并数据
+    """
+    # 如果该数据长度小于5个字符，则把前后字符合并在一起
+    for idx,entry in enumerate(data):
+        if len(entry) < 7 and entry != '':
+            pre_idx = idx - 1 if idx > 0 else 0
+            next_idx = idx + 1 if idx < len(data) - 1 else len(data) - 1
+            data[pre_idx] = data[pre_idx] + data[idx] + data[next_idx]
+            data[idx] = ''
+            data[next_idx] = ''
+    data = [line for line in data if line != '']
+    return data
+
+def clean_data(data):
+    """
+    清理文本数据
+    """
+    data = data.split('\n')
+    data = [line.strip() for line in data]
+    data = [clear_data(line) for line in data]
+    data = [line for line in data if line != '']
+    data = combine_data(data)
+    # 除开第一行，每行前面加上空格
+    data = ['         '+line for line in data]
+
+    data = '\n'.join(data)
+    return data
+
 # 下载目录
 path = '/Users/liuxinxin/Downloads/'
 # 查找目录下面htm和html文件
@@ -64,11 +104,14 @@ for file in files:
         content = result['content']
         entry['data'] = title + '\n' + content
         entry['md5'] = p_generate_md5(content)
+        entry['data'] = clean_data(entry['data'])
         data.append(entry)
     except:
         continue
 
 data = pd.DataFrame(data)
+
+data = data.drop_duplicates(subset=['md5'])
 
 data = data[~data.md5.isin(news.md5)]
 
@@ -77,7 +120,6 @@ data['label'] = data.data.apply(label_data)
 b_save_df_datasets(data, 'news_test.json')
 
 b_doccano_upload('news_test.json',14)
-
 
 
 # 重新随机排序
