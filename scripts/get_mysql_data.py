@@ -109,7 +109,8 @@ if __name__ == '__main__':
         #    get_diff_data(task,origin_table,target_table,number)
         #    get_new_data(task,origin_table,target_table,number)
            get_all_data(task,origin_table,number)
-           break 
+           break
+        continue 
         if entry['task'] == task:
             if mode == 'all':
                 print('get all data')
