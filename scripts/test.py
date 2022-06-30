@@ -4,6 +4,7 @@ from data_clean_new import clean_manager
 import cv2
 import numpy as np
 
+b_doccano_update_train_dev('bid')
 
 sql1 = 'select a.announcement_id,a.amount,a.winning_bidder,b.source_website_address,b.labels,"final_tender_bid_result" as tabel_name from final_winning_bidder a left join final_tender_bid_result b on a.announcement_id = b.id and b.source_website_address is not null order by a.amount desc limit 2000'
 sql2 = 'select a.announcement_id,a.amount,a.winning_bidder,b.source_website_address,b.labels,"final_tender_bid_result" as tabel_name from final_winning_bidder a left join final_tender_bid_result b on a.announcement_id = b.id and b.source_website_address is not null order by a.amount limit 2000'
@@ -159,44 +160,27 @@ df = pd.read_sql(sql, con=conn)
 df.to_json(DATA_PATH + file_name + '.json')
 
 
+invalid_span_tokens = re.compile(r'\s')
 
-import pandas as pd
+data = b_read_dataset('train_dev.json')
 
-files = glob.glob(DATA_PATH + '*.json')
+wrong_data = []
+for sample in data:
+    md5 = sample['md5']
+    text = sample['data']
+    labels = sample['label']
+    for start,end,label in labels:
+        valid_start = start
+        valid_end = end
+        label_text = text[start:end]
+        flag = False
+        if valid_start < len(text) and invalid_span_tokens.match(
+            text[valid_start]):
+            flag = True
+        if valid_end > 1 and invalid_span_tokens.match(
+            text[valid_end-1]):
+            flag = True
+        if flag:
+            wrong_data.append({'md5':md5,'label':label,'label_text':label_text})
 
-dfs = []
-
-for file in files:
-    df = pd.read_json(file)
-    dfs.append(df)
-
-df = pd.concat(dfs)
-
-df['labels']
-df['data'] = df['detail_content'].fillna('')
-df['data'] = df['data'].apply(p_filter_tags)
-df['md5'] = df['data'].apply(p_generate_md5)
-
-bid_label = pd.DataFrame(b_read_dataset('bid_train_dev.json'))
-bid_label = bid_label[['md5','label']]
-bid_label.columns = ['md5','labels']
-bid_label.set_index('md5',inplace=True)
-label_data = bid_label
-
-def find_labels_by_md5(md5,label_data):
-    """
-    根据md5查找标签，填充到label里面
-    """
-    try:
-        labels = label_data.loc[md5]['labels']
-    except:
-        labels = []
-    return labels
-
-df[df.md5.isin(label_data.index)]['labels'] = df[df.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
-
-df['labels']
-
-df[df.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
-
-df.loc[df.md]
+df = pd.DataFrame(wrong_data)
