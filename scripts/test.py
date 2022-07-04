@@ -184,3 +184,5 @@ for sample in data:
             wrong_data.append({'md5':md5,'label':label,'label_text':label_text})
 
 df = pd.DataFrame(wrong_data)
+
+b_sample_label_data('bid')

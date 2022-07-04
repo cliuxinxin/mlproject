@@ -122,7 +122,7 @@ b_doccano_upload('news_test.json',14)
 
 
 # 重新随机排序
-news = news[:1513]
+news = news[:2574]
 news = news.sample(frac=1)
 
 train = news[:int(len(news)*0.9)]
