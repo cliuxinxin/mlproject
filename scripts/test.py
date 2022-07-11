@@ -186,3 +186,33 @@ for sample in data:
 df = pd.DataFrame(wrong_data)
 
 b_sample_label_data('bid')
+
+b_doccano_train_dev_update('bid')
+
+data = b_read_dataset('train_dev.json')
+
+test_data = data[0]
+
+test = test_data['data']
+
+nlp = b_load_best_model('bid')
+
+doc = nlp(test)
+
+token = doc._.trf_data.tensors[-1].reshape(1,-1)
+
+from umap import UMAP
+umap = UMAP(n_components=2)
+X_tfm = umap.fit_transform(token)
+X_tfm.shape
+token.shape
+
+df = pd.DataFrame(data)
+
+df['len'] = df['data'].apply(lambda x:len(x))
+
+df.sort_values(by='len',ascending=False,inplace=True)
+
+df[['md5','len','dataset','data_source']].head(500)
+
+
