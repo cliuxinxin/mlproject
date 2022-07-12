@@ -14,7 +14,7 @@ def transform_json_txt(jsondir,txtdir):
         ln += 1
         dic = json.loads(line)
         # id = dic['id']            # json中对象转换为Python中的字典
-        text = dic['data']
+        text = dic['text']
 
         text = text.replace(' ','-')     # 将text中所有空格转换为‘-’，因为labels中数字将空格也对应上去了
         text = ' '.join(text)            # 将text中每个字符以空格隔开
