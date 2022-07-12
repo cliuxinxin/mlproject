@@ -86,7 +86,7 @@ def get_labels(series):
     """
     整理标签
     """
-    text = series['data']
+    text = series['text']
     new_labels = []
     labels = series['labels']
     if len(labels) == 0:
@@ -263,13 +263,13 @@ if __name__ == '__main__':
         df = pd.read_json(file)
         if len(df) == 0:
             continue
-        df['data'] = df['detail_content'].fillna('')
-        df['data'] = df['data'].apply(p_filter_tags)
-        df['md5'] = df['data'].apply(p_generate_md5)
+        df['text'] = df['detail_content'].fillna('')
+        df['text'] = df['text'].apply(p_filter_tags)
+        df['md5'] = df['text'].apply(p_generate_md5)
         max_len = 10000
-        df['data'] = df['data'].str[:max_len]
+        df['text'] = df['text'].str[:max_len]
         # 计算标签
-        data = df['data'].to_list()
+        data = df['text'].to_list()
         docs = nlp.pipe(data)
         labels = []
 
@@ -285,7 +285,7 @@ if __name__ == '__main__':
 
         
         if all_labels_is_empty(df['labels']):
-            df = df.drop(columns=['md5','data'])
+            df = df.drop(columns=['md5','text'])
             df['labels'] = ''
             df = datetime_process(df,task)
             delete_and_insert_target(file, target_table, df)
@@ -315,9 +315,9 @@ if __name__ == '__main__':
         df['labels'] = df['labels'].apply(lambda x: json.dumps(x,ensure_ascii=False))
         # 设置labels最长长度1000
         df['labels'] = df['labels'].apply(lambda x: x[:1000])
-        df = df.drop(columns=['md5','data','clean_labels'])
+        df = df.drop(columns=['md5','text','clean_labels'])
+        df = datetime_process(df,task)
 
         # 填写数据
-        df = datetime_process(df,task)
         delete_and_insert_target(file, target_table, df)
 
