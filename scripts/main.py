@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import spacy
 from spacy.tokens import Doc
-from data_utils import p_filter_tags
+# from data_utils import p_filter_tag
 
 
 # 这是api使用的模型
@@ -51,7 +51,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"])
 def process_text(query: RequestModel):
     nlp = nlp_model
     text = query.text
-    text = p_filter_tags(text)
+    # text = p_filter_tags(text)
     doc = nlp(text)
     # response_body.append(get_data(doc))
     # return {response_body}

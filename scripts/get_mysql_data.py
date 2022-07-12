@@ -12,7 +12,7 @@ def get_parser():
     parser.add_argument('--task', default='bid', help='task name')
     parser.add_argument('--mode', default='diff', choices=['all', 'new','diff'],help='all or newest')
     parser.add_argument('--number', default='200', help='save 100 records to a file')
-    parser.add_argument('--table', default='test_procurement_bid_result', help='save 100 records to a file')
+    parser.add_argument('--table', default='', help='save 100 records to a file')
     return parser
 
 def generate_sql(number, source, start,mode,max_time,target):
@@ -89,6 +89,24 @@ def get_new_data(task,origin_table,target_table,number):
 
     get_data_divide_to_number(task, number, origin_table, total,mode='new',max_time=max_time)
 
+def get_data(mode,task,origin_table,target_table,number):
+    """
+    抽取数据
+    """
+    if mode == 'all':
+        print('get all data')
+        print('origin_table:',origin_table)
+        get_all_data(task,origin_table,number)
+    if mode == 'new':
+        print('get new data')
+        print('origin_table:',origin_table)
+        print('target_table:',target_table) 
+        get_new_data(task,origin_table,target_table,number)
+    if mode == 'diff':
+        print('get diff data')
+        print('origin_table:',origin_table)
+        print('target_table:',target_table)
+        get_diff_data(task,origin_table,target_table,number)
 
 if __name__ == '__main__':
     parser = get_parser()
@@ -105,25 +123,8 @@ if __name__ == '__main__':
     for entry in process:
         origin_table = entry['origin_table']
         target_table = entry['target_table']
-        if origin_table == table:
-        #    get_diff_data(task,origin_table,target_table,number)
-        #    get_new_data(task,origin_table,target_table,number)
-           get_all_data(task,origin_table,number)
-           break
-        continue 
-        if entry['task'] == task:
-            if mode == 'all':
-                print('get all data')
-                print('origin_table:',origin_table)
-                get_all_data(task,origin_table,number)
-            if mode == 'new':
-                print('get new data')
-                print('origin_table:',origin_table)
-                print('target_table:',target_table)
-                get_new_data(task,origin_table,target_table,number)
-            if mode == 'diff':
-                print('get diff data')
-                print('origin_table:',origin_table)
-                print('target_table:',target_table)
-                get_diff_data(task,origin_table,target_table,number)
-            continue
+        if table != '' and origin_table == table:
+            get_data(mode,task,origin_table,target_table,number)
+            break
+        if table == '':
+            get_data(mode,task,origin_table,target_table,number)

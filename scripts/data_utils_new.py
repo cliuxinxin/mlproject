@@ -118,15 +118,9 @@ class Dataset():
 
 ds = Dataset('train.json')
 
-
-
 # ——————————————————————————————————————————————————
 # 数据操作层
 # ——————————————————————————————————————————————————
-
-
-
-
 # 存储pkl
 def d_save_pkl(value,path):
   with open(path, 'wb') as f:
@@ -613,9 +607,6 @@ def b_doccano_export_project(project_id,path,task=''):
     if task:
         p_export_preprocess(path,task)
     os.remove(tmp_zip_path)
-
-
-
 
 # 删除项目中的数据
 def b_doccano_delete_project(project_id):
