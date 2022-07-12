@@ -14,7 +14,7 @@ new_data = []
 
 for entry in data:
     new_entry = {}
-    text = entry['data']
+    text = entry['text']
     labels = entry['label']
     new_entry['text'] = text
     spans = []
