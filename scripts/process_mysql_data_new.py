@@ -30,7 +30,7 @@ def datetime_process(df,task):
     if task == 'bid':
         datetime_columns = ['publish_time','publish_stime','publish_etime']
     elif task == 'tender':
-        datetime_columns = ['publish_time','quote_stime','quote_etime','publish_stime','publish_etime','tender_etime']
+        datetime_columns = ['publish_time','tender_document_stime','tender_document_etime','quote_stime','quote_etime','tender_stime','tender_etime','publish_stime','publish_etime','bid_opening_time']
     else:
         datetime_columns = []
     for colum in datetime_columns:
@@ -282,11 +282,12 @@ if __name__ == '__main__':
         df['labels'] = labels
         # 替换正确标签
         df.loc[df.md5.isin(label_data.index),'labels'] = df[df.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
-        df = datetime_process(df,task)
+
         
         if all_labels_is_empty(df['labels']):
             df = df.drop(columns=['md5','data'])
             df['labels'] = ''
+            df = datetime_process(df,task)
             delete_and_insert_target(file, target_table, df)
             continue
 
@@ -317,5 +318,6 @@ if __name__ == '__main__':
         df = df.drop(columns=['md5','data','clean_labels'])
 
         # 填写数据
+        df = datetime_process(df,task)
         delete_and_insert_target(file, target_table, df)
 
