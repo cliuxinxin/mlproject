@@ -13,7 +13,7 @@ def convert(lang: str, input_path: Path, output_path: Path):
     nlp = spacy.blank(lang)
     db = DocBin()
     for entry in srsly.read_jsonl(input_path):
-        text = entry['data']
+        text = entry['text']
         doc = nlp.make_doc(text)
         ents = []
         for start, end, label in entry['label']:
