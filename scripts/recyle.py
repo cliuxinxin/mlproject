@@ -86,7 +86,7 @@ def b_check_random(data,num):
     test = random.sample(data,num)
     for entry in test:
         labels = entry['label']
-        text = entry['data']
+        text = entry['text']
         label = random.sample(labels,1)[0]
         print(text[label[0]:label[1]],label[2])
 
@@ -228,7 +228,7 @@ def generate_new_datasets(new_data, text, labels, borders_end, borders_start, la
     idx = 0
     for b_start,b_end in zip(borders_start,borders_end):
         entry = {}
-        entry['data'] = text[b_start:b_end]
+        entry['text'] = text[b_start:b_end]
         new_labels = []
         for idxl,loc in enumerate(label_loc):
             if loc == idx:
@@ -249,7 +249,7 @@ def cut_datasets_size_pipe():
     new_data = []
     for entry in data:
         id = entry['id']
-        text = entry['data']
+        text = entry['text']
         labels = entry['label']
         if len(text) < 4800:
             new_data.append(entry)
@@ -279,7 +279,7 @@ def train_data_evaluate():
 
     nlp = spacy.load('../training/model-best')
 
-    text_data = [entry['data'] for entry in train]
+    text_data = [entry['text'] for entry in train]
 
     docs = nlp.pipe(text_data)
 
@@ -293,7 +293,7 @@ def train_data_evaluate():
             start = item[0]
             end = item[1]
             label_ = item[2]
-            text = entry['data'][start:end]
+            text = entry['text'][start:end]
             new_label.append(text)
             new_label.append(start)
             new_label.append(end)
@@ -401,7 +401,7 @@ data =b_read_dataset('train.json')
 
 ret = []
 for entry in data:
-    txt = entry['data']
+    txt = entry['text']
     # 分句
     sents = cut_sent(txt)
     total = len(sents)
@@ -466,7 +466,7 @@ for entry in data:
             lbl_label = labels[j][2]
             sub_labels.append([lb-sb,le-sb,lbl_label])
 
-        ret.append({'data': sent_txt, 'label':sub_labels})
+        ret.append({'text': sent_txt, 'label':sub_labels})
 
 b_save_list_datasets(ret,'train.json')
 
