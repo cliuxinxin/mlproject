@@ -240,7 +240,7 @@ def p_generate_new_datasets(new_data, text, labels, borders_end, borders_start, 
     idx = 0
     for b_start,b_end in zip(borders_start,borders_end):
         entry = {}
-        entry['data'] = text[b_start:b_end]
+        entry['text'] = text[b_start:b_end]
         new_labels = []
         for idxl,loc in enumerate(label_loc):
             if loc == idx:
@@ -290,9 +290,9 @@ def p_export_preprocess(path,task):
     data = b_read_dataset(path)
     std_labels = b_read_db_labels(task)['label'].to_list()
     for entry in data:
-        text = entry['data']
+        text = entry['text']
         text = text.split('@crazy@')[0]
-        entry['data'] = text
+        entry['text'] = text
         del entry['label_counts']
         for label in std_labels:
             del entry[label]
@@ -306,10 +306,10 @@ def p_upload_preprocess(file,task):
     std_labels = std_labels[std_labels['task'] == task]
     std_labels = std_labels['label'].tolist()
     for entry in data:
-        text = entry['data']
+        text = entry['text']
         md5 = entry['md5']
         text  = text + '@crazy@' + md5
-        entry['data'] = text
+        entry['text'] = text
         try:
             labels = entry['label']
         except:
@@ -336,10 +336,10 @@ def p_process_df(df,task):
     # 清洗html标签
     p_html_text(df,data_col)
     # 改名
-    df.rename(columns={data_col:'data'},inplace=True)
+    df.rename(columns={data_col:'text'},inplace=True)
     df.rename(columns={data_source_col:'source'},inplace=True)
     df['task'] = task
-    df['md5'] = df['data'].apply(p_generate_md5)
+    df['md5'] = df['text'].apply(p_generate_md5)
     df['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     df.drop_duplicates(subset=['md5'],inplace=True)
     return df
@@ -506,7 +506,7 @@ def b_cut_datasets_size_pipe(file):
     new_data = []
     for entry in data:
         id = entry['id']
-        text = entry['data']
+        text = entry['text']
         labels = entry['label']
         if len(text) < 500:
             new_data.append(entry)
@@ -525,7 +525,7 @@ def b_baidu_excel_format(file):
     excel_data = []
     for entry in new_data:
         item = []
-        item.append(entry['data'])
+        item.append(entry['text'])
         labels = entry['label']
         for label in labels:
             loc = [label[0],label[1]]
@@ -556,7 +556,7 @@ def b_select_data_by_model(task,num) -> list:
 
     sample_data = []
     for index,row in db.iterrows():
-        text = row['data']
+        text = row['text']
         if len(text) > 500:
             doc = nlp(text)
             print(doc.cats['需要'])
@@ -625,16 +625,16 @@ def b_doccano_dataset_label_view(file,labels,project_id):
     train = b_read_dataset(file)
     new_train = []
     for entry in train:
-        text = entry['data']
+        text = entry['text']
         for label in entry['label']:
             new_entry = copy.deepcopy(entry)
-            new_entry.pop('data')
+            new_entry.pop('text')
 
             start = label[0]
             end = label[1]
             s_start = start - 200 if start - 200 > 0 else 0
             s_end = end + 200 if end + 200 < len(text) else len(text)
-            new_entry['data'] = text[s_start:s_end]
+            new_entry['text'] = text[s_start:s_end]
             label_ = [[start - s_start,end - s_start,label[2]]]
             new_entry['label'] = label_
             new_entry['s_start'] = s_start
@@ -675,7 +675,7 @@ def b_doccano_cat_data(df,number,terms,project_id):
         if len(new_trian) == number:
             break
     df = pd.DataFrame(new_trian)
-    df.rename(columns={'text':'data'},inplace=True)
+    df.rename(columns={'text':'text'},inplace=True)
     b_save_df_datasets(df,'train_cat.json')
     b_doccano_dataset_label_view('train_cat.json',['其他'],project_id)
 
@@ -842,9 +842,9 @@ def b_bio_trans_dataset(bio_labels,file):
     new_data = []
     for sample in data:
         new_sample = {}
-        text = sample['data']
+        text = sample['text']
         l_text = list(text)
-        new_sample['data'] = l_text
+        new_sample['text'] = l_text
         new_sample_label = [0] * len(l_text)
         for label in sample['label']:
             start = label[0]
@@ -893,7 +893,7 @@ def b_remove_invalid_label(file):
     cleaned_datas = []
     for sample in data:
         cleaned_data = deepcopy(sample)
-        text = cleaned_data['data']
+        text = cleaned_data['text']
         labels = cleaned_data['label']
         clean_labels = []
         for start,end,label in labels:
@@ -968,13 +968,13 @@ def b_combine_train_dev_meta():
 
     db = b_read_db_datasets()
 
-    df['md5'] = df['data'].apply(p_generate_md5)
+    df['md5'] = df['text'].apply(p_generate_md5)
 
     db_new = pd.merge(db,df,left_on='md5',right_on='md5',how='left')
 
     db_new = db_new.dropna()
 
-    db_new.rename(columns={'data':'text'},inplace=True)
+    db_new.rename(columns={'text':'text'},inplace=True)
 
     b_save_df_datasets(db_new,'train_dev.json')
 
@@ -1026,7 +1026,7 @@ def b_label_dataset_mult(task,file,thread_num):
             else:
                 sample = q.get()
                 try:
-                    text = sample['data']
+                    text = sample['text']
                 except:
                     text = sample['text']
                 doc = nlp(text)
@@ -1066,10 +1066,10 @@ def b_compare_human_machine_label():
 
     def record_data(new_data,wrong_type,label_type,sample, label):
         new_sample = copy.deepcopy(sample)
-        new_sample.pop('data')
+        new_sample.pop('text')
         new_sample.pop('mlabel')
 
-        text = sample['data']
+        text = sample['text']
 
         new_sample['错误种类'] = wrong_type
         new_sample['标注人'] = label_type
@@ -1079,7 +1079,7 @@ def b_compare_human_machine_label():
         s_start = start - 200 if start - 200 > 0 else 0
         s_end = end + 200 if end + 200 < len(text) else len(text)
 
-        new_sample['data'] = text[s_start:s_end] + '\n' + '错误类型'+label[2]
+        new_sample['text'] = text[s_start:s_end] + '\n' + '错误类型'+label[2]
         label_ = [[start - s_start,end - s_start,label[2]]]
         new_sample['label'] = label_
         new_sample['s_start'] = s_start
@@ -1181,7 +1181,7 @@ def b_trf_label_dataset(nlp,file):
     data = b_read_dataset(file)
 
     for sample in data:
-        text = sample['data']
+        text = sample['text']
     
     # 把text按照500字符分割
         if len(text) > 500:
@@ -1253,7 +1253,7 @@ def b_eavl_dataset(org_dataset_file,prd_dataset_file):
 
     examples = []
     for org,prd in zip(org_data,prd_data):
-        text = org['data']
+        text = org['text']
         org_doc = nlp.make_doc(text)
         prd_doc = nlp.make_doc(text)
         org_ents = get_ents(text, org_doc,org)
@@ -1351,7 +1351,7 @@ def b_generate_cats_datasets_by_compare(org_file,cmp_file):
     cmp_data = b_read_dataset(cmp_file)
 
     for o_sample,c_sample in zip(org_data,cmp_data):
-        text = o_sample['data']
+        text = o_sample['text']
         labels = o_sample['label']
         predicts = c_sample['label']
         o_sample['cats'] = {"需要":0,"不需要":1} 
@@ -1377,9 +1377,9 @@ def b_doccano_compare(org_file,cmp_file):
 
     def record_data(new_data,wrong_type,label_type,sample, label):
         new_sample = copy.deepcopy(sample)
-        new_sample.pop('data')
+        new_sample.pop('text')
 
-        text = sample['data']
+        text = sample['text']
 
         new_sample['wrong_type'] = wrong_type
         new_sample['labeler'] = label_type
@@ -1390,7 +1390,7 @@ def b_doccano_compare(org_file,cmp_file):
         s_start = start - 200 if start - 200 > 0 else 0
         s_end = end + 200 if end + 200 < len(text) else len(text)
 
-        new_sample['data'] = text[s_start:s_end] + '\n' + '错误类型'+label[2] + '错误种类' + wrong_type
+        new_sample['text'] = text[s_start:s_end] + '\n' + '错误类型'+label[2] + '错误种类' + wrong_type
         label_ = [[start - s_start,end - s_start,label[2]]]
         new_sample['label'] = label_
         new_sample['s_start'] = s_start
@@ -1500,7 +1500,7 @@ def b_label_dataset_multprocess(task,file):
             self.data = []
 
         def add(self, sample):
-            doc = self.nlp(sample['data'])
+            doc = self.nlp(sample['text'])
             labels = [[ent.start_char,ent.end_char,ent.label_] for ent in doc.ents]
             sample['label'] = labels
             self.data.append(sample)
@@ -1607,12 +1607,12 @@ def b_generate_compare_refine(task,org_file,cmp_file):
     results = []
     for sample in org_data:
         result = deepcopy(sample)
-        del result['data']
+        del result['text']
         del result['label']
         del result['time']
         id = sample['id']
         md5 = sample['md5']
-        text = sample['data']
+        text = sample['text']
         for entry in cmp_data:
             if entry['md5'] == md5:
                 break
@@ -1832,7 +1832,7 @@ def b_get_label_values(file):
     new_data = []
 
     for sample in data:
-        text = sample['data']
+        text = sample['text']
         labels = sample['label']
         for label in labels:
             entry = {'type':label[2],
@@ -1852,7 +1852,7 @@ def b_gpu_label(task,file):
 
     nlp = b_load_best_model(task)
 
-    data_data = [sample['data'] for sample in data]
+    data_data = [sample['text'] for sample in data]
 
     docs = nlp.pipe(data_data)
 
@@ -1940,7 +1940,7 @@ def b_convert_baidu_dataset(file,num):
     for sample in data[:num]:
         new_sample = {}
         new_sample['id'] = sample['id']
-        new_sample['text'] = sample['data']
+        new_sample['text'] = sample['text']
         new_sample['relations'] = []
         new_sample['entities'] = []
         for idx,label in enumerate(sample['label']):
@@ -2019,7 +2019,7 @@ def b_sample_label_data(task):
             new_entry['task'] = entry['task']
             md5 = entry['md5']
             new_entry['md5'] = md5
-            text = entry['data']
+            text = entry['text']
             human_label = text[human_start:human_end]
             new_entry['human_start'] = human_start
             new_entry['human_end'] = human_end

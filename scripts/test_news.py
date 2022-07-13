@@ -103,9 +103,9 @@ for file in files:
         title = doc.short_title()
         entry['title'] = title
         content = result['content']
-        entry['data'] = title + '\n' + content
+        entry['text'] = title + '\n' + content
         entry['md5'] = p_generate_md5(content)
-        entry['data'] = clean_data(entry['data'])
+        entry['text'] = clean_data(entry['text'])
         data.append(entry)
     except:
         continue

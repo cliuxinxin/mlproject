@@ -10,7 +10,7 @@ def work(q,nlp,data):
             return
         else:
             sample = q.get()
-            doc = nlp(sample['data'])
+            doc = nlp(sample['text'])
             label = [[ent.start,ent.end,ent.label_] for ent in doc.ents]
             sample['mlabel'] = label
             data.append(sample)
