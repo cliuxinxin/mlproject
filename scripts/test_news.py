@@ -1,4 +1,5 @@
 from data_utils import *
+from readability import Document
 
 from gne import GeneralNewsExtractor
 extractor = GeneralNewsExtractor()
@@ -97,8 +98,9 @@ for file in files:
     entry = {}
     try:
         html = open(file, 'r').read()
-        result = extractor.extract(html)
-        title = result['title']
+        doc = Document(html)
+        result = extractor.extract(doc.summary())
+        title = doc.short_title()
         entry['title'] = title
         content = result['content']
         entry['data'] = title + '\n' + content
