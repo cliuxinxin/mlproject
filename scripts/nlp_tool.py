@@ -1,4 +1,5 @@
 import os
+import nltk
 
 import pandas as pd
 from umap import UMAP
@@ -49,6 +50,39 @@ class Dataset():
 
     def sample(self,n):
         return self.df.sample(n)
+
+class Base():
+    def add_length(self,df,col='text'):
+        df['length'] = df[col].apply(lambda x:len(x))
+        return df
+
+    def display_describe(self,df):
+        return df.describe().T
+
+    def display_descirbe_num(self,df,txt_col=['text','title']):
+        return df[txt_col].describe().T
+
+    def display_na(self,df):
+        return df.isnull().sum()
+
+    def display_length(self,df):
+        df['length'].plot(kind='hist',bins=30,figsize=(8,2))
+
+    def fill_na(self,df,col,value='unkown'):
+        df[col] = df[col].fillna(value)
+        return df
+
+    def nltk_stopwords(sefl,lng='english'):
+        stopwords = set(nltk.corpus.stopwords.words(lng))
+        return stopwords
+
+    def add_stopwords(self,stopwords,include_stopwords):
+        stopwords = stopwords | include_stopwords
+        return stopwords
+
+    def remove_stopwords(self,stopwords,exclude_stopwords):
+        stopwords -= exclude_stopwords
+        return stopwords 
         
 
 file = 'xiyouji.txt'
