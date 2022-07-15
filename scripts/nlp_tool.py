@@ -1,15 +1,35 @@
 import os
 import nltk
+import re
 
 import pandas as pd
+from requests import head
 from umap import UMAP
+import numpy
 
 # pip install -U sentence-transformers
 from sentence_transformers import SentenceTransformer
+from websockets import Data
 
 # 根目录
 ROOT = os.path.dirname(os.path.dirname(__file__))
 ASSETS = os.path.join(ROOT, 'assets/')
+
+file = 'xiyouji.txt'
+
+df = pd.read_csv(ASSETS + file,header=None)
+
+df.columns = ['text']
+
+sentences = df['text']
+
+model = SentenceTransformer('distiluse-base-multilingual-cased-v1')
+
+X =  model.encode(sentences)
+
+numpy.savetxt(ASSETS + "xiyouji.tsv", X, delimiter='\t')
+
+df.to_csv(ASSETS + "xiyouji_meta.csv", index=False,header=False)
 
 
 class Processer():
@@ -40,13 +60,13 @@ class NLPTool:
 
 
 class Dataset():
-    def __init__(self) -> None:
-        self.df = None
+    def __init__(self,path) -> None:
+        self.df = self.read_csv(path)
         pass
 
     def read_csv(self,path):
         df = pd.read_csv(ASSETS + path)
-        self.df = df 
+        return df
 
     def sample(self,n):
         return self.df.sample(n)
@@ -55,6 +75,9 @@ class Base():
     def add_length(self,df,col='text'):
         df['length'] = df[col].apply(lambda x:len(x))
         return df
+
+    def tokenize(sefl,text):
+        return re.findall(r'[\w-]*\p{L}[\w-]*', text) 
 
     def display_describe(self,df):
         return df.describe().T
@@ -80,21 +103,22 @@ class Base():
         stopwords = stopwords | include_stopwords
         return stopwords
 
-    def remove_stopwords(self,stopwords,exclude_stopwords):
+    def exclude_stopwords(self,stopwords,exclude_stopwords):
         stopwords -= exclude_stopwords
         return stopwords 
-        
+    
+    def remove_stopwords(self,tokens,stopwords):
+        return [token for token in tokens if token not in stopwords]
 
-file = 'xiyouji.txt'
+    def prepare_pipeline(self,text,pipeline=[str.lower,tokenize,remove_stopwords]):
+        tokens = text
+        for transform in pipeline:
+            tokens = transform(tokens)
+        return tokens
 
-cleaner = Cleaner()
-
-lines = NLPTool().read_file(file)
-lines = [line for line in lines if cleaner.find_n(line)!=True]
-
-df = pd.DataFrame(lines)
-df.columns = ['text']
-Processer().umap_process(df,'xiyouji.csv')
+    def pipeline_df(self,df):
+        df['tokens'] = df['text'].apply(lambda x:self.prepare_pipeline(x))
+        return df
 
 
 

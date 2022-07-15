@@ -573,7 +573,7 @@ def b_doccano_upload(file,project_id):
     """
     把文件上传到doccano的项目中
     """
-    doccano_client.post_doc_upload(project_id,file,ASSETS_PATH,column_data="data")
+    doccano_client.post_doc_upload(project_id,file,ASSETS_PATH)
 
 
 def b_doccano_upload_by_task(file,task,task_type):

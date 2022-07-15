@@ -98,9 +98,10 @@ for file in files:
     entry = {}
     try:
         html = open(file, 'r').read()
+        result = extractor.extract(html)
+        title = result['title']
         doc = Document(html)
         result = extractor.extract(doc.summary())
-        title = doc.short_title()
         entry['title'] = title
         content = result['content']
         entry['text'] = title + '\n' + content
@@ -116,7 +117,7 @@ data = data.drop_duplicates(subset=['md5'])
 
 data = data[~data.md5.isin(news.md5)]
 
-data['label'] = data.data.apply(label_data)
+data['label'] = data.text.apply(label_data)
 
 b_save_df_datasets(data, 'news_test.json')
 
@@ -124,7 +125,7 @@ b_doccano_upload('news_test.json',14)
 
 
 # 重新随机排序
-news = news[:3275]
+news = news[:3473]
 news = news.sample(frac=1)
 
 train = news[:int(len(news)*0.9)]
