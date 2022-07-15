@@ -16,7 +16,7 @@ import threading
 import glob
 from copy import deepcopy
 from datetime import datetime
-
+import html
 
 
 import pandas as pd
@@ -195,6 +195,7 @@ def p_filter_tags(text) -> str:
     re_h = re.compile('</?\w+[^>]*>')  # HTML标签
     re_o = re.compile(r'<[^>]+>', re.S) # 其他
     re_comment = re.compile('<!--[^>]*-->')  # HTML注释
+    text = html.unescape(text)
     s = re_cdata.sub('', text)  # 去掉CDATA
     s = re_script.sub('', s)  # 去掉SCRIPT
     s = re_style.sub('', s)  # 去掉style
@@ -334,11 +335,12 @@ def p_process_df(df,task):
     df = df[df[data_col].notnull()]
     df = df[df[data_source_col].notnull()]
     # 清洗html标签
-    p_html_text(df,data_col)
+    # df = p_html_text(df,data_col)
     # 改名
     df.rename(columns={data_col:'text'},inplace=True)
     df.rename(columns={data_source_col:'source'},inplace=True)
     df['task'] = task
+    df['text'] = df['text'].apply(p_filter_tags)
     df['md5'] = df['text'].apply(p_generate_md5)
     df['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     df.drop_duplicates(subset=['md5'],inplace=True)
