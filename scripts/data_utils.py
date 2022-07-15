@@ -16,7 +16,6 @@ import threading
 import glob
 from copy import deepcopy
 from datetime import datetime
-import html
 
 
 import pandas as pd
@@ -195,7 +194,6 @@ def p_filter_tags(text) -> str:
     re_h = re.compile('</?\w+[^>]*>')  # HTML标签
     re_o = re.compile(r'<[^>]+>', re.S) # 其他
     re_comment = re.compile('<!--[^>]*-->')  # HTML注释
-    text = html.unescape(text)
     s = re_cdata.sub('', text)  # 去掉CDATA
     s = re_script.sub('', s)  # 去掉SCRIPT
     s = re_style.sub('', s)  # 去掉style
