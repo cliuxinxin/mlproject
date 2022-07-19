@@ -10,7 +10,7 @@ test = True
 
 def d_parse_config():
     config = configparser.ConfigParser()
-    config.read(r"D:\Gihub_desk\clone-file\mlproject\scripts\config.ini")
+    config.read("config.ini")
     return config
 project_configs = d_parse_config()
 def mysql_connect(config='mysql'):
