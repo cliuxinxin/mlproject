@@ -2035,6 +2035,13 @@ def b_sample_label_data(task):
     # 写入文件
     b_save_list_datasets(new_data,'所有标签.json')
 
+
+def b_display_all_keys(data):
+    keys = set()
+    for entry in data:
+        keys.update(entry.keys())
+    print(keys)
+
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————

@@ -125,7 +125,7 @@ b_doccano_upload('news_test.json',14)
 
 
 # 重新随机排序
-news = news[:3473]
+news = news[:3658]
 news = news.sample(frac=1)
 
 train = news[:int(len(news)*0.9)]
@@ -154,3 +154,7 @@ df = pd.DataFrame(data)
 df5 = pd.DataFrame(df.md5.value_counts())
 
 df[df.md5.isin(df5[df5.md5 > 1].index)][['md5','dataset']].sort_values(by='md5')
+
+# select * from final_other_tender_bid_result where source_website_address = 'http://www.ccgp-anhui.gov.cn/ZcyAnnouncemen'
+# 选取source_website_address 开头为 'http://www.ccgp-anhui.gov.cn/ZcyAnnouncemen' 的数据
+sql = "select * from final_other_tender_bid_result where source_website_address like 'http://www.ccgp-anhui.gov.cn/ZcyAnnouncemen%'"
