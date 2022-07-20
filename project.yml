@@ -50,6 +50,9 @@ workflows:
     - convert
     - trf_pre_train
     - evaluate
+  all_rel:
+    - convert_rel
+    - train_rel
 
 # 项目命令
 commands:
@@ -66,6 +69,19 @@ commands:
     script:
       - "python scripts/convert.py ${vars.lang} assets/${vars.train} corpus/train.spacy"
       - "python scripts/convert.py ${vars.lang} assets/${vars.dev} corpus/dev.spacy"
+    deps:
+      - "assets/${vars.train}"
+      - "assets/${vars.dev}"
+      - "scripts/convert.py"
+    outputs:
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+
+  - name: "convert_rel"
+    help: "convert to rel data"
+    script:
+      - "python scripts/convert_rel.py ${vars.lang} assets/${vars.train} corpus/train.spacy"
+      - "python scripts/convert_rel.py ${vars.lang} assets/${vars.dev} corpus/dev.spacy"
     deps:
       - "assets/${vars.train}"
       - "assets/${vars.dev}"
@@ -98,6 +114,17 @@ commands:
     help: "Train the NER model"
     script:
       - "python -m spacy train configs/config.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
+    deps:
+      - "configs/config.cfg"
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+    outputs:
+      - "training/model_best"
+
+  - name: "train_rel"
+    help: "Train the rel model"
+    script:
+      - "python -m spacy train configs/config_wl_rel.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy -c scripts/custom_functions.py  --gpu-id ${vars.gpu_id}"
     deps:
       - "configs/config.cfg"
       - "corpus/train.spacy"
