@@ -18,7 +18,7 @@ def get_source_data(table, s):
     df = pd.read_sql(sql,con=conn)
     return df
 
-def read_file(file)
+def read_file(file):
     df = pd.read_csv(ASSETS_PATH + file,header=None)
     df.columns = ['source_website_name','table']
     df['pk'] = df['source_website_name'] + '_' + df['table']
