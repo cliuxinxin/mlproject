@@ -1,7 +1,7 @@
 from data_utils import *
 from readability import Document
-
 from gne import GeneralNewsExtractor
+
 extractor = GeneralNewsExtractor()
 nlp = b_load_best_model('news')
 
@@ -77,12 +77,15 @@ def clean_data(data):
     data = '\n'.join(data)
     return data
 
-# 下载目录
-path = '/Users/liuxinxin/Downloads/'
-# 查找目录下面htm和html文件
-files = get_html_files(path)
-# 移动到ASSETS_PATH/htmls目录下
-move_htmls(files)
+def move_download_htmls():
+    # 下载目录
+    path = '/Users/liuxinxin/Downloads/'
+    # 查找目录下面htm和html文件
+    files = get_html_files(path)
+    # 移动到ASSETS_PATH/htmls目录下
+    move_htmls(files)
+
+move_download_htmls()
 
 # 下载最新数据
 b_doccano_export_project(14,'news.json')
