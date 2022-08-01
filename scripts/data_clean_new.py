@@ -107,7 +107,8 @@ def clean_tender_预算(value):
     """
     清洗出招标预算
     """
-    value = d_amount_process(value) 
+    value = d_amount_process(value)
+    value = 0 if value == '' else value
     return value
 
 def clean_tender_报名开始时间(value):
