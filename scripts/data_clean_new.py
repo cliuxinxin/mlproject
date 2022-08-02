@@ -94,12 +94,21 @@ def clean_bid_中标金额单位(value):
     return 1
     
 
+def clean_tender_预算单位(value):
+    """
+    清洗出中标金额
+    """
+    ten_thousand = re.findall(r'万',value)
+    if ten_thousand:
+        return 10000
+    return 1
 
 def clean_tender_预算(value):
     """
     清洗出招标预算
     """
-    value = d_amount_process(value) 
+    value = d_amount_process(value)
+    value = 0 if value == '' else value
     return value
 
 def clean_tender_报名开始时间(value):

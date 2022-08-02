@@ -112,31 +112,28 @@ def clean_labels(labels,task):
 
 def process_labels(labels,task):
     """
-    根据任务做一些label之间的数据处理
+    根据任务做一些label之间的数据处理，将金额和金额单位转为数字
     """
     if len(labels) == 0:
         return labels
-    if task == 'bid':
-        # 找到labels中的中标金额和中标金额单位
-        unit = 1
-        for label in labels:
-            label_,text = list(label.items())[0]
-            if label_ == '中标金额':
-                amount = text
-            if label_ == '中标金额单位':
-                unit = text
-        # 把中标金额和中标金额单位拼接起来
-        new_labels = []
-        for label in labels:
-            new_label = {}
-            label_,text = list(label.items())[0]
-            new_label[label_] = text
-            if label_ == '中标金额':
-                new_label[label_] = Decimal(amount) * Decimal(str(unit))
-            new_labels.append(new_label)
-        return new_labels
-    return labels
-
+    # 找到labels中的金额和金额单位
+    unit = 1
+    for label in labels:
+        label_,text = list(label.items())[0]
+        if label_ in ['中标金额','预算']:
+            amount = text
+        if label_ in ['中标金额单位','预算单位']:
+            unit = text
+    # 把中标金额和中标金额单位拼接起来
+    new_labels = []
+    for label in labels:
+        new_label = {}
+        label_,text = list(label.items())[0]
+        new_label[label_] = text
+        if label_ in ['中标金额','预算']:
+            new_label[label_] = Decimal(amount) * Decimal(str(unit))
+        new_labels.append(new_label)
+    return new_labels
 
 def preprocess_save(labels,task):
     """
@@ -202,6 +199,8 @@ def process_save(data_process, task, origin_table, df):
             # 如果有中标金额单位，则删除
             if '中标金额单位' in df_labels.columns:
                 df_labels.drop('中标金额单位',axis=1,inplace=True)
+        if '预算单位' in df_labels.columns:
+            df_labels.drop('预算单位',axis=1,inplace=True)
         data.append(df_labels)
         
     label_df = pd.concat(data)
