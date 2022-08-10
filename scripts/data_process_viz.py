@@ -109,7 +109,7 @@ for i in range(len(data)):
         # plt_title.append('_'.join([f"diff_{data[i][1][j][0]}",data[i][1][j][0]]))
         # print('_'.join([f"diff_{data[i][1][j][0]}",data[i][1][j][0]]))
         # print([data[i][1][j][1]/data[i][0][j][1],1-(data[i][1][j][1]/data[i][0][j][1])])
-        plt_label.append([data[i][1][j][0],"diff"])
+        plt_label.append([data[i][1][j][0],f"diff\n{data[i][0][j][1]-data[i][1][j][1]}"])
         plt_data.append([data[i][1][j][1]/data[i][0][j][1],1-(data[i][1][j][1]/data[i][0][j][1])])
 
 # 绘制两个任务分表完成数量
@@ -120,7 +120,7 @@ for i in range(len(data)):
         print(data[i][1][j][1])
         label_.append(data[i][1][j][0])
         data_.append(data[i][1][j][1]/data[i][0][3][1])
-    label_.append('diff_total')
+    label_.append(f'diff_total\n{data[i][0][3][1]-data[i][1][3][1]}')
     data_.append(1-sum(data_))
     plt_title.append(f"{tables[data[i][0][j][0]]['task']}**{data[i][0][j+1][1]}")
     plt_label.append(label_)
@@ -163,8 +163,5 @@ except:
     print(plt_data[-1])
     print(plt_label[-1])
 # 保存统计图  
-import os
-os.remove('result1.png')
-os.rename('result.png','result1.png')
 plt.savefig('result.png', bbox_inches='tight')
 
