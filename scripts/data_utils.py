@@ -2028,7 +2028,10 @@ def b_sample_label_data(task):
             new_entry['human_label'] = human_label
             new_entry['label_len'] = len(human_label)
             new_entry['is_human_correct'] = ''
-            new_entry['url'] = entry['data_source'] + "#:~:text=" + str(human_label)
+            try:
+                new_entry['url'] = entry['data_source'] + "#:~:text=" + str(human_label)
+            except:
+                new_entry['url'] = ''
             dataset = train_project_id if entry['dataset'] == task + '_train' else dev_project_id
             new_entry['doccano_url'] = 'http://47.108.218.88:18000/projects/{}/sequence-labeling?page=1&q={}'.format(dataset,md5) 
             new_data.append(new_entry)
