@@ -52,9 +52,7 @@ def redis_push_diff(ori_tar_configs):
     # 将df的数据推送到redis
         for idx,row in df.iterrows():
             content = json.dumps(row.to_dict())
-            # 如果不存在，则推送
-            if not redis_.hexists(diff_key,content):
-                redis_.rpush(diff_key,content)
+            redis_.rpush(diff_key,content)
 
 def redis_not_empty(key):
     return redis_.llen(key) > 0
@@ -82,17 +80,18 @@ def save_data(data,ori_task_configs):
         redis_.rpush(file_key, file_name + '.json')
 
 def generate_file(ori_task_configs,num=100):
-    while redis_not_empty(diff_key):
-        data = pop_redis_data(diff_key,num)
-        save_data(data,ori_task_configs)
+    data = pop_redis_data(diff_key,num)
+    save_data(data,ori_task_configs)
 
-process_configs = read_config()
-ori_tar_configs = get_target_config(process_configs)
-ori_task_configs = get_task_config(process_configs)
+# process_configs = read_config()
+# ori_tar_configs = get_target_config(process_configs)
+# ori_task_configs = get_task_config(process_configs)
 
-redis_push_diff(ori_tar_configs)
-generate_file(ori_task_configs,num=100)
+# redis_push_diff(ori_tar_configs)
+# generate_file(ori_task_configs,num=100)
 
-# 打印出redis的长度
-print(redis_.llen(diff_key))
+# # 打印出redis的长度
+# print(redis_.llen(diff_key))
+
+
 
