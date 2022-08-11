@@ -53,6 +53,9 @@ workflows:
   all_rel:
     - convert_rel
     - train_rel
+  all_multcats:
+    - convert_cats
+    - train_multcats
 
 # 项目命令
 commands:
@@ -93,8 +96,8 @@ commands:
   - name: "convert_cats"
     help: "convert to cats data"
     script:
-      - "python scripts/convert_cats.py ${vars.lang} assets/train_cats.json corpus/train_cats.spacy"
-      - "python scripts/convert_cats.py ${vars.lang} assets/dev_cats.json corpus/dev_cats.spacy"
+      - "python scripts/convert_cats.py ${vars.lang} assets/train.json corpus/train.spacy"
+      - "python scripts/convert_cats.py ${vars.lang} assets/dev.json corpus/dev.spacy"
     deps:
       - "assets/train_cats.json"
       - "assets/dev_cats.json"
@@ -135,7 +138,7 @@ commands:
   - name: "train_cats"
     help: "Train the cat model"
     script:
-      - "python -m spacy train configs/config_cats.cfg --output training/cats/ --paths.train corpus/train_cats.spacy --paths.dev corpus/dev_cats.spacy  --gpu-id ${vars.gpu_id}"
+      - "python -m spacy train configs/config_cats.cfg --output training/cats/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
     deps:
       - "configs/config_cats.cfg"
       - "corpus/train_cats.spacy"
@@ -227,6 +230,17 @@ commands:
       - "python -m spacy train configs/config_spancat.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
     deps:
       - "configs/config.cfg"
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+    outputs:
+      - "training/model_best"
+
+  - name: "train_multcats"
+    help: "Train the multilabel cats"
+    script:
+      - "python -m spacy train configs/config_multcats.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
+    deps:
+      - "configs/config_multcats.cfg"
       - "corpus/train.spacy"
       - "corpus/dev.spacy"
     outputs:
