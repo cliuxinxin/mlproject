@@ -83,9 +83,9 @@ def generate_file(ori_task_configs,num=100):
     data = pop_redis_data(diff_key,num)
     save_data(data,ori_task_configs)
 
-# process_configs = read_config()
-# ori_tar_configs = get_target_config(process_configs)
-# ori_task_configs = get_task_config(process_configs)
+process_configs = read_config()
+ori_tar_configs = get_target_config(process_configs)
+ori_task_configs = get_task_config(process_configs)
 
 # redis_push_diff(ori_tar_configs)
 # generate_file(ori_task_configs,num=100)
