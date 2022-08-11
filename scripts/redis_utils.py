@@ -42,9 +42,9 @@ def get_task_config(configs):
 def redis_push_diff(ori_tar_configs):
     for ori,tar in ori_tar_configs.items():
     # 读取差异总数据
-        # sql = f'select id from {ori} where id not in (select id from {tar}) limit 100'
+        sql = f'select id from {ori} where id not in (select id from {tar})'
         # 取100条数据
-        sql = f'select id from {ori} limit 100'
+        # sql = f'select id from {ori} limit 100'
 
         df = mysql_select_df(sql)
         df['table'] = ori
