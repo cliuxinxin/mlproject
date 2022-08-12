@@ -319,4 +319,5 @@ if __name__ == '__main__':
 
         # 填写数据
         delete_and_insert_target(file, target_table, df)
+        files = glob.glob(DATA_PATH + '*.json')
 
