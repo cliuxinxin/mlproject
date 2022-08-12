@@ -25,5 +25,5 @@ while True:
             print('Generate file done')
         except:
             continue
-        files = read_json_files(DATA_PATH)
+    files = read_json_files(DATA_PATH)
     time.sleep(5)
