@@ -87,7 +87,7 @@ def generate_file(ori_task_configs,num=100):
 # ori_tar_configs = get_target_config(process_configs)
 # ori_task_configs = get_task_config(process_configs)
 
-# redis_push_diff(ori_tar_configs)
+# redis_push_diff(ori_tar_configs
 # generate_file(ori_task_configs,num=100)
 
 # # 打印出redis的长度

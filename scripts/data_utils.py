@@ -2046,6 +2046,15 @@ def b_display_all_keys(data):
         keys.update(entry.keys())
     print(keys)
 
+def b_get_cats(data):
+    # 获取数据集中的cats的分布
+    cats = {}
+    for entry in data:
+        for cat,is_cat in entry['cats'].items():
+            if is_cat:
+                cats[cat] = cats.get(cat,0) + 1
+    return cats
+
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————
