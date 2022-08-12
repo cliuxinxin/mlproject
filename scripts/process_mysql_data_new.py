@@ -245,79 +245,78 @@ def delete_and_insert_target(file, target_table, df):
     move_file(file)
 
 if __name__ == '__main__':
-    files = glob.glob(DATA_PATH + '*.json')
     helper = Helper()
     data_process = json.loads(open('data_process.json','r',encoding='utf-8').read())
+    while True:
+        files = glob.glob(DATA_PATH + '*.json')
+        for file in tqdm(files):
+            print(file)
+            task = file.split('#')[0].split('/')[-1]
+            # task = 'bid'
+            origin_table = file.split('#')[1]
+            target_table = data_process.get(origin_table).get('target')
 
-    for file in tqdm(files):
-        print(file)
-        task = file.split('#')[0].split('/')[-1]
-        # task = 'bid'
-        origin_table = file.split('#')[1]
-        target_table = data_process.get(origin_table).get('target')
+            label_data = helper.get_label(task)
+            nlp = helper.get_model(task)
 
-        label_data = helper.get_label(task)
-        nlp = helper.get_model(task)
+            df = pd.read_json(file)
+            if len(df) == 0:
+                continue
+            df['text'] = df['detail_content'].fillna('')
+            df['text'] = df['text'].apply(p_filter_tags)
+            df['md5'] = df['text'].apply(p_generate_md5)
+            max_len = 10000
+            df['text'] = df['text'].str[:max_len]
+            # 计算标签
+            data = df['text'].to_list()
+            docs = nlp.pipe(data)
+            labels = []
 
-        df = pd.read_json(file)
-        if len(df) == 0:
-            continue
-        df['text'] = df['detail_content'].fillna('')
-        df['text'] = df['text'].apply(p_filter_tags)
-        df['md5'] = df['text'].apply(p_generate_md5)
-        max_len = 10000
-        df['text'] = df['text'].str[:max_len]
-        # 计算标签
-        data = df['text'].to_list()
-        docs = nlp.pipe(data)
-        labels = []
+            for doc in docs:
+                label = []
+                for ent in doc.ents:
+                    label.append([ent.start_char,ent.end_char,ent.label_])
+                labels.append(label)
 
-        for doc in docs:
-            label = []
-            for ent in doc.ents:
-                label.append([ent.start_char,ent.end_char,ent.label_])
-            labels.append(label)
+            df['labels'] = labels
+            # 替换正确标签
+            df.loc[df.md5.isin(label_data.index),'labels'] = df[df.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
 
-        df['labels'] = labels
-        # 替换正确标签
-        df.loc[df.md5.isin(label_data.index),'labels'] = df[df.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
+            
+            if all_labels_is_empty(df['labels']):
+                df = df.drop(columns=['md5','text'])
+                df['labels'] = ''
+                df = datetime_process(df,task)
+                delete_and_insert_target(file, target_table, df)
+                continue
 
-        
-        if all_labels_is_empty(df['labels']):
-            df = df.drop(columns=['md5','text'])
-            df['labels'] = ''
+            # 得到label内容
+            df['labels'] = df.apply(get_labels,axis=1)
+            # label根据任务做清洗
+            df['clean_labels'] = df['labels'].apply(lambda x:clean_labels(x,task))
+            # 根据任务，处理label之间的问题
+            df['clean_labels'] = df['clean_labels'].apply(lambda x:process_labels(x,task))
+            # 根据任务预处理数据，合并标签内容，有全部合并成一个或者是取最前面的数据
+            df['clean_labels'] = df['clean_labels'].apply(lambda x:preprocess_save(x,task))
+            # 处理填充数据，可能根据任务分列
+            label_df, sub_label_df = process_save(data_process, task, origin_table, df)
+            # 填充label数据
+            cols = list(data_process[task].values())
+            for col in label_df.columns:
+                for md5,value in label_df[label_df[col].notnull()][['md5',col]].values:
+                    df.loc[df.md5 == md5,col] = value
+            # 填充子表
+            if task == 'bid' and len(sub_label_df) > 0:
+                delete_win_by_df('final_winning_bidder',sub_label_df,origin_table)
+                mysql_insert_data(sub_label_df,'final_winning_bidder')
+
+            # 清理df数据
+            df['labels'] = df['labels'].apply(lambda x: json.dumps(x,ensure_ascii=False))
+            # 设置labels最长长度1000
+            df['labels'] = df['labels'].apply(lambda x: x[:1000])
+            df = df.drop(columns=['md5','text','clean_labels'])
             df = datetime_process(df,task)
-            delete_and_insert_target(file, target_table, df)
-            continue
-
-        # 得到label内容
-        df['labels'] = df.apply(get_labels,axis=1)
-        # label根据任务做清洗
-        df['clean_labels'] = df['labels'].apply(lambda x:clean_labels(x,task))
-        # 根据任务，处理label之间的问题
-        df['clean_labels'] = df['clean_labels'].apply(lambda x:process_labels(x,task))
-        # 根据任务预处理数据，合并标签内容，有全部合并成一个或者是取最前面的数据
-        df['clean_labels'] = df['clean_labels'].apply(lambda x:preprocess_save(x,task))
-        # 处理填充数据，可能根据任务分列
-        label_df, sub_label_df = process_save(data_process, task, origin_table, df)
-        # 填充label数据
-        cols = list(data_process[task].values())
-        for col in label_df.columns:
-            for md5,value in label_df[label_df[col].notnull()][['md5',col]].values:
-                df.loc[df.md5 == md5,col] = value
-        # 填充子表
-        if task == 'bid' and len(sub_label_df) > 0:
-            delete_win_by_df('final_winning_bidder',sub_label_df,origin_table)
-            mysql_insert_data(sub_label_df,'final_winning_bidder')
-
-        # 清理df数据
-        df['labels'] = df['labels'].apply(lambda x: json.dumps(x,ensure_ascii=False))
-        # 设置labels最长长度1000
-        df['labels'] = df['labels'].apply(lambda x: x[:1000])
-        df = df.drop(columns=['md5','text','clean_labels'])
-        df = datetime_process(df,task)
 
         # 填写数据
         delete_and_insert_target(file, target_table, df)
-        files = glob.glob(DATA_PATH + '*.json')
 
