@@ -2055,6 +2055,57 @@ def b_get_cats(data):
                 cats[cat] = cats.get(cat,0) + 1
     return cats
 
+def b_doccano_export_cat_labels(project_id):
+    # 根据project_id下载项目的分类标签
+    cat_labels = doccano_client.get_category_type_list(project_id)
+    new_labels = []
+    for label in cat_labels:
+        new_labels.append(label['text'])
+    return new_labels
+
+def b_doccano_export_cat_project(project_id,file_name):
+    # 导出分类项目，并且将分类项目的标签从cats的列表转换成字典
+    b_doccano_export_project(project_id,'temp.json')
+
+    data = b_read_dataset('temp.json')
+
+    cats = b_doccano_export_cat_labels(project_id)
+
+    stand_cats = {}
+    for cat in cats:
+        stand_cats[cat] = 0
+
+    for entry in data:
+        entry_stand_cats = copy.deepcopy(stand_cats)
+        for cat in entry['cats']:
+            entry_stand_cats[cat] = 1
+        entry['cats'] = entry_stand_cats
+
+    b_save_list_datasets(data,file_name)
+
+def b_doccano_cat_stand_compare(project_id,file_name):
+    # 导出project_id,存入到file_name中，并且比较标准的区别
+    b_doccano_export_cat_project(project_id,file_name)
+
+    data = b_read_dataset(file_name)
+
+    train_cats = b_get_cats(data)
+    stand_cats = b_doccano_export_cat_labels(project_id)
+
+    df_train_cats = pd.DataFrame(train_cats,index=['train']).T
+    df_train_cats = df_train_cats.reset_index()
+    df_train_cats.columns = ['stand','train']
+    df_stand_cats = pd.DataFrame(stand_cats,columns=['stand'])
+
+    # df_stand_cats 左连接 df_train_cats,通过 stand列
+    df_merge = pd.merge(df_stand_cats,df_train_cats,on='stand',how='left')
+
+    # 找出 NA
+    print(df_merge[df_merge.train.isnull()])
+
+    return df_merge
+ 
+
 # ——————————————————————————————————————————————————
 # 调用
 # ——————————————————————————————————————————————————

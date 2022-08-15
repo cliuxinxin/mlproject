@@ -88,7 +88,28 @@ b_save_df_datasets(df,'dev.json')
 b_doccano_upload_by_task('dev.json','tender','dev')
 
 task = 'tender'
+
 b_sample_label_data(task)
+
+b_doccano_export_project(26,'test.json')
+
+data = b_read_dataset('test.json')
+
+cats = b_doccano_export_cat_labels(26)
+
+stand_cats = {}
+for cat in cats:
+    stand_cats[cat] = 0
+
+for entry in data:
+    entry_stand_cats = copy.deepcopy(stand_cats)
+    for cat in entry['cats']:
+        entry_stand_cats[cat] = 1
+    entry['cats'] = entry_stand_cats
+
+b_save_list_datasets(data,'train_dve.json')
+    
+
 
 
 
