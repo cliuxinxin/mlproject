@@ -24,9 +24,13 @@ train = []
 dev = []
 
 for table in tables:
+    print(table)
     for column in columns:
+        print(column)
         for label,keyword_list in keywords.items():
+            print(label)
             for keyword in keyword_list:
+                print(keyword)
                 sql = f"select id,source_website_address,detail_content from {table} where {column} regexp('{keyword}') limit 100"
                 try:
                     df = mysql_select_df(sql)
