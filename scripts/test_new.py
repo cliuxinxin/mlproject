@@ -43,15 +43,11 @@ for table in tables:
                 df['label'] = label
                 df = df[['table','id','source_website_address','detail_content','label']]
                 df = p_process_df(df,'bidcats')
+                name = table + '#' + column + '#' + label + '#' + keyword
                 if len_df == 1:
-                    train.append(df)
-                    dev.append(df)
+                    df.to_json(ASSETS_PATH + name + '#train.json')
+                    df.to_json(ASSETS_PATH + name + '#dev.json')
                 else:
-                    train.append(df[:int(len_df*0.8)])
-                    dev.append(df[int(len_df*0.8):])
+                    df[:int(len_df*0.8)].to_json(ASSETS_PATH + name + '#train.json')
+                    df[int(len_df*0.8):].to_json(ASSETS_PATH + name + '#dev.json')
 
-df_train = pd.concat(train)
-df_dev = pd.concat(dev)
-
-b_save_df_datasets(df_train,'train_cats.json')
-b_save_df_datasets(df_dev,'dev_cats.json')
