@@ -56,6 +56,9 @@ workflows:
   all_multcats:
     - convert_cats
     - train_multcats
+  all_multcats_trf:
+    - convert_cats
+    - train_multcats_trf
 
 # 项目命令
 commands:
@@ -238,10 +241,21 @@ commands:
   - name: "train_multcats"
     help: "Train the multilabel cats"
     script:
+      - "python -m spacy train configs/config_multcats.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
+    deps:
+      - "configs/config_multcats.cfg"
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+    outputs:
+      - "training/model_best"
+
+  - name: "train_multcats_trf"
+    help: "Train the multilabel cats"
+    script:
       - "python -m spacy train configs/config_multcats_trf.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
     deps:
       - "configs/config_multcats.cfg"
       - "corpus/train.spacy"
       - "corpus/dev.spacy"
     outputs:
-      - "training/model_best" 
+      - "training/model_best"  
