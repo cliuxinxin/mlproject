@@ -231,7 +231,7 @@ commands:
     deps:
       - "configs/config.cfg"
       - "corpus/train.spacy"
-      - "corpus/dev.spacy"
+      - "corpus/dev.spacy"s
     outputs:
       - "training/model_best"
 
