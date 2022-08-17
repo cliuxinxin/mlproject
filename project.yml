@@ -238,7 +238,7 @@ commands:
   - name: "train_multcats"
     help: "Train the multilabel cats"
     script:
-      - "python -m spacy train configs/config_multcats.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
+      - "python -m spacy train configs/config_multcats_trf.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
     deps:
       - "configs/config_multcats.cfg"
       - "corpus/train.spacy"

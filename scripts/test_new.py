@@ -31,6 +31,11 @@ for table in tables:
             print(label)
             for keyword in keyword_list:
                 print(keyword)
+                name = table + '#' + column + '#' + label + '#' + keyword
+                train_name = name + '#train.json'
+                # 如果train_name文件在assets目录下存在,则跳过执行
+                if os.path.exists(ASSETS_PATH + train_name):
+                    continue
                 sql = f"select id,source_website_address,detail_content from {table} where {column} regexp('{keyword}') limit 100"
                 try:
                     df = mysql_select_df(sql)

@@ -2077,9 +2077,14 @@ def b_doccano_export_cat_project(project_id,file_name):
 
     for entry in data:
         entry_stand_cats = copy.deepcopy(stand_cats)
-        for cat in entry['cats']:
-            entry_stand_cats[cat] = 1
-        entry['cats'] = entry_stand_cats
+        if 'cats' in entry:
+            for cat in entry['cats']:
+                entry_stand_cats[cat] = 1
+            entry['cats'] = entry_stand_cats
+        else:
+            for cat in entry['label']:
+                entry_stand_cats[cat] = 1
+            entry['cats'] = entry_stand_cats
 
     b_save_list_datasets(data,file_name)
 
