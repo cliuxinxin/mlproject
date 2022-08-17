@@ -88,15 +88,18 @@ dev['len'] = dev['text'].apply(lambda x:len(x))
 train = train[train['len'] != 0]
 dev = dev[dev['len'] != 0]
 # 去掉text>50000的
-train = train[train['len'] < 50000]
-dev = dev[dev['len'] < 50000]
+train = train[train['len'] < 5000]
+dev = dev[dev['len'] < 5000]
+# 去掉text<50的
+train = train[train['len'] > 50]
+dev = dev[dev['len'] > 50]
 
 b_save_df_datasets(train,'train_bid.json')
 b_save_df_datasets(dev,'dev_bid.json')
 
 
 train = b_read_dataset('train_bid.json')
-devnull = b_read_dataset('dev_bid.json')
+dev = b_read_dataset('dev_bid.json')
 
 for entry in train:
     labels = entry['label'].split(',')
@@ -116,4 +119,7 @@ b_save_list_datasets(dev,'dev_bid_new.json')
 b_doccano_export_cat_project(37,'train.json')
 b_doccano_export_cat_project(38,'dev.json')
 
+df  = pd.DataFrame(train)
+df['len'] = df['text'].apply(lambda x:len(x))
+df.sort_values(by='len',ascending=False,inplace=True)
 
