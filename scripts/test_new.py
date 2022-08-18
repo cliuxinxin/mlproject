@@ -1,4 +1,3 @@
-from posixpath import devnull
 from mysql_utils import *
 from data_utils import *
 
