@@ -179,7 +179,16 @@ def mysql_delete_data_by_ids(ids,table):
         db.commit()
         cursor.close()
 
-
+def mysql_update(table,ids,values):
+    """
+    使用insert into语句批量更新表格的数据
+    """
+    sql = "update {} set {} where id in {}".format(table,values,tuple(ids))
+    with LOCK:
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        db.commit()
+        cursor.close()
 
 
 

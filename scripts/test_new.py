@@ -69,9 +69,9 @@ for file in files:
     is_train = paras[-1] == 'train.json'
     df = pd.read_json(ASSETS_PATH + 'bidclass/' + file)
     if is_train:
-        train.append(df)
+        train.append(df[:10])
     else:
-        dev.append(df)
+        dev.append(df[:5])
 
 train = pd.concat(train)
 dev = pd.concat(dev)
@@ -87,8 +87,8 @@ dev['len'] = dev['text'].apply(lambda x:len(x))
 train = train[train['len'] != 0]
 dev = dev[dev['len'] != 0]
 # 去掉text>50000的
-train = train[train['len'] < 5000]
-dev = dev[dev['len'] < 5000]
+train = train[train['len'] < 3000]
+dev = dev[dev['len'] < 3000]
 # 去掉text<50的
 train = train[train['len'] > 50]
 dev = dev[dev['len'] > 50]
@@ -121,4 +121,10 @@ b_doccano_export_cat_project(38,'dev.json')
 df  = pd.DataFrame(train)
 df['len'] = df['text'].apply(lambda x:len(x))
 df.sort_values(by='len',ascending=False,inplace=True)
+
+ls = list(range(11))
+
+df = pd.DataFrame(ls)
+
+df[:10]
 

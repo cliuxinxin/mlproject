@@ -10,7 +10,8 @@ port = project_configs['redis']['port']
 
 # redis 参数设置
 diff_key = 'diff'
-file_key = 'file'
+tag_key = 'tag'
+sql_key = 'sql'
 pool = redis.ConnectionPool(host=host, port=port, password=password, max_connections=50)
 redis_ = redis.Redis(connection_pool=pool, decode_responses=True)
 
@@ -39,6 +40,11 @@ def get_target_config(configs):
 def get_task_config(configs):
     return parse_configs(configs,'task')
 
+def redis_push(df,key):
+    for idx,row in df.iterrows():
+        content = json.dumps(row.to_dict())
+        redis_.rpush(key,content)
+
 def redis_push_diff(ori_tar_configs):
     for ori,tar in ori_tar_configs.items():
     # 读取差异总数据
@@ -49,10 +55,7 @@ def redis_push_diff(ori_tar_configs):
         df = mysql_select_df(sql)
         df['table'] = ori
 
-    # 将df的数据推送到redis
-        for idx,row in df.iterrows():
-            content = json.dumps(row.to_dict())
-            redis_.rpush(diff_key,content)
+        redis_push(df,diff_key)
 
 def redis_not_empty(key):
     return redis_.llen(key) > 0
@@ -77,16 +80,28 @@ def save_data(data,ori_task_configs):
         file_name = task + '#' + ori + '#' + str(int(time.time()*100000))
         df1.to_json(DATA_PATH + file_name + '.json')
         print(len(df1))
-        redis_.rpush(file_key, file_name + '.json')
 
 def generate_file(ori_task_configs,num=100):
     data = pop_redis_data(diff_key,num)
     save_data(data,ori_task_configs)
 
+
 process_configs = read_config()
 ori_tar_configs = get_target_config(process_configs)
 ori_task_configs = get_task_config(process_configs)
 
+tar_configs = [value for value in ori_tar_configs.values()]
+
+def redis_push_tag():
+    tar = 'final_procurement_bid_result'
+
+    sql = f'select id from {tar} limit 100'
+
+    df = mysql_select_df(sql)
+
+    df['table'] = tar
+
+    redis_push(df,tag_key)
 # redis_push_diff(ori_tar_configs
 # generate_file(ori_task_configs,num=100)
 

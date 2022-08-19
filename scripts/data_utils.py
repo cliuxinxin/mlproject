@@ -1866,6 +1866,34 @@ def b_gpu_label(task,file):
 
     b_save_list_datasets(data,file_name + '_label.json')
 
+def b_gpu_cats_label(task,file):
+    """
+    服务器GPU直接标注
+    """
+    def get_tag(doc,threhold):
+        tag = []
+        for label,prob in doc.cats.items():
+            if prob > threhold:
+                tag.append(label)
+        if len(tag) == 0:
+            tag = ['其他']
+        return tag
+
+    file_name = file.split('.')[0]
+    data = b_read_dataset(file)
+
+    nlp = b_load_best_model(task)
+
+    data_data = [sample['text'] for sample in data]
+
+    docs = nlp.pipe(data_data)
+
+    for doc,sample in zip(docs,data):
+        tag = get_tag(doc,0.7)
+        sample['tag'] = tag
+
+    b_save_list_datasets(data,file_name + '_tag.json')
+
 def b_combine_compare(files = ['1.xlsx','2.xlsx','3.xlsx']):
     """
     根据refine导出compare，合成compare文件
