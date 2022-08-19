@@ -323,5 +323,10 @@ if __name__ == '__main__':
             except Exception as e:
                 file_name = file.split('/')[-1]
                 os.rename(file,DATA_PATH + 'tmp/' + file_name)
+                with open('/root/error_collect.txt','a') as f:
+                    t = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    f.write(f'{t}\n{file_name}\n{e}\n')
+                    f.close()
+        time.sleep(10)
 
 
