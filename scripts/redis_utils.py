@@ -40,6 +40,13 @@ def get_target_config(configs):
 def get_task_config(configs):
     return parse_configs(configs,'task')
 
+def get_tag_config(configs):
+    new_configs = {}
+    for key,value in configs.items():
+        new_configs[value['target']] = value['task'] + 'cats'
+    return new_configs
+            
+
 def redis_push(df,key):
     for idx,row in df.iterrows():
         content = json.dumps(row.to_dict())
@@ -56,6 +63,22 @@ def redis_push_diff(ori_tar_configs):
         df['table'] = ori
 
         redis_push(df,diff_key)
+
+def redis_push_tag(tag_configs):
+    for table,task in tag_configs.items():
+        sql = f"select id from {table} where classify_tag is null"
+        df = mysql_select_df(sql)
+        df['table'] = table
+        df['task'] = task
+        redis_push(df,tag_key)
+
+def redis_push_tag_test(tag_configs):
+    for table,task in tag_configs.items():
+        sql = f"select id from {table} where classify_type is null limit 200"
+        df = mysql_select_df(sql)
+        df['table'] = table
+        df['task'] = task
+        redis_push(df,tag_key)
 
 def redis_not_empty(key):
     return redis_.llen(key) > 0
@@ -89,24 +112,21 @@ def generate_file(ori_task_configs,num=100):
 process_configs = read_config()
 ori_tar_configs = get_target_config(process_configs)
 ori_task_configs = get_task_config(process_configs)
+tag_configs = get_tag_config(process_configs)
 
-tar_configs = [value for value in ori_tar_configs.values()]
 
-def redis_push_tag():
-    tar = 'final_procurement_bid_result'
 
-    sql = f'select id from {tar} limit 100'
+# redis_push_tag_test(tag_configs)
 
-    df = mysql_select_df(sql)
-
-    df['table'] = tar
-
-    redis_push(df,tag_key)
 # redis_push_diff(ori_tar_configs
 # generate_file(ori_task_configs,num=100)
 
 # # 打印出redis的长度
 # print(redis_.llen(diff_key))
+# print(redis_.llen(tag_key))
+
+# # 删除redis中的数据
+# redis_.delete(tag_key)
 
 
 

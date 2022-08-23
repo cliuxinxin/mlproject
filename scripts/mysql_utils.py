@@ -5,6 +5,7 @@ from dbutils.persistent_db import PersistentDB
 import os
 from threading import RLock
 import json
+import copy
 
 MYSQL = 'mysql'
 test = False
@@ -179,11 +180,15 @@ def mysql_delete_data_by_ids(ids,table):
         db.commit()
         cursor.close()
 
-def mysql_update(table,ids,values):
+def mysql_update(dict_value):
     """
     使用insert into语句批量更新表格的数据
     """
-    sql = "update {} set {} where id in {}".format(table,values,tuple(ids))
+    tmp  = copy.deepcopy(dict_value)
+    table = tmp.pop('table')
+    id = tmp.pop('id')
+    partial_sql = ','.join([f"{key} = '{value}'" for key,value in tmp.items()])
+    sql = f"update {table} set {partial_sql} where id = '{id}'"
     with LOCK:
         cursor = conn.cursor()
         cursor.execute(sql)

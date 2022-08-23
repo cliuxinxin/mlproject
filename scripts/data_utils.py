@@ -1880,6 +1880,7 @@ def b_gpu_cats_label(task,file):
         return tag
 
     file_name = file.split('.')[0]
+    
     data = b_read_dataset(file)
 
     nlp = b_load_best_model(task)

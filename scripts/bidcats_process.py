@@ -36,36 +36,46 @@ config = {
         'dev_id': 38,
 },
     'tendercats':{
-        'train_id':26,
-        'dev_id': 27,
+        'train_id':36,
+        'dev_id': 36,
     }
 }
 
+task = 'tendercats'
+# task = 'bidcats'
+threhold = 0.7
 
-train = b_doccano_export_project_md5(train_id,'bidcats_train.json')
-dev = b_doccano_export_project_md5(dev_id,'bidcats_dev.json')
+train_id = config[task]['train_id']
+dev_id = config[task]['dev_id']
+
+train = b_doccano_export_project_md5(train_id,'train.json')
+dev = b_doccano_export_project_md5(dev_id,'dev.json')
 
 df_train = pd.DataFrame(train)
 df_dev = pd.DataFrame(dev)
 
+
 df_train['project_id'] = train_id
 df_dev['project_id'] = dev_id
+
+data = b_read_dataset('train_tag.json')
+
+df = pd.DataFrame(data)
+df['project_id'] = train_id
+
 
 df = pd.concat([df_train,df_dev])
 
 df['doccano_url'] = df.apply(generate_doccano_url,axis=1)
 
-df = df[['id','table','label','source','doccano_url']]
+df = df[['id','cats',  'tag', 'data_source','doccano_url']]
+df.columns = ['id','human','ai','data_source','doccano_url']
+df['is_same'] = df.apply(lambda x: x['human'] == x['ai'],axis=1)
+df = df[['id',  'is_same','human', 'ai', 'data_source', 'doccano_url']]
+
+b_save_df_datasets(df,'tendercats.json')
 
 df.to_csv(ASSETS_PATH + 'bidcats.csv',index=False)
-
-
-
-
-
-
-task = 'bidcats'
-threhold = 0.7
 
 def get_tag(doc,threhold):
     tag = []
@@ -74,9 +84,20 @@ def get_tag(doc,threhold):
             tag.append(label)
     if len(tag) == 0:
         tag = ['其他']
-    return ','.join(tag)
+    return tag
 
 nlp = b_load_best_model(task)
+
+text = df_train.text.values.tolist()
+
+docs = nlp.pipe(text)
+
+tags = []
+for doc in docs:
+    tags.append(get_tag(doc,threhold))
+
+df_train['tags'] = tags
+
 
 
 tables = ['test_other_tender_bid_result','test_procurement_bid_result','test_tender_bid_result']
