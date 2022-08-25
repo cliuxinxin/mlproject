@@ -5,9 +5,4 @@ import json
 s = redis_.lpop(sql_key)
 s = json.loads(s)
 
-
 mysql_update(s)
-
-
-
-

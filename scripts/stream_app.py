@@ -2,7 +2,7 @@ import streamlit as st
 from data_utils import *
 
 
-nlp = b_load_best_model('tender')
+nlp = b_load_best_model('bid')
 
 
 st.title('招标信息提取')

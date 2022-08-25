@@ -10,6 +10,11 @@ def remove_md5(data):
         entry['text'] = entry['text'].split('@crazy@')[0]
     return data
 
+def change_label_to_cats(data):
+    for entry in data:
+        entry['cats'] = entry['label']
+    return data
+
 def b_doccano_export_project_md5(project_id,filename):
     """
     导出项目数据，并且添加md5
@@ -18,6 +23,29 @@ def b_doccano_export_project_md5(project_id,filename):
     data = b_read_dataset(filename)
     data = remove_md5(data)
     return data
+
+def b_doccano_export_cat_project_md5(project_id,file_name):
+    # 导出分类项目，并且将分类项目的标签从cats的列表转换成字典
+    data = b_doccano_export_project_md5(project_id,file_name)
+
+    cats = b_doccano_export_cat_labels(project_id)
+
+    stand_cats = {}
+    for cat in cats:
+        stand_cats[cat] = 0
+
+    for entry in data:
+        entry_stand_cats = copy.deepcopy(stand_cats)
+        if 'cats' in entry:
+            for cat in entry['cats']:
+                entry_stand_cats[cat] = 1
+            entry['cats'] = entry_stand_cats
+        else:
+            for cat in entry['label']:
+                entry_stand_cats[cat] = 1
+            entry['cats'] = entry_stand_cats
+
+    b_save_list_datasets(data,file_name)
 
 def b_save_list_datasets_md5(data,filename):
     """
@@ -38,18 +66,23 @@ config = {
     'tendercats':{
         'train_id':36,
         'dev_id': 36,
-    }
+}
 }
 
-task = 'tendercats'
-# task = 'bidcats'
+# task = 'tendercats'
+task = 'bidcats'
 threhold = 0.7
+
+b_doccano_bak_train_dev(task)
 
 train_id = config[task]['train_id']
 dev_id = config[task]['dev_id']
 
 train = b_doccano_export_project_md5(train_id,'train.json')
 dev = b_doccano_export_project_md5(dev_id,'dev.json')
+
+b_doccano_export_cat_project_md5(train_id,'train.json')
+b_doccano_export_cat_project_md5(dev_id,'dev.json')
 
 df_train = pd.DataFrame(train)
 df_dev = pd.DataFrame(dev)

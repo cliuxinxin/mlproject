@@ -193,12 +193,14 @@ def p_filter_tags(text) -> str:
     re_br = re.compile('<br\s*?/?>')  # 处理换行
     re_h = re.compile('</?\w+[^>]*>')  # HTML标签
     re_o = re.compile(r'<[^>]+>', re.S) # 其他
+    re_td = re.compile('</td>')  # 处理换行
     re_comment = re.compile('<!--[^>]*-->')  # HTML注释
     text = html.unescape(text)
     s = re_cdata.sub('', text)  # 去掉CDATA
     s = re_script.sub('', s)  # 去掉SCRIPT
     s = re_style.sub('', s)  # 去掉style
     s = re_br.sub('\n', s)  # 将br转换为换行
+    s = re_td.sub(' ', s)  # 将td转换为换行
     s = re_h.sub('', s)  # 去掉HTML 标签
     s = re_o.sub('',s)
     s = re_comment.sub('', s)  # 去掉HTML注释
@@ -293,9 +295,15 @@ def p_export_preprocess(path,task):
         text = entry['text']
         text = text.split('@crazy@')[0]
         entry['text'] = text
-        del entry['label_counts']
-        for label in std_labels:
-            del entry[label]
+        try:
+            del entry['label_counts']
+        except:
+            pass
+        try:
+            for label in std_labels:
+                del entry[label]
+        except:
+            pass
     b_save_list_datasets(data,path)
 
 
