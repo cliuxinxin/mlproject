@@ -2,34 +2,26 @@ from tqdm import tqdm
 from data_utils import *
 from mysql_utils import *
 
-from dragnet import extract_content, extract_content_and_comments
+df = pd.read_json(ASSETS_PATH + 'bid.json')
 
-    
-path = ASSETS_PATH + 'htmls/'
+df = df['RECORDS'].apply(pd.Series)
 
-files = os.listdir(path)
+df['text'] = df['detail_content'].apply(p_filter_tags)
 
-file = files[9]
+df.text.values[0]
+df.detail_content.values[0]
+df.title.values[0]
 
-with open(path + file,'r') as f:
-    html = f.read()
+nlp = b_load_best_model('bid')
 
+doc = nlp(df.text.values[0])
 
+for ent in doc.ents:
+    print(ent.label_,ent.text)
 
+sql ="SELECT fin.id,win.winning_bidder,win.table_name,win.amount,fin.publish_time,fin.source_website_name,fin.source_website_address FROM final_winning_bidder as win \
+LEFT JOIN final_procurement_bid_result as fin on win.announcement_id = fin.id WHERE win.table_name = 'test_procurement_bid_result' AND DATE_FORMAT(fin.publish_time,'%Y-%m') = '2022-06' limit 1"
 
-
-
-
-sql = 'select * from final_procurement_bid limit 10'
 df = mysql_select_df(sql)
-
-df.columns
-html = df.detail_content.values[0]
-
-p_filter_tags(html)
-extract_content_and_comments(html)
-
-
-
 
 

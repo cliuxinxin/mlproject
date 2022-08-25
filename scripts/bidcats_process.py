@@ -57,6 +57,16 @@ def b_save_list_datasets_md5(data,filename):
 def generate_doccano_url(x):
     return f'http://47.108.118.95:18000/projects/{x["project_id"]}/text-classification?page=1&q={x["md5"]}'
 
+def generate_project_id(x):
+    # 如果dataset
+    train_dev = x['dataset'].split('_')[1]
+    if train_dev == 'train':
+        return 37
+    elif train_dev == 'dev':
+        return 38
+    else:
+        return 0
+
 
 config = {
     'bidcats':{
@@ -74,6 +84,8 @@ task = 'bidcats'
 threhold = 0.7
 
 b_doccano_bak_train_dev(task)
+
+data = b_read_dataset('bidcats_train_dev.json')
 
 train_id = config[task]['train_id']
 dev_id = config[task]['dev_id']
@@ -99,14 +111,22 @@ df['project_id'] = train_id
 
 df = pd.concat([df_train,df_dev])
 
+data = b_read_dataset('bidcats_train_dev_tag.json')
+df = pd.DataFrame(data)
+
+df['project_id'] = df.apply(generate_project_id,axis=1)
+
 df['doccano_url'] = df.apply(generate_doccano_url,axis=1)
+# 把label 改成 cats ，吧source 改成 data_source
+df['cats'] = df['label']
+df['data_source'] = df['source']
 
 df = df[['id','cats',  'tag', 'data_source','doccano_url']]
 df.columns = ['id','human','ai','data_source','doccano_url']
 df['is_same'] = df.apply(lambda x: x['human'] == x['ai'],axis=1)
 df = df[['id',  'is_same','human', 'ai', 'data_source', 'doccano_url']]
 
-b_save_df_datasets(df,'tendercats.json')
+b_save_df_datasets(df,'bidcats.json')
 
 df.to_csv(ASSETS_PATH + 'bidcats.csv',index=False)
 

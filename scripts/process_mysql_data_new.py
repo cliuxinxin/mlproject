@@ -193,7 +193,8 @@ def process_save(data_process, task, origin_table, df):
                 split_df_labels[['announcement_id','table_name']] = [id,origin_table]
                 if 'amount' in split_df_labels.columns and len(split_df_labels) > 1:
                 # 保留第一行amount,其他行清空
-                    split_df_labels.reset_index().loc[1:,'amount'] = 0
+                    split_df_labels.reset_index(inplace=True)
+                    split_df_labels.loc[1:,'amount'] = 0
                 sub_data.append(split_df_labels)
             df_labels[['winning_bidder','amount']] = ''
             # 如果有中标金额单位，则删除

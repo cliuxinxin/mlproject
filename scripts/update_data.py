@@ -29,4 +29,3 @@ for task in tasks:
         cats_process(task)
 
 
-
