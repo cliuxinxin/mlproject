@@ -4,6 +4,7 @@ from mysql_utils import *
 import glob
 from data_clean_new import clean_manager
 from decimal import Decimal
+from scrapy import Selector
 
 def all_labels_is_empty(labels):
     """
@@ -245,6 +246,15 @@ def delete_and_insert_target(file, target_table, df):
     mysql_insert_data(df,target_table)
     move_file(file)
 
+def deal_detail_content(html):
+    if html:
+        sj = Selector(text=html)
+        content = sj.xpath('string(.)').extract_first(default='')
+        content = re.sub(r'\s{2,}', ' ', content)
+        content = re.sub(r'[\U00010000-\U0010ffff]', '', content)
+        return repr(content)
+    else:
+        return ''
 if __name__ == '__main__':
     helper = Helper()
     data_process = json.loads(open('data_process.json','r',encoding='utf-8').read())
@@ -262,6 +272,9 @@ if __name__ == '__main__':
                 nlp = helper.get_model(task)
 
                 df = pd.read_json(file)
+
+                # 提取文本
+                df['result_detail'] = df['detail_content'].apply(deal_detail_content)
                 if len(df) == 0:
                     continue
                 df['text'] = df['detail_content'].fillna('')
