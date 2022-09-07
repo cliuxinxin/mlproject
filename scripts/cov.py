@@ -8,7 +8,7 @@ cov_path = os.path.join(ASSETS_PATH,'cov')
 
 cov_files = os.listdir(cov_path)
 
-pattern = re.compile(r'居住于(锦江区|青羊区|双流区|龙泉驿区|新都区|金牛区|温江区|高新区|成华区|天府新区)(.*?)，系(.*?)。')
+pattern = re.compile(r'居住于(锦江区|青羊区|双流区|龙泉驿区|新都区|金牛区|温江区|高新区|成华区|天府新区|武侯区)(.*?)，系(.*?)。')
 
 new_data = []
 
@@ -36,3 +36,13 @@ df_group[df_group.情况.str.contains('愿检尽检')]
 df_group = df.groupby(['区域','日期'])['小区'].count().reset_index()
 
 df[df.区域.str.contains('金牛')]
+df[df.区域.str.contains('龙泉')]
+df[df.区域.str.contains('武侯')]
+df[df.区域.str.contains('锦江') & df.日期.str.contains('2022-8-31')]
+
+
+
+df[df.日期.str.contains('2022-8-30')&(df.情况.str.contains('愿检')|df.情况.str.contains('主动'))].sort_values(by='区域')
+
+df[df.区域.str.contains('高新')].sort_values(by=['日期','小区'])
+df[df.区域.str.contains('龙泉')].sort_values(by=['日期','小区'])

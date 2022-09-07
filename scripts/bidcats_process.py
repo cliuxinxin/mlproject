@@ -126,7 +126,7 @@ df.columns = ['id','human','ai','data_source','doccano_url']
 df['is_same'] = df.apply(lambda x: x['human'] == x['ai'],axis=1)
 df = df[['id',  'is_same','human', 'ai', 'data_source', 'doccano_url']]
 
-b_save_df_datasets(df,'bidcats.json')
+b_save_df_datasets(df,'bidcats_tag.json')
 
 df.to_csv(ASSETS_PATH + 'bidcats.csv',index=False)
 

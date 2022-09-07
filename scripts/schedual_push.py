@@ -12,10 +12,10 @@ while True:
             print(f'There is {redis_.llen(diff_key)} data in redis')
         except:
             continue
-    # if is_redis_not_enough(tag_key,1000):
-    #     try:
-    #         redis_push_tag(tag_configs)
-    #         print(f'There is {redis_.llen(tag_key)} data in redis')
-    #     except:
-    #         continue
+    if is_redis_not_enough(tag_key,1000):
+        try:
+            redis_push_tag(tag_configs)
+            print(f'There is {redis_.llen(tag_key)} data in redis')
+        except:
+            continue
     time.sleep(60)
