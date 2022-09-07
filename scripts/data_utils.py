@@ -2146,6 +2146,53 @@ def b_doccano_cat_stand_compare(project_id,file_name):
     print(df_merge[df_merge.train.isnull()])
 
     return df_merge
+
+def b_convert_ner_rel(data):
+    """
+    将ner的标注转换成rel的标注
+    """
+    for entry in data:
+        labels = entry['label']
+        entities = []
+        relations = []
+        id = 1
+        for start_offset,end_offset,label in labels:
+            entity = {}
+            entity['id'] = id
+            id += 1
+            entity['label'] = label
+            entity['start_offset'] = start_offset
+            entity['end_offset'] = end_offset
+            entities.append(entity)
+        entry['entities'] = entities
+        # 如果entities中有 中标单位 和 中标金额
+        # 如果entities中有 中标金额 和 中标金额单位
+        # 则生成关系
+        id = 1
+        for entity in entities:
+            if entity['label'] == '中标单位':
+                for entity2 in entities:
+                    if entity2['label'] == '中标金额':
+                        relation = {}
+                        relation['id'] = id
+                        id += 1
+                        relation['from_id'] = entity['id']
+                        relation['to_id'] = entity2['id']
+                        relation['type'] = '中标单位-中标金额'
+                        relations.append(relation)
+            if entity['label'] == '中标金额':
+                for entity2 in entities:
+                    if entity2['label'] == '中标金额单位':
+                        relation = {}
+                        relation['id'] = id
+                        id += 1
+                        relation['from_id'] = entity['id']
+                        relation['to_id'] = entity2['id']
+                        relation['type'] = '中标金额-中标金额单位'
+                        relations.append(relation)
+        entry['relations'] = relations
+    return data
+
  
 
 # ——————————————————————————————————————————————————

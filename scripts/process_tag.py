@@ -1,6 +1,6 @@
 from data_utils import * 
 from mysql_utils import *
-from redis_utils import pop_redis_data,redis_push,tag_key,sql_key
+from redis_utils import pop_redis_data,redis_push,tag_key,sql_key,redis_
 import time
 
 class Helper():
@@ -48,29 +48,32 @@ helper = Helper()
 threhold = 0.7
 
 while True:
-    data = pop_redis_data(tag_key,200)
-    df = pd.DataFrame(data)
-    df_group = df.groupby('table')
-    for table,idxs in df_group.groups.items():
-        df_table = df.loc[df_group.groups[table]]
-        print(f"Process {table} {len(df_table)} records")
-        sql = f"select id,detail_content from {table} where id in {tuple(df_table.id.values.tolist())}"
-        task = df.loc[df_group.groups[table]].task.values[0]
-        df1 = mysql_select_df(sql)
-        df1['text'] = df1['detail_content'].apply(p_filter_tags)
-        df1['md5'] = df1['text'].apply(p_generate_md5)
-        df1['table'] = table
-        text = df1.text.values.tolist()
-        docs = helper.get_model(task).pipe(text)
-        tags = []
-        for doc in docs:
-            tags.append(get_tag(doc,threhold))
-        df1['classify_type'] = tags
-        label_data = helper.get_label(task)
-        df1.loc[df1.md5.isin(label_data.index),'classify_type'] = df1[df1.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
-        df1 = df1[['table','id','classify_type']]
-        redis_push(df1,sql_key)
-        print(f"Push {table} {len(df1)} records to redis")
-        print("Sleep 5s")
+    while len(redis_.keys(sql_key)) > 0:
+        data = pop_redis_data(tag_key,200)
+        # redis中还有多少数据
+        print(f'There is {redis_.llen(tag_key)} data in redis')
+        df = pd.DataFrame(data)
+        df_group = df.groupby('table')
+        for table,idxs in df_group.groups.items():
+            df_table = df.loc[df_group.groups[table]]
+            print(f"Process {table} {len(df_table)} records")
+            sql = f"select id,detail_content from {table} where id in {tuple(df_table.id.values.tolist())}"
+            task = df.loc[df_group.groups[table]].task.values[0]
+            df1 = mysql_select_df(sql)
+            df1['text'] = df1['detail_content'].apply(p_filter_tags)
+            df1['md5'] = df1['text'].apply(p_generate_md5)
+            df1['table'] = table
+            text = df1.text.values.tolist()
+            docs = helper.get_model(task).pipe(text)
+            tags = []
+            for doc in docs:
+                tags.append(get_tag(doc,threhold))
+            df1['classify_type'] = tags
+            label_data = helper.get_label(task)
+            df1.loc[df1.md5.isin(label_data.index),'classify_type'] = df1[df1.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
+            df1 = df1[['table','id','classify_type']]
+            redis_push(df1,sql_key)
+            print(f"Push {table} {len(df1)} records to redis")
+    print("Sleep 5s")
     time.sleep(5)
     
