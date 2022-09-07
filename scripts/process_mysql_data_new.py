@@ -303,6 +303,9 @@ if __name__ == '__main__':
                     df['labels'] = ''
                     df = datetime_process(df,task)
                     delete_and_insert_target(file, target_table, df)
+                    if task == 'bid' and len(df) > 0:
+                        df['announcement_id'] = df['id']
+                        delete_win_by_df('final_winning_bidder',df,origin_table)
                     continue
 
                 # 得到label内容
