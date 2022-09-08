@@ -48,7 +48,7 @@ helper = Helper()
 threhold = 0.7
 
 while True:
-    while len(redis_.keys(sql_key)) > 0:
+    while len(redis_.keys(tag_key)) > 0:
         data = pop_redis_data(tag_key,200)
         # redis中还有多少数据
         print(f'There is {redis_.llen(tag_key)} data in redis')
