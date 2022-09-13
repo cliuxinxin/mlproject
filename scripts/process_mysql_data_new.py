@@ -37,6 +37,7 @@ def datetime_process(df,task):
     for colum in datetime_columns:
         # 转换为datetime格式
         try:
+            df[colum] = pd.to_datetime(df[colum],unit='ms')
             df[colum] = df[colum].apply(lambda x: d_date_clean(x))
         except:
             pass
