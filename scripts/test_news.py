@@ -1,6 +1,10 @@
+from data_utils import b_save_list_datasets
+import hashlib
 from newspaper import Article
 from dragnet import extract_content_and_comments
 from gne import GeneralNewsExtractor
+import os
+from bs4 import BeautifulSoup
 
 
 newspaper_keywords = [
@@ -11,9 +15,9 @@ newspaper_keywords = [
     'rfi.fr'
 ]
 
-def mothod_choose(url):
+def mothod_choose(name):
     for keyword in newspaper_keywords:
-        if keyword in url:
+        if keyword in name:
             return 'newspaper'
     return 'dragnet'
 
@@ -34,17 +38,60 @@ def gne_process(article):
     result = extractor.extract(article.html)
     return result['title'] + '\n' +  result['content']
 
+def get_article_from_url(url):
+    method = mothod_choose(url)
+    article = download_html(url)
+    return article,method
 
+def get_article_from_file(file):
+    article = Article('')
+    article.download(input_html=open(file, 'r').read())
+    method = mothod_choose(file)
+    return article,method
 
-url = 'http://www.dapenti.com/blog/more.asp?name=xilei&id=166509'
+def parse_html(article,method):
+    if method == 'newspaper':
+        content = newspaper_process(article)
+    else:
+        content = dragnet_process(article)
+    return content
 
-method = mothod_choose(url)
-article = download_html(url)
+def parse_date(bs,file):
+    if 'cnBeta.COM' in file:
+        return bs.find('div', class_='meta').find_all('span')[0].text
+    if 'FT中文网' in file:
+        return bs.find('span', class_='story-time').text.replace('更新于','')
 
-if method == 'newspaper':
-    print(newspaper_process(article))
-else:
-    print(dragnet_process(article))
+def parse_source(bs,file):
+    if 'cnBeta.COM' in file:
+        return bs.find('span', class_='source').text.replace('稿源：','')
+    if 'FT中文网' in file:
+        return bs.find('span', class_='story-author').text.replace('FT中文网专栏作家','').replace('为FT中文网撰稿','')
 
+htmls_path = '../assets/htmls/'
 
+files = os.listdir(htmls_path)
+files = [ file for file in files if file.endswith('.html')]
+data = []
 
+for file in files:
+    file_path = htmls_path + file
+    article,method = get_article_from_file(file_path)
+    content = file + '\n' + parse_html(article, method)
+    md5 = hashlib.md5(content.encode('utf-8')).hexdigest()
+    bs = BeautifulSoup(article.html, 'html.parser')
+    date = parse_date(bs,file)
+    source = parse_source(bs,file)
+    data.append({
+        'method': method,
+        'md5': md5,
+        'date': date,
+        'source': source,
+        'text': content
+    })
+
+b_save_list_datasets(data, '../assets/htmls.json')
+
+file_path = htmls_path +'中亚行风光_ 观察人士_习近平撒币换声望，却得到高涨的排华效应.html'
+article,method = get_article_from_file(file_path)
+bs = BeautifulSoup(article.html, 'html.parser')
