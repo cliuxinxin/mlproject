@@ -1884,9 +1884,12 @@ def b_gpu_rel_label(task, file):
 
     data_data = [sample['text'] for sample in data]
 
-    docs = nlp.pipe(data_data)
 
-    for doc,sample in zip(docs,data):
+    for doc,sample in zip(data_data,data):
+        try:
+            doc = nlp(doc)
+        except:
+            continue
         entities = []
         for ent in doc.ents:
             label = [ent.start,ent.start_char,ent.end_char,ent.label_]
