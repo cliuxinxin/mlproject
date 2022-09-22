@@ -53,6 +53,9 @@ workflows:
   all_rel:
     - convert_rel
     - train_rel
+  all_rel_trf:
+    - convert_rel
+    - train_rel_trf
   all_multcats:
     - convert_cats
     - train_multcats
@@ -137,6 +140,17 @@ commands:
       - "corpus/dev.spacy"
     outputs:
       - "training/model_best"
+
+    - name: "train_rel_trf"
+      help: "Train the rel trf model"
+      script:
+        - "python -m spacy train configs/config_trf_rel.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy -c scripts/custom_functions.py  --gpu-id ${vars.gpu_id}"
+      deps:
+        - "configs/config.cfg"
+        - "corpus/train.spacy"
+        - "corpus/dev.spacy"
+      outputs:
+        - "training/model_best"
 
   - name: "train_cats"
     help: "Train the cat model"
