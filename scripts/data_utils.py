@@ -1882,20 +1882,31 @@ def b_gpu_rel_label(task, file):
 
     nlp = b_load_best_model(task)
 
-    data_data = [sample['text'] for sample in data]
-
-
-    for doc,sample in zip(data_data,data):
-        try:
-            doc = nlp(doc)
-        except:
-            continue
+    for sample in data:
+        doc = nlp(sample['text'])
         entities = []
         for ent in doc.ents:
-            label = [ent.start,ent.start_char,ent.end_char,ent.label_]
-            entities.append(label)
+            entities.append({
+                'id': ent.start,
+                'label': ent.label_,
+                'start_offset': ent.start_char,
+                'end_offset': ent.end_char
+            })
+        relations = []
+        num = 1
+        for rel in doc._.rel.items():
+            from_id,to_id = rel[0]
+            for rel_type in rel[1].items():
+                if rel_type[1] > 0.5:
+                    relations.append({
+                        'id': num,
+                        'from_id': from_id,
+                        'to_id': to_id,
+                        'type': rel_type[0],
+                    })
+                    num += 1
         sample['entities'] = entities
-        sample['rel'] = doc._.rel
+        sample['relations'] = relations
 
     b_save_list_datasets(data,file_name + '_label.json')
 
