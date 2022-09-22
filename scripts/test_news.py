@@ -1,3 +1,4 @@
+from html import entities
 from data_utils import b_save_list_datasets
 import hashlib
 from newspaper import Article
@@ -99,6 +100,7 @@ b_save_list_datasets(data, '../assets/htmls.json')
 import pandas as pd
 from data_utils import *
 
+
 path = '../assets/test.xlsx'
 
 df = pd.read_excel(path)
@@ -121,9 +123,24 @@ data = b_read_dataset('news.json')
 new_data =[]
 
 for entry in data:
-    if len(entry['entities']) > 0:
+    if len(entry['entities']) == 0:
         new_data.append(entry)
 
-new_data = b_convert_ner_rel(new_data)
 
 b_save_list_datasets(new_data,'../assets/news_data.json')
+
+task = 'news'
+nlp = b_load_best_model(task)
+
+text = data[445]['text']
+
+doc = nlp(text)
+
+
+doc._.rel
+
+for ent in doc.ents:
+    print(ent.text, ent.label_,ent.start,ent.end)
+
+
+
