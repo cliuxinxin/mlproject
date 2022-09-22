@@ -1872,7 +1872,10 @@ def b_gpu_label(task,file):
 
     b_save_list_datasets(data,file_name + '_label.json')
 
-def b_gpu_rel_label(file, task):
+def b_gpu_rel_label(task, file):
+    """
+    服务器GPU标注rel
+    """
     file_name = file.split('.')[0]
 
     data = b_read_dataset(file)
