@@ -260,10 +260,10 @@ def deal_detail_content(html):
     else:
         return ''
 
+# 必需数据是否满足
 def is_full_data(task,df):
     import numpy as np
-    pd.DataFrame([False,False,False])
-    if list(df[['province','city','county','publish_time','title']] == df[['province','city','county','publish_time','title']]) == [False,False,False,False,False]:
+    if list(df[['province','city','county','publish_time','title']].fillna(''))==['','','','','']:
         return 0
     elif task =='tender' and not all(x in df['labels'].split("\"") for x in ["项目名称","项目招标编号","预算","招标单位","招标文件领取开始时间","投标截止时间"]):
         return 0
@@ -271,7 +271,20 @@ def is_full_data(task,df):
         return 0
     else:
         return 1
-    
+
+# 多中标单位连接
+def deal_winning_bidders(labels):
+    try:
+        labels = eval(labels)
+    except:
+        return ''
+    str = []
+    for label in labels:
+        for key,value in label.items():
+            if key=="中标单位":
+                str.append(value)
+    return "_".join(str)
+
 if __name__ == '__main__':
     helper = Helper()
     data_process = json.loads(open('data_process.json','r',encoding='utf-8').read())
@@ -353,6 +366,9 @@ if __name__ == '__main__':
                 df = datetime_process(df,task)
                 if origin_table in ['test_tender_bid','test_tender_bid_result']:
                     df['is_full_data'] = df.apply(lambda x:is_full_data(task,x),axis=1)                  
+                
+                if task == 'bid':
+                    df['winning_bidder'] = df['labels'].apply(lambda x:deal_winning_bidders(x))
                     
                 # 填写数据
                 delete_and_insert_target(file, target_table, df)
