@@ -30,12 +30,10 @@ from transformers import (AutoConfig, AutoModelForTokenClassification,
 from multiprocessing import Pool
 from multiprocessing.managers import BaseManager
 
-
-# from pdfminer.pdfinterp import PDFResourceManager, process_pdf
-# from pdfminer.converter import TextConverter
-# from pdfminer.layout import  LAParams
-# from io import StringIO
-
+# make the factory work
+from rel_pipe import make_relation_extractor
+# make the config work
+from rel_model import create_relation_model, create_classification_layer, create_instances, create_tensors
 
 def d_parse_config():
     config = configparser.ConfigParser()
@@ -1871,6 +1869,27 @@ def b_gpu_label(task,file):
             label = [ent.start_char,ent.end_char,ent.label_]
             labels.append(label)
         sample['label'] = labels
+
+    b_save_list_datasets(data,file_name + '_label.json')
+
+def b_gpu_rel_label(file, task):
+    file_name = file.split('.')[0]
+
+    data = b_read_dataset(file)
+
+    nlp = b_load_best_model(task)
+
+    data_data = [sample['text'] for sample in data]
+
+    docs = nlp.pipe(data_data)
+
+    for doc,sample in zip(docs,data):
+        entities = []
+        for ent in doc.ents:
+            label = [ent.start,ent.start_char,ent.end_char,ent.label_]
+            entities.append(label)
+        sample['entities'] = entities
+        sample['rel'] = doc._.rel
 
     b_save_list_datasets(data,file_name + '_label.json')
 
