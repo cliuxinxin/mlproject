@@ -92,6 +92,38 @@ for file in files:
 
 b_save_list_datasets(data, '../assets/htmls.json')
 
-file_path = htmls_path +'中亚行风光_ 观察人士_习近平撒币换声望，却得到高涨的排华效应.html'
-article,method = get_article_from_file(file_path)
-bs = BeautifulSoup(article.html, 'html.parser')
+# file_path = htmls_path +'中亚行风光_ 观察人士_习近平撒币换声望，却得到高涨的排华效应.html'
+# article,method = get_article_from_file(file_path)
+# bs = BeautifulSoup(article.html, 'html.parser')
+
+import pandas as pd
+from data_utils import *
+
+path = '../assets/test.xlsx'
+
+df = pd.read_excel(path)
+
+df.columns =['title', 'source', 'picture', 'summery', 'tag', 'status', 'title_detail', 'pubdate', 'no_important','writer', 'content']
+
+df.dropna(subset=['title'],inplace=True)
+
+df['text'] = df['title'] + '\n' + df['content']
+
+df.drop(['no_important','picture','content'],axis=1,inplace=True)
+
+b_save_df_datasets(df,'../assets/test.json')
+
+# 下载数据
+b_doccano_export_project(43,'../assets/news.json')
+
+data = b_read_dataset('news.json')
+
+new_data =[]
+
+for entry in data:
+    if len(entry['entities']) > 0:
+        new_data.append(entry)
+
+new_data = b_convert_ner_rel(new_data)
+
+b_save_list_datasets(new_data,'../assets/news_data.json')
