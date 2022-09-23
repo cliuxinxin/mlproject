@@ -119,28 +119,21 @@ b_save_df_datasets(df,'../assets/test.json')
 b_doccano_export_project(43,'../assets/news.json')
 
 data = b_read_dataset('news.json')
+data = b_read_dataset('news_data_label.json')
 
 new_data =[]
 
 for entry in data:
-    if len(entry['entities']) == 0:
+    if len(entry['entities']) > 0:
         new_data.append(entry)
 
 
+new_data.extend(data)
+
 b_save_list_datasets(new_data,'../assets/news_data.json')
 
-task = 'news'
-nlp = b_load_best_model(task)
-
-text = data[445]['text']
-
-doc = nlp(text)
-
-
-doc._.rel
-
-for ent in doc.ents:
-    print(ent.text, ent.label_,ent.start,ent.end)
+image_filepath = open('../assets/news_data.json', 'rb')
+resp = doccano_client.post_doc_upload_binary(project_id=43, files=[image_filepath],task='RelationExtraction')
 
 
 

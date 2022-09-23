@@ -1872,7 +1872,7 @@ def b_gpu_label(task,file):
 
     b_save_list_datasets(data,file_name + '_label.json')
 
-def b_gpu_rel_label(task, file):
+def b_gpu_rel_label(task, file, ent_id, rel_id):
     """
     服务器GPU标注rel
     """
@@ -1881,30 +1881,34 @@ def b_gpu_rel_label(task, file):
     data = b_read_dataset(file)
 
     nlp = b_load_best_model(task)
-
+    ent_id = int(ent_id)
+    rel_id = int(rel_id)
     for sample in data:
         doc = nlp(sample['text'])
         entities = []
+        ent_dict = {}
         for ent in doc.ents:
             entities.append({
-                'id': ent.start,
+                'id': ent_id,
                 'label': ent.label_,
                 'start_offset': ent.start_char,
                 'end_offset': ent.end_char
             })
+            ent_dict[ent.start] = ent_id
+            ent_id += 1
         relations = []
-        num = 1
         for rel in doc._.rel.items():
             from_id,to_id = rel[0]
+            from_id,to_id = ent_dict[from_id],ent_dict[to_id]
             for rel_type in rel[1].items():
                 if rel_type[1] > 0.5:
                     relations.append({
-                        'id': num,
+                        'id': rel_id,
                         'from_id': from_id,
                         'to_id': to_id,
                         'type': rel_type[0],
                     })
-                    num += 1
+                    rel_id += 1
         sample['entities'] = entities
         sample['relations'] = relations
 
