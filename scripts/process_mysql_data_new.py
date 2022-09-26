@@ -302,7 +302,10 @@ if __name__ == '__main__':
                 nlp = helper.get_model(task)
 
                 df = pd.read_json(file)
-
+                
+                # 删除更新时间
+                data = data.drop(columns=['update_time'])
+                
                 # 提取文本
                 df['result_detail'] = df['detail_content'].apply(deal_detail_content)
                 if len(df) == 0:
