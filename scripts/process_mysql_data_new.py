@@ -267,7 +267,7 @@ def is_full_data(task,df):
         return 0
     elif task =='tender' and any(x in list(df[["project_name","notice_num","budget","tenderee","tender_document_stime","tender_etime",'publish_time','title']].fillna('')) for x in ['']):
         return 0
-    elif task == 'bid' and not all(x in df['labels'].split("\"") for x in ["项目名称","中标公告编号","中标金额","中标单位"]) and any(x in list(df[['publish_time','title']].fillna('')) for x in ['']):
+    elif task == 'bid' and not all(x in df['labels'].split("\"") for x in ["项目名称","中标公告编号","中标金额","中标单位"]) or any(x in list(df[['publish_time','title']].fillna('')) for x in ['']):
         return 0
     else:
         return 1
