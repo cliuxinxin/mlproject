@@ -263,11 +263,11 @@ def deal_detail_content(html):
 # 必需数据是否满足
 def is_full_data(task,df):
     import numpy as np
-    if list(df[['province','city','county','publish_time','title']].fillna(''))==['','','','','']:
+    if list(df[['province','city','county']].fillna(''))==['','','','','']:
         return 0
-    elif task =='tender' and not all(x in df['labels'].split("\"") for x in ["项目名称","项目招标编号","预算","招标单位","招标文件领取开始时间","投标截止时间"]):
+    elif task =='tender' and any(x in list(df[["project_name","notice_num","budget","tenderee","tender_document_stime","tender_etime",'publish_time','title']].fillna('')) for x in ['']):
         return 0
-    elif task == 'bid' and not all(x in df['labels'].split("\"") for x in ["项目名称","中标公告编号","中标金额","中标单位"]):
+    elif task == 'bid' and not all(x in df['labels'].split("\"") for x in ["项目名称","中标公告编号","中标金额","中标单位"]) and any(x in list(df[['publish_time','title']].fillna('')) for x in ['']):
         return 0
     else:
         return 1
@@ -367,12 +367,13 @@ if __name__ == '__main__':
                 df['labels'] = df['labels'].apply(lambda x: x[:1000])
                 df = df.drop(columns=['md5','text','clean_labels'])
                 df = datetime_process(df,task)
-                if origin_table in ['test_tender_bid','test_tender_bid_result']:
-                    df['is_full_data'] = df.apply(lambda x:is_full_data(task,x),axis=1)                  
                 
                 if task == 'bid':
                     df['winning_bidder'] = df['labels'].apply(lambda x:deal_winning_bidders(x))
                     
+                if origin_table in ['test_tender_bid','test_tender_bid_result']:
+                    df['is_full_data'] = df.apply(lambda x:is_full_data(task,x),axis=1)                  
+                                    
                 # 填写数据
                 delete_and_insert_target(file, target_table, df)
             except Exception as e:
