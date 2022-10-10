@@ -198,7 +198,7 @@ def process_save(data_process, task, origin_table, df):
                     split_df_labels.reset_index(inplace=True)
                     split_df_labels.loc[1:,'amount'] = 0
                 sub_data.append(split_df_labels)
-            df_labels[['winning_bidder','amount']] = ''
+            df_labels[['winning_bidder']] = ''
             # 如果有中标金额单位，则删除
             if '中标金额单位' in df_labels.columns:
                 df_labels.drop('中标金额单位',axis=1,inplace=True)
@@ -267,7 +267,7 @@ def is_full_data(task,df):
         return 0
     elif task =='tender' and any(x in list(df[["project_name","notice_num","budget","tenderee","tender_document_stime","tender_etime",'publish_time','title']].fillna('')) for x in ['']):
         return 0
-    elif task == 'bid' and not all(x in df['labels'].split("\"") for x in ["项目名称","中标公告编号","中标金额","中标单位"]) and any(x in list(df[['publish_time','title']].fillna('')) for x in ['']):
+    elif task == 'bid' and (not all(x in df['labels'].split("\"") for x in ["项目名称","中标公告编号","中标金额","中标单位"]) or any(x in list(df[['publish_time','title']].fillna('')) for x in ['']) or (df['amount'] < 100 or df['amount'] != df['amount'])):
         return 0
     else:
         return 1
