@@ -25,14 +25,9 @@ class Helper():
         elif task == 'bidcats':
             return self.bid_label
 
-def get_tag(doc,threhold):
-    tag = []
-    for label,prob in doc.cats.items():
-        if prob > threhold:
-            tag.append(label)
-    if len(tag) == 0:
-        tag = ['其他']
-    return ','.join(tag)
+def get_tag(doc):
+    tag=sorted(doc.cats.items(),  key=lambda d: d[1],reverse=True)
+    return tag[0][0]
 
 def find_labels_by_md5(md5,label_data):
     """
@@ -45,7 +40,6 @@ def find_labels_by_md5(md5,label_data):
     return labels
 
 helper = Helper()
-threhold = 0.7
 
 while True:
     while len(redis_.keys(tag_key)) > 0:
@@ -67,7 +61,7 @@ while True:
             docs = helper.get_model(task).pipe(text)
             tags = []
             for doc in docs:
-                tags.append(get_tag(doc,threhold))
+                tags.append(get_tag(doc))
             df1['classify_type'] = tags
             label_data = helper.get_label(task)
             df1.loc[df1.md5.isin(label_data.index),'classify_type'] = df1[df1.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
