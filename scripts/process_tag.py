@@ -7,14 +7,17 @@ class Helper():
     def __init__(self) -> None:
         self.tendercats = b_load_best_model('tendercats')
         self.bidcats = b_load_best_model('bidcats')
+        self.contractcats = b_load_best_model('contractcats')
         # self.tender_label = pd.DataFrame(b_read_dataset('tendercats_train_dev.json'))
         self.bid_label = pd.DataFrame(b_read_dataset('bidcats_train_dev.json'))
-
+        self.contract_label = pd.DataFrame(b_read_dataset('contractcats_train_dev.json'))
     def get_model(self,task):
         if task == 'tendercats':
             return self.tendercats
         elif task == 'bidcats':
             return self.bidcats
+        elif task == 'contractcats':
+            return self.contractcats    
         else:
             # 报错
             raise Exception('没有指定任务')
@@ -24,6 +27,8 @@ class Helper():
             return self.tender_label
         elif task == 'bidcats':
             return self.bid_label
+        elif task == 'contractcats':
+            return self.contract_label
 
 def get_tag(doc):
     tag=sorted(doc.cats.items(),  key=lambda d: d[1],reverse=True)
