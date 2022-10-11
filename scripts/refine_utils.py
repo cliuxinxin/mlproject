@@ -76,7 +76,7 @@ class OpenRefine():
 
         return project_id
 
-# server_url = 'http://47.108.118.95:3333'
+
 # file_name = 'events.csv'
 # openrefine = OpenRefine(server_url)
 # project_id = openrefine.upload(file_name,ASSETS_PATH + file_name, project_name='events2')
