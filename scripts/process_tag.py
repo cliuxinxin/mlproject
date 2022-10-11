@@ -7,14 +7,17 @@ class Helper():
     def __init__(self) -> None:
         self.tendercats = b_load_best_model('tendercats')
         self.bidcats = b_load_best_model('bidcats')
+        self.contractcats = b_load_best_model('contractcats')
         # self.tender_label = pd.DataFrame(b_read_dataset('tendercats_train_dev.json'))
         self.bid_label = pd.DataFrame(b_read_dataset('bidcats_train_dev.json'))
-
+        self.contract_label = pd.DataFrame(b_read_dataset('contractcats_train_dev.json'))
     def get_model(self,task):
         if task == 'tendercats':
             return self.tendercats
         elif task == 'bidcats':
             return self.bidcats
+        elif task == 'contractcats':
+            return self.contractcats    
         else:
             # 报错
             raise Exception('没有指定任务')
@@ -24,15 +27,12 @@ class Helper():
             return self.tender_label
         elif task == 'bidcats':
             return self.bid_label
+        elif task == 'contractcats':
+            return self.contract_label
 
-def get_tag(doc,threhold):
-    tag = []
-    for label,prob in doc.cats.items():
-        if prob > threhold:
-            tag.append(label)
-    if len(tag) == 0:
-        tag = ['其他']
-    return ','.join(tag)
+def get_tag(doc):
+    tag=sorted(doc.cats.items(),  key=lambda d: d[1],reverse=True)
+    return tag[0][0]
 
 def find_labels_by_md5(md5,label_data):
     """
@@ -45,7 +45,6 @@ def find_labels_by_md5(md5,label_data):
     return labels
 
 helper = Helper()
-threhold = 0.7
 
 while True:
     while len(redis_.keys(tag_key)) > 0:
@@ -67,7 +66,7 @@ while True:
             docs = helper.get_model(task).pipe(text)
             tags = []
             for doc in docs:
-                tags.append(get_tag(doc,threhold))
+                tags.append(get_tag(doc))
             df1['classify_type'] = tags
             label_data = helper.get_label(task)
             df1.loc[df1.md5.isin(label_data.index),'classify_type'] = df1[df1.md5.isin(label_data.index)]['md5'].apply(lambda x:find_labels_by_md5(x,label_data))
