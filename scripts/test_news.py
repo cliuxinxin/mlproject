@@ -1,139 +1,172 @@
-from html import entities
-from data_utils import b_save_list_datasets
-import hashlib
-from newspaper import Article
-from dragnet import extract_content_and_comments
-from gne import GeneralNewsExtractor
-import os
-from bs4 import BeautifulSoup
-
-
-newspaper_keywords = [
-    'bohaishibei',
-    'bbc.com',
-    'zaobao.com',
-    'ftchinese.com',
-    'rfi.fr'
-]
-
-def mothod_choose(name):
-    for keyword in newspaper_keywords:
-        if keyword in name:
-            return 'newspaper'
-    return 'dragnet'
-
-def download_html(url):
-    article = Article(url)
-    article.download()
-    return article
-
-def newspaper_process(article):
-    article.parse()
-    return article.text
-
-def dragnet_process(article):
-    return extract_content_and_comments(article.html)
-
-def gne_process(article):
-    extractor = GeneralNewsExtractor()
-    result = extractor.extract(article.html)
-    return result['title'] + '\n' +  result['content']
-
-def get_article_from_url(url):
-    method = mothod_choose(url)
-    article = download_html(url)
-    return article,method
-
-def get_article_from_file(file):
-    article = Article('')
-    article.download(input_html=open(file, 'r').read())
-    method = mothod_choose(file)
-    return article,method
-
-def parse_html(article,method):
-    if method == 'newspaper':
-        content = newspaper_process(article)
-    else:
-        content = dragnet_process(article)
-    return content
-
-def parse_date(bs,file):
-    if 'cnBeta.COM' in file:
-        return bs.find('div', class_='meta').find_all('span')[0].text
-    if 'FT中文网' in file:
-        return bs.find('span', class_='story-time').text.replace('更新于','')
-
-def parse_source(bs,file):
-    if 'cnBeta.COM' in file:
-        return bs.find('span', class_='source').text.replace('稿源：','')
-    if 'FT中文网' in file:
-        return bs.find('span', class_='story-author').text.replace('FT中文网专栏作家','').replace('为FT中文网撰稿','')
-
-htmls_path = '../assets/htmls/'
-
-files = os.listdir(htmls_path)
-files = [ file for file in files if file.endswith('.html')]
-data = []
-
-for file in files:
-    file_path = htmls_path + file
-    article,method = get_article_from_file(file_path)
-    content = file + '\n' + parse_html(article, method)
-    md5 = hashlib.md5(content.encode('utf-8')).hexdigest()
-    bs = BeautifulSoup(article.html, 'html.parser')
-    date = parse_date(bs,file)
-    source = parse_source(bs,file)
-    data.append({
-        'method': method,
-        'md5': md5,
-        'date': date,
-        'source': source,
-        'text': content
-    })
-
-b_save_list_datasets(data, '../assets/htmls.json')
-
-# file_path = htmls_path +'中亚行风光_ 观察人士_习近平撒币换声望，却得到高涨的排华效应.html'
-# article,method = get_article_from_file(file_path)
-# bs = BeautifulSoup(article.html, 'html.parser')
-
-import pandas as pd
 from data_utils import *
 
+def get_unlabel_news(all, data,number=200):
+    df_all = pd.DataFrame(all)
+    df_data = pd.DataFrame(data)
 
-path = '../assets/test.xlsx'
+    # 根据source去掉重复项
+    df_all = df_all.drop_duplicates(subset=['source'], keep='first')
+    # 随机
+    df_all = df_all.sample(frac=1)
 
-df = pd.read_excel(path)
+    df = df_all[~df_all.source.isin(df_data.source)][:number]
 
-df.columns =['title', 'source', 'picture', 'summery', 'tag', 'status', 'title_detail', 'pubdate', 'no_important','writer', 'content']
+    b_save_df_datasets(df, 'news.json')
 
-df.dropna(subset=['title'],inplace=True)
+def get_ids(data):
+    statc_ent = []
+    for entry in data:
+        for entity in entry['entities']:
+            statc_ent.append(entity['id'])
 
-df['text'] = df['title'] + '\n' + df['content']
-
-df.drop(['no_important','picture','content'],axis=1,inplace=True)
-
-b_save_df_datasets(df,'../assets/test.json')
-
-# 下载数据
-b_doccano_export_project(43,'../assets/news.json')
-
-data = b_read_dataset('news.json')
-data = b_read_dataset('news_data_label.json')
-
-new_data =[]
-
-for entry in data:
-    if len(entry['entities']) > 0:
-        new_data.append(entry)
+    statc_rel = []
+    for entry in data:
+        for entity in entry['relations']:
+            statc_rel.append(entity['id'])
+    return statc_ent[-1] + 1, statc_rel[-1] + 1
 
 
-new_data.extend(data)
+def drop_empty(file):
+    data = b_read_dataset(file)
+    new_data = []
+    for entry in data:
+        if entry['entities']:
+            new_data.append(entry)
+    b_save_list_datasets(new_data,file)
 
-b_save_list_datasets(new_data,'../assets/news_data.json')
+def process_xlsx(file):
+    df = pd.read_excel(ASSETS_PATH + file)
+    df.columns = ['title', 'source', 'image', 'summery', 'labels', 'status', 'title_detail', 'pubdate', 'no_impot','writer', 'content']
+    # 去掉为空的数据
+    df = df.dropna(subset=['content'])
+    # 去掉重复项
+    df = df.drop_duplicates(subset=['source'], keep='first')
+    df['text'] = df['title'] +'\n' + df['content']
+    df.drop(columns=['content'], inplace=True)
+    b_save_df_datasets(df,'news_all.json')
 
-image_filepath = open('../assets/news_data.json', 'rb')
-resp = doccano_client.post_doc_upload_binary(project_id=43, files=[image_filepath],task='RelationExtraction')
+# 导出文件
+def export_rel(num):
+    b_doccano_export_project(1,'data.json')
+    data = b_read_dataset('data.json')
+    b_save_list_datasets(data[:num],'data.json')
+    drop_empty('data.json')
+    data = b_read_dataset('data.json')
+    df = pd.DataFrame(data)
+    # 随机
+    df = df.sample(frac=1)
+    # 保存训练集
+    train_len = int(len(df) * 0.8)
+    b_save_df_datasets(df[:train_len], 'train.json')
+    b_save_df_datasets(df[train_len:], 'dev.json')
+
+def process_entry(entry):
+    ents  = {}
+    text = entry['text']
+
+    for ent in entry['entities']:
+        ents[ent['id']] = text[ent['start_offset']:ent['end_offset']]
+
+    events = []
+    concepts = []
+    views = []
+
+    def find_ent_events(events,ent):
+        for event in events:
+            if event['ent'] == ent:
+                return event
+        return {}
+
+    def process_records(records):
+        for item in records:
+            for key,value in item.items():
+                item[key] = ents[value]
+            item['url'] = entry['source']
+            item['title'] = entry['title']
+            item['pubdate'] = entry['pubdate']
+
+    for relation in entry['relations']:
+        relation_type = relation['type']
+        if relation_type == '概念解释':
+            concepts.append({
+            'concept':relation['from_id'],
+            'explation':relation['to_id']
+        })
+            continue
+        if relation_type == '实体观点':
+            views.append({
+            'ent':relation['from_id'],
+            'view':relation['to_id']
+        })
+            continue
+        else:
+            ent = relation['from_id']
+            event = find_ent_events(events,ent)
+            if event == {}: 
+                events.append(event)
+            event['ent'] = ent
+            if relation_type == '实体事件':
+                event['event'] = relation['to_id']
+            if relation_type == '实体时间':
+                event['time'] = relation['to_id']
+            if relation_type == '实体地点':
+                event['place'] = relation['to_id']
+
+    process_records(events)
+    process_records(concepts)
+    process_records(views)
+
+    return events,concepts,views
+
+export_rel()
+
+process_xlsx('test.xlsx')
+
+# 所有数据 news_all.json
+# 导出数据 train.json
+all = b_read_dataset('news_all_label.json')
+data = b_read_dataset('data.json')
+
+get_unlabel_news(all, data,500)
+
+ent_id,rel_id = get_ids(data)
+
+task = 'news'
+b_gpu_rel_label(task,'news.json',ent_id ,rel_id)
+
+events = []
+concepts = []
+views = []
+
+for entry in all:
+    e,c,v = process_entry(entry)
+    events.extend(e)
+    concepts.extend(c)
+    views.extend(v)
+
+views = pd.DataFrame(views)
+# 去掉重复
+views = views.drop_duplicates(subset=['ent','view'], keep='first')
+views.to_csv(ASSETS_PATH + 'views.csv',index=False)
+concepts = pd.DataFrame(concepts)
+# 去掉重复
+concepts = concepts.drop_duplicates(subset=['concept','explation'], keep='first')
+concepts.to_csv(ASSETS_PATH + 'concepts.csv',index=False)
+events = pd.DataFrame(events)
+# 去掉重复
+events = events.drop_duplicates(subset=['ent','event'], keep='first')
+events.to_csv(ASSETS_PATH + 'events.csv',index=False)
+
+data = b_read_dataset('news_label.json')
+df_data = pd.DataFrame(data)
+df_data.drop(columns=['image','no_impot'], inplace=True)
+b_save_df_datasets(df_data,'news_label_new.json')
+
+
+
+
+
+            
 
 
 
