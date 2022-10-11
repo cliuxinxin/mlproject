@@ -36,7 +36,7 @@ def drop_empty(file):
 
 def process_xlsx(file):
     df = pd.read_excel(ASSETS_PATH + file)
-    df.columns = ['title', 'source', 'image', 'summery', 'labels', 'status', 'title_detail', 'pubdate', 'no_impot','writer', 'content']
+    df.columns = ['title', 'source', 'image', 'summery', 'labels', 'status', 'title_detail', 'pubdate', 'writer', 'content']
     # 去掉为空的数据
     df = df.dropna(subset=['content'])
     # 去掉重复项
@@ -118,7 +118,7 @@ def process_entry(entry):
 
     return events,concepts,views
 
-export_rel()
+export_rel(1759)
 
 process_xlsx('test.xlsx')
 
@@ -161,6 +161,31 @@ data = b_read_dataset('news_label.json')
 df_data = pd.DataFrame(data)
 df_data.drop(columns=['image','no_impot'], inplace=True)
 b_save_df_datasets(df_data,'news_label_new.json')
+
+df_events = pd.read_excel(ASSETS_PATH + 'events-csv.xlsx')
+df_concepts = pd.read_excel(ASSETS_PATH + 'concepts-csv.xlsx')
+df_views = pd.read_excel(ASSETS_PATH + 'views-csv.xlsx')
+
+df_events = df_events[['url','flag']]
+df_concepts = df_concepts[['url','flag']]
+df_views = df_views[['url','flag']]
+
+df_flag = pd.concat([df_events,df_concepts,df_views])
+df_flag = df_flag[df_flag.flag=='Y']
+
+df_all = pd.DataFrame(all)
+
+df_all = df_all[df_all.source.isin(df_flag.url)]
+
+df_all.drop(columns=['image'],inplace=True)
+
+df_data = pd.DataFrame(data)
+
+df_all = df_all[~df_all.source.isin(df_data.source)]
+
+b_save_df_datasets(df_all,'news_label.json')
+
+test = b_read_dataset('news_label.json')
 
 
 
