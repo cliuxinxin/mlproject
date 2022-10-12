@@ -291,11 +291,8 @@ def p_export_preprocess(path,task):
     std_labels = b_read_db_labels(task)['label'].to_list()
     for entry in data:
         text = entry['text']
-        try:
-            text = text.split('@crazy@')[0]
-            entry['text'] = text
-        except:
-            pass
+        text = text.split('@crazy@')[0]
+        entry['text'] = text
         try:
             del entry['label_counts']
         except:
