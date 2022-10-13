@@ -32,12 +32,14 @@ def datetime_process(df,task):
         datetime_columns = ['publish_time','publish_stime','publish_etime']
     elif task == 'tender':
         datetime_columns = ['publish_time','tender_document_stime','tender_document_etime','quote_stime','quote_etime','tender_stime','tender_etime','publish_stime','publish_etime','bid_opening_time']
+    elif task=="contract":
+        datetime_columns=['publish_time','publish_stime','publish_etime','start_time','end_time']
     else:
         datetime_columns = []
     for colum in datetime_columns:
         # 转换为datetime格式
         try:
-            df[colum] = pd.to_datetime(df[colum],unit='ms')
+            df[colum] = pd.to_datetime(df[colum])
             df[colum] = df[colum].apply(lambda x: d_date_clean(x))
         except:
             pass
@@ -198,7 +200,7 @@ def process_save(data_process, task, origin_table, df):
                     split_df_labels.reset_index(inplace=True)
                     split_df_labels.loc[1:,'amount'] = 0
                 sub_data.append(split_df_labels)
-            df_labels[['winning_bidder']] = ''
+            df_labels[['winning_bidder','amount']] = ''
             # 如果有中标金额单位，则删除
             if '中标金额单位' in df_labels.columns:
                 df_labels.drop('中标金额单位',axis=1,inplace=True)
@@ -220,14 +222,18 @@ class Helper():
     def __init__(self) -> None:
         self.tender = b_load_best_model('tender')
         self.bid = b_load_best_model('bid')
+        self.contract = b_load_best_model('contract') 
         self.tender_label = pd.DataFrame(b_read_dataset('tender_train_dev.json'))
         self.bid_label = pd.DataFrame(b_read_dataset('bid_train_dev.json'))
+        self.contract_label = pd.DataFrame(b_read_dataset('contract_train_dev.json'))
 
     def get_model(self,task):
         if task == 'tender':
             return self.tender
         elif task == 'bid':
             return self.bid
+        elif task == 'contract':
+            return self.contract
         else:
             # 报错
             raise Exception('没有指定任务')
@@ -243,6 +249,11 @@ class Helper():
             bid_label.columns = ['md5','labels']
             bid_label.set_index('md5',inplace=True)
             return bid_label
+        elif task == 'contract':
+            contract_label = self.contract_label[['md5','label']]
+            contract_label.columns = ['md5','labels']
+            contract_label.set_index('md5',inplace=True)
+            return contract_label            
     
    
 def delete_and_insert_target(file, target_table, df):
@@ -265,9 +276,9 @@ def is_full_data(task,df):
     import numpy as np
     if list(df[['province','city','county']].fillna(''))==['','','','','']:
         return 0
-    elif task =='tender' and any(x in list(df[["project_name","notice_num","budget","tenderee","tender_document_stime","tender_etime",'publish_time','title']].fillna('')) for x in ['']):
+    elif task =='tender' and any(x in list(df[["project_name","notice_num","budget","tenderee","tender_document_stime","tender_etime",'publish_time','title']].fillna('')) for x in [''] or any(x in str(df['budget']) for x in ['元','万']) or 0<df['budget']<100 or df['budget'] != df['budget']):
         return 0
-    elif task == 'bid' and (not all(x in df['labels'].split("\"") for x in ["项目名称","中标公告编号","中标金额","中标单位"]) or any(x in list(df[['publish_time','title']].fillna('')) for x in ['']) or (df['amount'] < 100 or df['amount'] != df['amount'])):
+    elif task == 'bid' and not all(x in df['labels'].split("\"") for x in ["项目名称","中标公告编号","中标金额","中标单位"]) and any(x in list(df[['publish_time','title']].fillna('')) for x in [''] or any(x in str(df['amount']) for x in ['元','万']) or 0<df['amount']<100 or df['amount'] != df['amount']):
         return 0
     else:
         return 1
@@ -294,15 +305,18 @@ if __name__ == '__main__':
             try:
                 print(file)
                 task = file.split('#')[0].split('/')[-1]
+                print(task)
                 # task = 'bid'
                 origin_table = file.split('#')[1]
                 target_table = data_process.get(origin_table).get('target')
 
                 label_data = helper.get_label(task)
                 nlp = helper.get_model(task)
-
+        
                 df = pd.read_json(file)
-                
+                if task == 'contract':
+                   df.drop(['winning_bidder','amount','contract_term','agency','bid_section_name'],axis=1,inplace=True)
+
                 # 删除更新时间
                 df = df.drop(columns=['update_time'])
                 
