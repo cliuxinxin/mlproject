@@ -1,4 +1,31 @@
 from data_utils import *
+from refine_utils import *
+
+refine = OpenRefine('http://47.108.118.95:3333')
+
+def extact_ecv(all):
+    events = []
+    concepts = []
+    views = []
+
+    for entry in all:
+        e,c,v = process_entry(entry)
+        events.extend(e)
+        concepts.extend(c)
+        views.extend(v)
+
+    upload_data(views,'views',['ent','view'])
+    upload_data(concepts,'concepts',['concept','explation'])
+    upload_data(events,'events',['ent','event'])
+
+def upload_data(data,name='views',subset=['ent','view']):
+    data = pd.DataFrame(data)
+    file_name = name + '.csv'
+    file_path = ASSETS_PATH + file_name
+    data = data.drop_duplicates(subset, keep='first')
+    data.to_csv(file_path,index=False)
+    refine.upload(file_name, file_path,name)
+
 
 def get_unlabel_news(all, data,number=200):
     df_all = pd.DataFrame(all)
@@ -118,14 +145,15 @@ def process_entry(entry):
 
     return events,concepts,views
 
-export_rel(1759)
+export_rel(1779)
 
 process_xlsx('test.xlsx')
-
 # 所有数据 news_all.json
 # 导出数据 train.json
 all = b_read_dataset('news_all_label.json')
+extact_ecv(all)
 data = b_read_dataset('data.json')
+
 
 get_unlabel_news(all, data,500)
 
@@ -133,29 +161,6 @@ ent_id,rel_id = get_ids(data)
 
 task = 'news'
 b_gpu_rel_label(task,'news.json',ent_id ,rel_id)
-
-events = []
-concepts = []
-views = []
-
-for entry in all:
-    e,c,v = process_entry(entry)
-    events.extend(e)
-    concepts.extend(c)
-    views.extend(v)
-
-views = pd.DataFrame(views)
-# 去掉重复
-views = views.drop_duplicates(subset=['ent','view'], keep='first')
-views.to_csv(ASSETS_PATH + 'views.csv',index=False)
-concepts = pd.DataFrame(concepts)
-# 去掉重复
-concepts = concepts.drop_duplicates(subset=['concept','explation'], keep='first')
-concepts.to_csv(ASSETS_PATH + 'concepts.csv',index=False)
-events = pd.DataFrame(events)
-# 去掉重复
-events = events.drop_duplicates(subset=['ent','event'], keep='first')
-events.to_csv(ASSETS_PATH + 'events.csv',index=False)
 
 data = b_read_dataset('news_label.json')
 df_data = pd.DataFrame(data)
