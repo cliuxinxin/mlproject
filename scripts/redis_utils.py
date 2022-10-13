@@ -15,10 +15,10 @@ sql_key = 'sql'
 pool = redis.ConnectionPool(host=host, port=port, password=password, max_connections=50)
 redis_ = redis.Redis(connection_pool=pool, decode_responses=True)
 
-process_config_bussiness  = ['tender','bid']
+process_config_bussiness  = ['tender','bid','contract']
 
 def read_config():
-    with open('data_process.json', 'r') as f:
+    with open('data_process.json', 'r',encoding="utf-8") as f:
         configs = json.load(f)
 
     for item in process_config_bussiness:
