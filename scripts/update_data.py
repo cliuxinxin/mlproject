@@ -1,7 +1,7 @@
 from data_utils import b_doccano_bak_train_dev,b_read_dataset,b_save_df_datasets
 import pandas as pd
 
-tasks = ['tender','bid','bidcats']
+tasks = ['tender','tendercats','bid','bidcats','contract','contractcats']
 
 def is_cats(task):
     if task[-4:] == 'cats':
