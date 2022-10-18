@@ -52,11 +52,6 @@ def redis_push(df,key):
         content = json.dumps(row.to_dict())
         redis_.rpush(key,content)
 
-def redis_lpush(df,key):
-    for idx,row in df.iterrows():
-        content = json.dumps(row.to_dict())
-        redis_.lpush(key,content)
-
 def redis_push_diff(ori_tar_configs):
     for ori,tar in ori_tar_configs.items():
     # 读取差异总数据
@@ -75,7 +70,7 @@ def redis_push_tag(tag_configs):
         df = mysql_select_df(sql)
         df['table'] = table
         df['task'] = task
-        redis_lpush(df,tag_key)
+        redis_push(df,tag_key)
 
 def redis_push_tag_test(tag_configs):
     for table,task in tag_configs.items():
@@ -92,7 +87,7 @@ def pop_redis_data(key,num):
     data = []
     for i in range(num):
         try:
-            s = redis_.lpop(key)
+            s = redis_.rpop(key)
             data.append(json.loads(s))
         except:
             break
