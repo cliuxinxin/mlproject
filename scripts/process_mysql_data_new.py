@@ -331,7 +331,7 @@ if __name__ == '__main__':
                 df['text'] = df['text'].str[:max_len]
                 # 计算标签
                 data = df['text'].to_list()
-                docs = nlp.pipe(data,n_process=1)
+                docs = nlp.pipe(data)
                 labels = []
 
                 for doc in docs:
