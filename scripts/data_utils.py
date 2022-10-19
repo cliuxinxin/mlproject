@@ -193,10 +193,7 @@ def p_filter_tags(text) -> str:
     re_o = re.compile(r'<[^>]+>', re.S) # 其他
     re_td = re.compile('</td>')  # 处理换行
     re_comment = re.compile('<!--[^>]*-->')  # HTML注释
-    try:
-        text = html.unescape(text)
-    except:
-        pass
+    text = html.unescape(text)
     s = re_cdata.sub('', text)  # 去掉CDATA
     s = re_script.sub('', s)  # 去掉SCRIPT
     s = re_style.sub('', s)  # 去掉style
