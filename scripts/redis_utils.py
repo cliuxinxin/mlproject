@@ -87,7 +87,7 @@ def pop_redis_data(key,num):
     data = []
     for i in range(num):
         try:
-            s = redis_.lpop(key)
+            s = redis_.rpop(key)
             data.append(json.loads(s))
         except:
             break

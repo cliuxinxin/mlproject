@@ -349,6 +349,8 @@ if __name__ == '__main__':
                     df = df.drop(columns=['md5','text'])
                     df['labels'] = ''
                     df = datetime_process(df,task)
+                    if origin_table in ['test_tender_bid','test_tender_bid_result']:
+                        df['is_full_data'] = 0
                     delete_and_insert_target(file, target_table, df)
                     if task == 'bid' and len(df) > 0:
                         df['announcement_id'] = df['id']
