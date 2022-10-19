@@ -1883,13 +1883,12 @@ def b_gpu_rel_label(task, file, ent_id, rel_id):
 
     data = b_read_dataset(file)
 
-    data_data = [sample['text'] for sample in data]
-
     nlp = b_load_best_model(task)
     ent_id = int(ent_id)
     rel_id = int(rel_id)
-    docs = nlp.pipe(data_data)
-    for doc,sample in zip(docs,data):
+    for sample in data:
+        text = sample['text']
+        doc = nlp(text)
         entities = []
         ent_dict = {}
         for ent in doc.ents:
