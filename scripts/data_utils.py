@@ -1887,7 +1887,8 @@ def b_gpu_rel_label(task, file, ent_id, rel_id):
     ent_id = int(ent_id)
     rel_id = int(rel_id)
     for sample in data:
-        doc = nlp(sample['text'])
+        text = sample['text']
+        doc = nlp(text)
         entities = []
         ent_dict = {}
         for ent in doc.ents:
