@@ -66,7 +66,7 @@ def redis_push_diff(ori_tar_configs):
 
 def redis_push_tag(tag_configs):
     for table,task in tag_configs.items():
-        sql = f"select id from {table} where classify_type is null"
+        sql = f"select id from {table} where classify_type is null and is_full_data = 1"
         df = mysql_select_df(sql)
         df['table'] = table
         df['task'] = task
