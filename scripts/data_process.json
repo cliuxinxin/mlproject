@@ -47,6 +47,22 @@
         "金额单位": "amount_unit"
     },
 
+    "test_other_tender_bid_result":{
+        "target": "final_other_tender_bid_result",
+        "task": "bid"
+    },
+    "test_other_tender_bid": {
+        "target": "final_other_tender_bid", 
+        "task": "tender"
+    },
+    "test_procurement_bid": {
+        "target": "final_procurement_bid", 
+        "task": "tender"
+    },
+    "test_procurement_bid_result": {
+        "target": "final_procurement_bid_result", 
+        "task": "bid"
+    },
     "test_tender_bid": {
         "target": "final_tender_bid", 
         "task": "tender"
@@ -54,6 +70,18 @@
     "test_tender_bid_result": {
         "target": "final_tender_bid_result", 
         "task": "bid"
+    },
+    "test_tender_trade_result": {
+        "target": "final_tender_trade_result",
+        "task":"contract"
+    },
+    "test_other_tender_trade_result": {
+        "target": "final_other_tender_trade_result",
+        "task": "contract"
+    },
+    "test_procurement_trade_result": {
+        "target": "final_procurement_trade_result",
+        "task": "contract"
     }
 
 }
