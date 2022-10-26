@@ -43,7 +43,7 @@ def process_entry(entry):
             event = find_ent_events(events,ent)
             if event == {}: 
                 events.append(event)
-            event['ent'] = ent
+            event['ent'] = ents[relation['from_id']]
             if relation_type == '实体事件':
                 event['event'] = ents[relation['to_id']]
             if relation_type == '实体时间':
