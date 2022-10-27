@@ -15,7 +15,7 @@ sql_key = 'sql'
 pool = redis.ConnectionPool(host=host, port=port, password=password, max_connections=50)
 redis_ = redis.Redis(connection_pool=pool, decode_responses=True)
 
-process_config_bussiness  = ['tender','bid']
+process_config_bussiness  = ['tender','bid','contract']
 
 def read_config():
     with open('data_process.json', 'r') as f:
@@ -66,7 +66,7 @@ def redis_push_diff(ori_tar_configs):
 
 def redis_push_tag(tag_configs):
     for table,task in tag_configs.items():
-        sql = f"select id from {table} where classify_type is null"
+        sql = f"select id from {table} where classify_type is null and is_full_data = 1"
         df = mysql_select_df(sql)
         df['table'] = table
         df['task'] = task

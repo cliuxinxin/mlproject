@@ -191,3 +191,4 @@ scripts/bert-base-chinese-finetuned-ner/checkpoint/tokenizer.json
 scripts/bert-base-chinese-finetuned-ner/checkpoint/trainer_state.json
 scripts/bert-base-chinese-finetuned-ner/checkpoint/training_args.bin
 scripts/bert-base-chinese-finetuned-ner/checkpoint/vocab.txt
+scripts/configs.json

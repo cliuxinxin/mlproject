@@ -8,7 +8,7 @@ class Helper():
         self.tendercats = b_load_best_model('tendercats')
         self.bidcats = b_load_best_model('bidcats')
         self.contractcats = b_load_best_model('contractcats')
-        # self.tender_label = pd.DataFrame(b_read_dataset('tendercats_train_dev.json'))
+        self.tender_label = pd.DataFrame(b_read_dataset('tendercats_train_dev.json'))
         self.bid_label = pd.DataFrame(b_read_dataset('bidcats_train_dev.json'))
         self.contract_label = pd.DataFrame(b_read_dataset('contractcats_train_dev.json'))
     def get_model(self,task):
@@ -59,6 +59,7 @@ while True:
             sql = f"select id,detail_content from {table} where id in {tuple(df_table.id.values.tolist())}"
             task = df.loc[df_group.groups[table]].task.values[0]
             df1 = mysql_select_df(sql)
+            df1 = df1[~df1['detail_content'].isnull()]
             df1['text'] = df1['detail_content'].apply(p_filter_tags)
             df1['md5'] = df1['text'].apply(p_generate_md5)
             df1['table'] = table

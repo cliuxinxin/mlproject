@@ -609,7 +609,10 @@ def b_doccano_export_project(project_id,path,task=''):
         for chunk in result.iter_content(chunk_size=8192): 
             f.write(chunk)
     zipfile.ZipFile(tmp_zip_path).extractall(path=ASSETS_PATH)
-    shutil.move(ASSETS_PATH + 'all.jsonl', ASSETS_PATH + path)
+    try:
+        shutil.move(ASSETS_PATH + 'all.jsonl', ASSETS_PATH + path)
+    except:
+        shutil.move(ASSETS_PATH + 'admin.jsonl', ASSETS_PATH + path)
     if task:
         p_export_preprocess(path,task)
     os.remove(tmp_zip_path)
@@ -1714,7 +1717,7 @@ def b_check_duplicate_labels(file):
                 label_count[label_type] += 1
     # 如果label_count中有一个label_type的数量大于1，则说明有重复的label
         for label_type in label_count:
-            if label_count[label_type] > 1:
+            if label_count[label_type] > 1 and label_type != '中标单位':
                 print(sample['dataset'])
                 print(sample['md5'])
                 print(label_type + ':' + str(label_count[label_type]))
@@ -1884,7 +1887,8 @@ def b_gpu_rel_label(task, file, ent_id, rel_id):
     ent_id = int(ent_id)
     rel_id = int(rel_id)
     for sample in data:
-        doc = nlp(sample['text'])
+        text = sample['text']
+        doc = nlp(text)
         entities = []
         ent_dict = {}
         for ent in doc.ents:

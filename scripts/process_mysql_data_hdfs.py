@@ -6,6 +6,7 @@ from data_clean_new import clean_manager
 from decimal import Decimal
 from scrapy import Selector
 
+
 def all_labels_is_empty(labels):
     """
     检查所有labels是否为空
@@ -51,7 +52,7 @@ def move_file(file):
     """
     移动已处理文件
     """
-    file_name = file.split('/')[-1]
+    file_name = file.split('\\')[-1]
     os.rename(file,DATA_PATH + 'processed/' + file_name)
 
 def delete_win_by_df(target_table, df, origin_table):
@@ -259,20 +260,17 @@ class Helper():
 def delete_and_insert_target(file, target_table, df):
     delete_mysql_by_df(target_table, df)
     mysql_insert_data(df,target_table)
-    move_file(file)
+    # move_file(file)
 
 def deal_detail_content(html):
-    res = ''
     if html:
         sj = Selector(text=html)
-        sj.xpath('//script | //noscript | //style').remove()
         content = sj.xpath('string(.)').extract_first(default='')
+        content = re.sub(r'\s{2,}', ' ', content)
         content = re.sub(r'[\U00010000-\U0010ffff]', '', content)
-        content = re.sub(r'\s', '', content)
-        content_ = re.findall(r'\w', content)
-        if content_:
-            res = repr(''.join(content_))
-    return res
+        return repr(content)
+    else:
+        return ''
 
 # 必需数据是否满足
 def is_full_data(task,df):
@@ -299,26 +297,22 @@ def deal_winning_bidders(labels):
                 str.append(value)
     return "_".join(str)
 
-if __name__ == '__main__':
-    helper = Helper()
-    data_process = json.loads(open('data_process.json','r',encoding='utf-8').read())
-    while True:
-        files = glob.glob(DATA_PATH + '*.json')
+def  deal_big_data(files,origin_table):
+        helper = Helper()
+        data_process = json.loads(open('data_process.json','r',encoding='utf-8').read())
         for file in tqdm(files):
-            try:
-                print(file)
-                task = file.split('#')[0].split('/')[-1]
-                print(task)
-                # task = 'bid'
-                origin_table = file.split('#')[1]
+            # 判断是否为空
+                if len(file) == 0:
+                    continue
+                df=json.loads(file)
+                df=pd.DataFrame.from_dict(df,orient='index').T
+                origin_table = origin_table
+                task=data_process.get(origin_table).get('task')
                 target_table = data_process.get(origin_table).get('target')
-
                 label_data = helper.get_label(task)
                 nlp = helper.get_model(task)
-        
-                df = pd.read_json(file)
                 if task == 'contract':
-                   df.drop(['winning_bidder','amount','contract_term','agency','bid_section_name'],axis=1,inplace=True)
+                    df.drop(['winning_bidder','amount','contract_term','agency','bid_section_name'],axis=1,inplace=True)
 
                 # 删除更新时间
                 df = df.drop(columns=['update_time'])
@@ -395,13 +389,3 @@ if __name__ == '__main__':
                                     
                 # 填写数据
                 delete_and_insert_target(file, target_table, df)
-            except Exception as e:
-                file_name = file.split('/')[-1]
-                os.rename(file,DATA_PATH + 'tmp/' + file_name)
-                with open('/root/error_collect.txt','a') as f:
-                    t = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    f.write(f'{t}\n{file_name}\n{e}\n')
-                    f.close()
-        time.sleep(10)
-
-

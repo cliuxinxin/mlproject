@@ -25,6 +25,28 @@
             "代理机构联系人": "agency_liaison",
             "代理联系人电话": "agency_pnumber"
     },
+
+    "contract":{
+        "项目名称": "project_name",
+        "项目编号": "notice_num",
+        "开工时间": "start_time",
+        "结束时间": "end_time",
+        "建筑面积": "build_area",
+        "建筑全长": "build_length",
+        "项目地址": "address",
+        "项目概况": "project_overview",
+        "金额": "amount",
+        "建设/采购公司": "procurement_company",
+        "建设/采购联系人": "procurement_contact",
+        "建设/采购联系方式": "procurement_pnumber",
+        "招标公司": "tenderee",
+        "招标联系人": "tenderee_liaison",
+        "招标联系方式": "tenderee_pnumber",
+        "面积单位": "area_unit",
+        "长度单位": "length_unit",
+        "金额单位": "amount_unit"
+    },
+
     "test_other_tender_bid_result":{
         "target": "final_other_tender_bid_result",
         "task": "bid"
@@ -48,6 +70,18 @@
     "test_tender_bid_result": {
         "target": "final_tender_bid_result", 
         "task": "bid"
+    },
+    "test_tender_trade_result": {
+        "target": "final_tender_trade_result",
+        "task":"contract"
+    },
+    "test_other_tender_trade_result": {
+        "target": "final_other_tender_trade_result",
+        "task": "contract"
+    },
+    "test_procurement_trade_result": {
+        "target": "final_procurement_trade_result",
+        "task": "contract"
     }
 
 }
