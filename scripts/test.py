@@ -1,6 +1,6 @@
 from refac import *
 
-path = assets_path('news_test.json')
+path = assets_path('news.json')
 
 with open(path, 'r', encoding='utf-8') as f:
     data = json.load(f)
