@@ -263,14 +263,17 @@ def delete_and_insert_target(file, target_table, df):
     # move_file(file)
 
 def deal_detail_content(html):
+    res = ''
     if html:
         sj = Selector(text=html)
+        sj.xpath('//script | //noscript | //style').remove()
         content = sj.xpath('string(.)').extract_first(default='')
-        content = re.sub(r'\s{2,}', ' ', content)
         content = re.sub(r'[\U00010000-\U0010ffff]', '', content)
-        return repr(content)
-    else:
-        return ''
+        content = re.sub(r'\s', '', content)
+        content_ = re.findall(r'\w', content)
+        if content_:
+            res = repr(''.join(content_))
+    return res
 
 # 必需数据是否满足
 def is_full_data(task,df):
