@@ -43,19 +43,24 @@ def logs(p):
 
 if __name__ == "__main__":
     while True:
-        path = pop_redis_data(key1)
-        logs(path)
-        # path='/user/admin/ods/ZTB_data/test_tender_trade_result/dt=20221021/data_15.json'
-        table=path.split('/')[5]
-        for i in start_list:
-            if i==table:
-                origin_table =i
-                try: 
-                    hdfs.read_hdfs_file(path,origin_table)
-                except Exception as e:
-                    print(e,type(e))
-                    logs("Error:"+str(e)+"**$$**"+path)
-                    continue 
-            else:
-                pass
+        try:
+            path = pop_redis_data(key1)
+            logs(path)
+            # path='/user/admin/ods/ZTB_data/test_tender_trade_result/dt=20221021/data_15.json'
+            table=path.split('/')[5]
+            for i in start_list:
+                if i==table:
+                    origin_table =i
+                    try: 
+                        hdfs.read_hdfs_file(path,origin_table)
+                    except Exception as e:
+                        print(e,type(e))
+                        logs("Error1:"+str(e)+"**$$**"+path)
+                        continue 
+                else:
+                    pass
+        except Exception as e:
+            print(e,type(e))
+            logs("Error2:"+str(e)+"**$$**"+path)
+            continue         
         time.sleep(10)
