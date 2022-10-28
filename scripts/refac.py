@@ -5,8 +5,14 @@ from doccano_client import DoccanoClient
 import pandas as pd
 import spacy
 
+# make the factory work
+from rel_pipe import make_relation_extractor
+# make the config work
+from rel_model import create_relation_model, create_classification_layer, create_instances, create_tensors
+
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS_PATH = os.path.join(PROJECT_PATH, 'assets')
+SCRIPTS_PATH = os.path.join(PROJECT_PATH, 'scripts')
 
 def get_configs(file_name='configs.json'):
     """
@@ -15,10 +21,11 @@ def get_configs(file_name='configs.json'):
     configs = json.load(open(file_name))
     return configs
 
-def get_config(configs,config_name):
+def get_config(config_name):
     """
     读取具体的配置
     """
+    configs = get_configs(os.path.join(SCRIPTS_PATH,'configs.json'))
     config = configs[config_name]
     return config
 
@@ -88,6 +95,12 @@ def b_save_dataset(data,file,is_df='N'):
     把数据集保存到ASSETS文件夹下
     """
     d_save_dataset(data,os.path.join(ASSETS_PATH,file),is_df)
+
+def assets_path(path):
+    """
+    返回ASSETS文件夹下的文件路径
+    """
+    return os.path.join(ASSETS_PATH,path)
 
 # client = get_doccano_client()
 # data = b_read_dataset('train.json')

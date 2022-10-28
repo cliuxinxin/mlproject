@@ -75,6 +75,11 @@ class OpenRefine():
 
         return project_id
 
+    def upload_path(self,path):
+        file_name = os.path.basename(path)
+        project_name = os.path.splitext(file_name)[0]
+        return self.upload(file_name, path, project_name)
+
 
 # file_name = 'events.csv'
 # openrefine = OpenRefine(server_url)
