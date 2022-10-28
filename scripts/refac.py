@@ -1,7 +1,10 @@
 import json
 import os
 import zipfile
-from doccano_client import DoccanoClient
+try:
+    from doccano_client import DoccanoClient
+except:
+    pass
 import pandas as pd
 import spacy
 
