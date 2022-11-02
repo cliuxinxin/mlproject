@@ -16,6 +16,9 @@ port = project_configs['REDIS_SLAVE1']['port']
 key1 = 'ods_path'
 pool = redis.ConnectionPool(host=host, port=port, password=password, max_connections=50,db=13)
 redis_ = redis.Redis(connection_pool=pool, decode_responses=True)
+# # 获取所有数据
+# keys=redis_.smembers(key1)
+# print(keys)
 
 # 目前能解析的表
 start_list=ast.literal_eval(project_configs['data_process']['origin_tables'])
@@ -46,21 +49,22 @@ if __name__ == "__main__":
         try:
             path = pop_redis_data(key1)
             logs(path)
-            # path='/user/admin/ods/ZTB_data/test_tender_trade_result/dt=20221021/data_15.json'
-            table=path.split('/')[5]
-            for i in start_list:
-                if i==table:
-                    origin_table =i
-                    try: 
-                        hdfs.read_hdfs_file(path,origin_table)
-                    except Exception as e:
-                        print(e,type(e))
-                        logs("Error1:"+str(e)+"**$$**"+path)
-                        continue 
-                else:
-                    pass
+            if path==None:
+                break
+            else:
+            # path='/user/admin/ods/ZTB_data/test_other_tender_bid/dt=20221020/data_20.json'
+                table=path.split('/')[5]
+                for i in start_list:
+                    if i==table:
+                        origin_table =i
+                        try: 
+                            hdfs.read_hdfs_file(path,origin_table)
+                        except Exception as e:
+                            logs("Error1:"+str(e)+"**$$**"+path)
+                            continue 
+                    else:
+                        pass
         except Exception as e:
-            print(e,type(e))
             logs("Error2:"+str(e)+"**$$**"+path)
             continue         
         time.sleep(10)
