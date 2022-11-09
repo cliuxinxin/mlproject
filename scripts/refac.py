@@ -7,6 +7,8 @@ except:
     pass
 import pandas as pd
 import spacy
+import re
+from scrapy import Selector
 
 # make the factory work
 from rel_pipe import make_relation_extractor
@@ -24,7 +26,7 @@ def get_configs(file_name='configs.json'):
     configs = json.load(open(file_name))
     return configs
 
-def get_config(config_name):
+def get_config(configs,config_name):
     """
     读取具体的配置
     """
@@ -107,4 +109,19 @@ def assets_path(path):
 
 # client = get_doccano_client()
 # data = b_read_dataset('train.json')
+
+def p_filter_tags(html) -> str:
+    res = ''
+    if html:
+        html = html.replace("</p>","\n</p>")
+        html = html.replace("</tr>","\n</tr>")
+        html = html.replace("</td>","\n</td>")
+        sj = Selector(text=html)
+        sj.xpath('//script | //noscript | //style').remove()
+        content = sj.xpath('string(.)').extract_first(default='')
+        content = re.sub(r'[\U00010000-\U0010ffff]', '', content)
+        content = re.sub(r'[\r\n\f]', '\n', content)
+        content = content.replace(' ','').replace('\t','')
+        content = re.sub(r"\n+","\n",content)
+    return content
 
