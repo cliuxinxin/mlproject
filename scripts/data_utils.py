@@ -17,6 +17,7 @@ import glob
 from copy import deepcopy
 from datetime import datetime
 import html
+from scrapy import Selector
 
 import pandas as pd
 import spacy
@@ -183,7 +184,7 @@ def p_replaceCharEntity(text) -> str:
     return text
 
 # 去掉网页标签
-def p_filter_tags(text) -> str:
+def p_filter_tags_old(text) -> str:
     # 先过滤CDATA
     re_cdata = re.compile('//<!\[CDATA\[[^>]*//\]\]>', re.I)  # 匹配CDATA
     re_script = re.compile('<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', re.I)  # Script
@@ -207,6 +208,21 @@ def p_filter_tags(text) -> str:
     # s = blank_line.sub('\n', s)
     s = p_replaceCharEntity(s)  # 替换实体
     return s
+
+def p_filter_tags(html) -> str:
+    res = ''
+    if html:
+        html = html.replace("</p>","\n</p>")
+        html = html.replace("</tr>","\n</tr>")
+        html = html.replace("</td>","\n</td>")
+        sj = Selector(text=html)
+        sj.xpath('//script | //noscript | //style').remove()
+        content = sj.xpath('string(.)').extract_first(default='')
+        content = re.sub(r'[\U00010000-\U0010ffff]', '', content)
+        content = re.sub(r'[\r\n\f]', '\n', content)
+        content = content.replace(' ','').replace('\t','')
+        content = re.sub(r"\n+","\n",content)
+    return content
 
 # 计算分割点
 def p_cal_boder_end(block,length=500):

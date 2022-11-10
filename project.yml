@@ -62,6 +62,9 @@ workflows:
   all_multcats_trf:
     - convert_cats
     - train_multcats_trf
+  all_ner_cat:
+    - convert_ner_cat
+    - train_ner_cat
 
 # 项目命令
 commands:
@@ -244,7 +247,7 @@ commands:
   - name: "train_spancats"
     help: "Train the NER model"
     script:
-      - "python -m spacy train configs/config_spancat.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
+      - "python -m spacy train configs/config_spancats.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
     deps:
       - "configs/config.cfg"
       - "corpus/train.spacy"
@@ -272,4 +275,28 @@ commands:
       - "corpus/train.spacy"
       - "corpus/dev.spacy"
     outputs:
-      - "training/model_best"  
+      - "training/model_best" 
+
+  - name: "convert_ner_cat"
+    help: "convert to ner and cat data"
+    script:
+      - "python scripts/convert_ner_cat.py ${vars.lang} assets/train.json corpus/train.spacy"
+      - "python scripts/convert_ner_cat.py ${vars.lang} assets/dev.json corpus/dev.spacy"
+    deps:
+      - "assets/train_cats.json"
+      - "assets/dev_cats.json"
+      - "scripts/convert_cats.py"
+    outputs:
+      - "corpus/train_cats.spacy"
+      - "corpus/dev_cats.spacy"
+
+  - name: "train_ner_cat"
+    help: "Train the NER and cat model"
+    script:
+      - "python -m spacy train configs/config_ner_cat.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
+    deps:
+      - "configs/config.cfg"
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+    outputs:
+      - "training/model_best" 
