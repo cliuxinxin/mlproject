@@ -217,10 +217,19 @@ def p_filter_tags(html) -> str:
         html = html.replace("</td>","\n</td>")
         sj = Selector(text=html)
         sj.xpath('//script | //noscript | //style').remove()
+        # 解决部分网站数据是嵌套网页iframe，数据能保留在input标签的value属性中
+        input_value_str = sj.xpath('.//input[@value]').extract()
+        s = ''
+        for i in input_value_str:
+            s += p_filter_tags_old(i)
+        # 剔除部分无用的字典信息
+        s = re.split(r'[\'\"]\w+[\'\"\:]+',s)
+        s = max(s, key=len, default='')
         content = sj.xpath('string(.)').extract_first(default='')
+        content = s + content
         content = re.sub(r'[\U00010000-\U0010ffff]', '', content)
         content = re.sub(r'[\r\n\f]', '\n', content)
-        content = content.replace(' ','').replace('\t','')
+        content = content.replace(' ','').replace('\t','\n')
         content = re.sub(r"\n+","\n",content)
     return content
 
