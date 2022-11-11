@@ -82,7 +82,8 @@ def d_save_dataset(data,path,is_df='N'):
     """
     把数据集保存到ASSETS文件夹下
     """
-    if is_df == 'Y':
+    # 如果data是dataframe
+    if type(data) == pd.core.frame.DataFrame:
         data = data.to_dict('records')
     with open(path,'w',encoding='utf-8') as f:
         for entry in data:
