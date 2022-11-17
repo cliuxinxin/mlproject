@@ -277,7 +277,9 @@ def deal_detail_content(html):
 # 必需数据是否满足
 def is_full_data(task,df):
     import numpy as np
-    if list(df[['province','city','county']].fillna(''))==['','','','','']:
+    if task == 'contract' and any(x in list(df[['amount','notice_num','tenderee']].fillna('')) for x in ['']):
+        return 0
+    elif list(df[['province','city','county']].fillna(''))==['','','','','']:
         return 0
     elif task =='tender' and (any(x in list(df[["project_name","notice_num","budget","tenderee","tender_document_stime","tender_etime",'publish_time','title']].fillna('')) for x in ['']) or any(x in str(df['budget']) for x in ['元','万']) or 0<df['budget']<100 or df['budget'] != df['budget']):
         return 0
@@ -390,7 +392,7 @@ if __name__ == '__main__':
                 if task == 'bid':
                     df['winning_bidder'] = df['labels'].apply(lambda x:deal_winning_bidders(x))
                     
-                if origin_table in ['test_tender_bid','test_tender_bid_result']:
+                if origin_table in ['test_tender_bid','test_tender_bid_result','test_tender_trade_result']:
                     df['is_full_data'] = df.apply(lambda x:is_full_data(task,x),axis=1)                  
                                     
                 # 填写数据
