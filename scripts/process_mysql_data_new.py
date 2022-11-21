@@ -277,7 +277,7 @@ def deal_detail_content(html):
 # 必需数据是否满足
 def is_full_data(task,df):
     import numpy as np
-    if task == 'contract' and any(x in list(df[['amount','notice_num','tenderee']].fillna('')) for x in ['']):
+    if task == 'contract' and any(x in list(df[['notice_num','tenderee']].fillna('')) for x in ['']):
         return 0
     elif list(df[['province','city','county']].fillna(''))==['','','','','']:
         return 0
