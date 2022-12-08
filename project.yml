@@ -105,11 +105,11 @@ commands:
   - name: "convert_cats"
     help: "convert to cats data"
     script:
-      - "python scripts/convert_cats.py ${vars.lang} assets/train.json corpus/train.spacy"
-      - "python scripts/convert_cats.py ${vars.lang} assets/dev.json corpus/dev.spacy"
+      - "python scripts/convert_cats.py ${vars.lang} assets/train.json corpus/train_cats.spacy"
+      - "python scripts/convert_cats.py ${vars.lang} assets/dev.json corpus/dev_cats.spacy"
     deps:
-      - "assets/train_cats.json"
-      - "assets/dev_cats.json"
+      - "assets/train.json"
+      - "assets/dev.json"
       - "scripts/convert_cats.py"
     outputs:
       - "corpus/train_cats.spacy"
