@@ -105,15 +105,15 @@ commands:
   - name: "convert_cats"
     help: "convert to cats data"
     script:
-      - "python scripts/convert_cats.py ${vars.lang} assets/train.json corpus/train_cats.spacy"
-      - "python scripts/convert_cats.py ${vars.lang} assets/dev.json corpus/dev_cats.spacy"
+      - "python scripts/convert_cats.py ${vars.lang} assets/train.json corpus/train.spacy"
+      - "python scripts/convert_cats.py ${vars.lang} assets/dev.json corpus/dev.spacy"
     deps:
       - "assets/train.json"
       - "assets/dev.json"
       - "scripts/convert_cats.py"
     outputs:
-      - "corpus/train_cats.spacy"
-      - "corpus/dev_cats.spacy"
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
 
   - name: "create-config"
     help: "Create a new config with an NER pipeline component"
