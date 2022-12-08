@@ -158,7 +158,7 @@ commands:
   - name: "train_cats"
     help: "Train the cat model"
     script:
-      - "python -m spacy train configs/config_cats_trf.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
+      - "python -m spacy train configs/config_cats_trf_mul.cfg --output training/${env.task}/ --paths.train corpus/train.spacy --paths.dev corpus/dev.spacy  --gpu-id ${vars.gpu_id}"
     deps:
       - "configs/config_cats.cfg"
       - "corpus/train_cats.spacy"
