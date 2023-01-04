@@ -21,9 +21,9 @@ redis_ = redis.Redis(connection_pool=pool, decode_responses=True)
 # print(keys)
 
 # 目前能解析的表
-start_list=ast.literal_eval(project_configs['data_process']['origin_tables'])
-end_list=ast.literal_eval(project_configs['data_process']['target_tables'])
-tasks=ast.literal_eval(project_configs['data_process']['tasks'])
+start_list = ast.literal_eval(project_configs['data_process']['origin_tables'])
+end_list = ast.literal_eval(project_configs['data_process']['target_tables'])
+tasks = ast.literal_eval(project_configs['data_process']['tasks'])
 
 # 取数据
 def pop_redis_data(key):
@@ -31,7 +31,7 @@ def pop_redis_data(key):
         try:
             s = redis_.spop(key)
             if isinstance(s,bytes):
-                s=s.decode('utf-8')
+                s = s.decode('utf-8')
         except:
             redis_.ping()
             time.sleep(5)
@@ -48,22 +48,22 @@ if __name__ == "__main__":
     while True:
         try:
             path = pop_redis_data(key1)
-            logs(path)
-            if path==None:
+            if path == None:
+                logs("无可处理文件,程序终止。")
                 break
             else:
-            # path='/user/admin/ods/ZTB_data/test_other_tender_bid/dt=20221020/data_20.json'
-                table=path.split('/')[5]
-                for i in start_list:
-                    if i==table:
-                        origin_table =i
-                        try: 
-                            hdfs.read_hdfs_file(path,origin_table)
-                        except Exception as e:
-                            logs("Error1:"+str(e)+"**$$**"+path)
-                            continue 
-                    else:
-                        pass
+                # path='/user/admin/ods/ZTB_data/test_other_tender_bid/dt=20221020/data_20.json'
+                logs(f"正在处理文件：{path}")
+                table = path.split('/')[5]
+                if table in start_list:
+                    origin_table = table
+                    try: 
+                        hdfs.read_hdfs_file(path,origin_table)
+                    except Exception as e:
+                        logs("Error1:"+str(e)+"**$$**"+path)
+                        continue 
+                else:
+                    pass
         except Exception as e:
             logs("Error2:"+str(e)+"**$$**"+path)
             continue         
