@@ -174,7 +174,7 @@ def process_save(data_process, task, origin_table, df):
     data = []
     sub_data = []
 
-    for md5,labels,id in df[['md5','clean_labels','id']].values:
+    for md5,labels,id,publish_time in df[['md5','clean_labels','id','publish_time']].values:
         if len(labels) == 0:
             continue
         df_labels = pd.DataFrame([labels])
@@ -194,7 +194,7 @@ def process_save(data_process, task, origin_table, df):
                 split_df_labels = df_labels.explode('winning_bidder')
                 # 根据winner_bidder排重
                 split_df_labels = split_df_labels.drop_duplicates(subset=['winning_bidder'])
-                split_df_labels[['announcement_id','table_name']] = [id,origin_table]
+                split_df_labels[['announcement_id','table_name','publish_time']] = [id, origin_table, publish_time]
                 if 'amount' in split_df_labels.columns and len(split_df_labels) > 1:
                 # 保留第一行amount,其他行清空
                     split_df_labels.reset_index(inplace=True)
@@ -213,7 +213,7 @@ def process_save(data_process, task, origin_table, df):
         sub_label_df = pd.concat(sub_data)
         if 'amount' not in sub_label_df.columns:
             sub_label_df['amount'] = 0
-        sub_label_df = sub_label_df[['winning_bidder','amount','table_name','announcement_id']]
+        sub_label_df = sub_label_df[['winning_bidder','amount','table_name','announcement_id','publish_time']]
     else:
         sub_label_df = pd.DataFrame()
     return label_df,sub_label_df
