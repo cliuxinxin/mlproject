@@ -9,10 +9,10 @@ class hdfsOperator(object):
         lines = []
         with self.client.read(filename, encoding='utf-8', delimiter='\n') as reader:
             for line in reader:
-                    lines.append(line.strip())
-                    if len(lines)==200:
-                        deal_big_data(lines,origin_table)
-                        lines=[]    
+                lines.append(line.strip())
+                if len(lines)==200:
+                    deal_big_data(lines,origin_table)
+                    lines=[]    
             deal_big_data(lines,origin_table)
     # 创建目录
     def mkdirs(self, hdfs_path):
@@ -66,7 +66,8 @@ except Exception as e:
 
 
 if __name__ == "__main__":
-    hdfs.read_hdfs_file()
+    pass
+    # hdfs.read_hdfs_file()
 
 
 
