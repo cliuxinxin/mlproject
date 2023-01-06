@@ -57,7 +57,9 @@ def deal_big_data(files,origin_table):
             df = datetime_process(df,task)
             if origin_table in ['test_tender_bid','test_tender_bid_result']:
                 df['is_full_data'] = 0
-            delete_and_insert_target(file, target_table, df)
+            # delete_and_insert_target(file, target_table, df)
+            delete_mysql_by_df(target_table, df)
+            mysql_insert_data(df,target_table)
             if task == 'bid' and len(df) > 0:
                 df['announcement_id'] = df['id']
                 delete_win_by_df('final_winning_bidder',df,origin_table)
