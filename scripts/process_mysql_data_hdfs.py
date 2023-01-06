@@ -97,7 +97,9 @@ def deal_big_data(files,origin_table):
             df['is_full_data'] = df.apply(lambda x:is_full_data(task,x),axis=1)                  
                             
         # 填写数据
-        delete_and_insert_target(file, target_table, df)
+        # delete_and_insert_target(file, target_table, df)
+        delete_mysql_by_df(target_table, df)
+        mysql_insert_data(df,target_table)
 
 
 if __name__ == '__main__':
