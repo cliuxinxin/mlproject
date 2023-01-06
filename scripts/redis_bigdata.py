@@ -1,7 +1,6 @@
 import redis
-from data_utils import project_configs,DATA_PATH
+from data_utils import project_configs
 from mysql_utils import *
-import json
 import time
 from hdfs调用 import *
 import json
@@ -52,7 +51,7 @@ if __name__ == "__main__":
                 logs("无可处理文件,程序终止。")
                 break
             else:
-                # path='/user/admin/ods/ZTB_data/test_other_tender_bid/dt=20221020/data_20.json'
+                # path='/user/admin/ods/ZTB_data/test_other_tender_bid_result/dt=20230105/data013229_3.json'
                 logs(f"正在处理文件：{path}")
                 table = path.split('/')[5]
                 if table in start_list:
