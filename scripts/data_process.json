@@ -23,7 +23,10 @@
             "招标代理机构": "agency",
             "招标代理机构地址": "agency_address",
             "代理机构联系人": "agency_liaison",
-            "代理联系人电话": "agency_pnumber"
+            "代理联系人电话": "agency_pnumber",
+            "招标文件获取网址": "tender_document_access",
+            "建设地点": "address",
+            "招标公告类型":"tender_announcement_type"
     },
 
     "contract":{
