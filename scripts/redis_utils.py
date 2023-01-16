@@ -80,6 +80,15 @@ def redis_push_tag_test(tag_configs):
         df['task'] = task
         redis_push(df,tag_key)
 
+def redis_push_all_tender():
+    for ori in ['test_tender_bid','test_procurement_bid','test_other_tender_bid']:
+        # 读取所有id数据
+        sql = f'select id from {ori}'
+    df = mysql_select_df(sql)
+    df['table'] = ori
+
+    redis_push(df,diff_key)
+
 def redis_not_empty(key):
     return redis_.llen(key) > 0
 
