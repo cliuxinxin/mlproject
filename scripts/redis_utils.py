@@ -18,7 +18,7 @@ redis_ = redis.Redis(connection_pool=pool, decode_responses=True)
 process_config_bussiness  = ['tender','bid','contract']
 
 def read_config():
-    with open('data_process.json', 'r') as f:
+    with open('data_process.json', 'r') as f: #,encoding='utf-8'
         configs = json.load(f)
 
     for item in process_config_bussiness:
@@ -81,7 +81,7 @@ def redis_push_tag_test(tag_configs):
         redis_push(df,tag_key)
 
 def redis_push_all_tender():
-    for ori in ['test_tender_bid','test_procurement_bid']:
+    for ori in ['test_tender_bid','test_procurement_bid','test_other_tender_bid']:
         # 读取所有id数据
         sql = f'select id from {ori}'
         df = mysql_select_df(sql)
