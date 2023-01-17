@@ -181,3 +181,7 @@ def clean_contract_结束时间(value):
     value = d_date_clean(value)
     return value   
 
+def clean_money(value):
+    money = d_amount_process(value)
+    money = 0 if money == '' else money
+    return money
