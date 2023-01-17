@@ -2,7 +2,7 @@ from tqdm import tqdm
 from data_utils import *
 from mysql_utils import *
 import glob
-from data_clean_new import clean_manager
+from data_clean_new import clean_manager,clean_money
 from decimal import Decimal
 from scrapy import Selector
 
@@ -174,7 +174,7 @@ def process_save(data_process, task, origin_table, df):
     data = []
     sub_data = []
 
-    for md5,labels,id,publish_time in df[['md5','clean_labels','id','publish_time']].values:
+    for md5,labels,id,publish_time,money in df[['md5','clean_labels','id','publish_time','money']].values:
         if len(labels) == 0:
             continue
         df_labels = pd.DataFrame([labels])
@@ -189,6 +189,8 @@ def process_save(data_process, task, origin_table, df):
         df_labels.columns = new_columns
         df_labels['md5'] = md5
         if task == 'bid':
+            if money != 0:
+                df_labels['amount'] =  money
             if 'winning_bidder' in df_labels.columns:
                 df_labels['winning_bidder'] = df_labels['winning_bidder'].apply(lambda x: x.split('#'))
                 split_df_labels = df_labels.explode('winning_bidder')
@@ -318,7 +320,7 @@ if __name__ == '__main__':
                 label_data = helper.get_label(task)
                 nlp = helper.get_model(task)
         
-                df = pd.read_json(file)
+                df = pd.read_json(file)[:20]
                 if task == 'contract':
                    df.drop(['winning_bidder','amount','contract_term','agency','bid_section_name'],axis=1,inplace=True)
 
@@ -326,7 +328,7 @@ if __name__ == '__main__':
                 df = df.drop(columns=['update_time'])
                 
                 # 提取文本
-                df['result_detail'] = df['detail_content'].apply(deal_detail_content)
+                df['result_detail'] = df['detail_content'].fillna('').apply(deal_detail_content)
                 if len(df) == 0:
                     continue
                 df['text'] = df['detail_content'].fillna('')
@@ -361,7 +363,13 @@ if __name__ == '__main__':
                         df['announcement_id'] = df['id']
                         delete_win_by_df('final_winning_bidder',df,origin_table)
                     continue
-
+                
+                if task == 'tender':
+                    df['money'] = df['budget']
+                if task == 'bid':
+                    df['money'] = df['amount']
+                df['money'] = df['money'].fillna('')
+                df['money'] = df['money'].apply(lambda x:clean_money(x))
                 # 得到label内容
                 df['labels'] = df.apply(get_labels,axis=1)
                 # label根据任务做清洗
@@ -372,6 +380,7 @@ if __name__ == '__main__':
                 df['clean_labels'] = df['clean_labels'].apply(lambda x:preprocess_save(x,task))
                 # 处理填充数据，可能根据任务分列
                 label_df, sub_label_df = process_save(data_process, task, origin_table, df)
+                label_df = label_df[label_df.columns.drop(list(label_df.filter(regex='[^A-Za-z_\d]')))]
                 # 填充label数据
                 cols = list(data_process[task].values())
                 for col in label_df.columns:
@@ -385,19 +394,24 @@ if __name__ == '__main__':
                 # 清理df数据
                 df['labels'] = df['labels'].apply(lambda x: json.dumps(x,ensure_ascii=False))
                 # 设置labels最长长度1000
-                df['labels'] = df['labels'].apply(lambda x: x[:1000])
+                # df['labels'] = df['labels'].apply(lambda x: x[:1000])
                 df = df.drop(columns=['md5','text','clean_labels'])
                 df = datetime_process(df,task)
                 
                 if task == 'bid':
                     df['winning_bidder'] = df['labels'].apply(lambda x:deal_winning_bidders(x))
-                    
+                    df['amount'] = df.apply(lambda series:series['amount'] if series['money']==0 else series['money'])
+                elif task == 'tender':
+                    df['budget'] = df.apply(lambda series:series['budget'] if series['money']==0 else series['money'],axis=1)
+                df.drop('money',axis=1,inplace=True)
+
                 if origin_table in ['test_tender_bid','test_tender_bid_result','test_tender_trade_result']:
                     df['is_full_data'] = df.apply(lambda x:is_full_data(task,x),axis=1)                  
                                     
                 # 填写数据
                 delete_and_insert_target(file, target_table, df)
             except Exception as e:
+                print(e)
                 file_name = file.split('/')[-1]
                 os.rename(file,DATA_PATH + 'tmp/' + file_name)
                 with open('/root/error_collect.txt','a') as f:
