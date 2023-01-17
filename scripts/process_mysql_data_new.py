@@ -320,7 +320,7 @@ if __name__ == '__main__':
                 label_data = helper.get_label(task)
                 nlp = helper.get_model(task)
         
-                df = pd.read_json(file)[:20]
+                df = pd.read_json(file)
                 if task == 'contract':
                    df.drop(['winning_bidder','amount','contract_term','agency','bid_section_name'],axis=1,inplace=True)
 
