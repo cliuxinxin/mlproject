@@ -18,7 +18,7 @@ def is_redis_not_empty(redis_,key):
 files = read_json_files(DATA_PATH)
 # 如果文件不满8个，并且redis不为空,则生成文件
 while True:
-    if is_file_not_enough(files,3) and is_redis_not_empty(redis_,diff_key):
+    if is_file_not_enough(files,8) and is_redis_not_empty(redis_,diff_key):
         print(f'There is {redis_.llen(diff_key)} data in redis')
         try:
             generate_file(ori_task_configs,200)
