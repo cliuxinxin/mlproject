@@ -101,10 +101,10 @@ def deal_big_data(files,origin_table):
         
         if task == 'bid':
             df['winning_bidder'] = df['labels'].apply(lambda x:deal_winning_bidders(x))
-            df['amount'] = df.apply(lambda series:series['amount'] if series['money']==0 else series['money'])
+            df['amount'] = df.apply(lambda series:series['amount'] if series['money']==0 else series['money'],axis=1)
         elif task == 'tender':
             df['budget'] = df.apply(lambda series:series['budget'] if series['money']==0 else series['money'],axis=1)
-        df.drop('money',axis=1,inplace=True)
+        df.drop(columns=['money'],inplace=True)
         
         if origin_table in ['test_tender_bid','test_tender_bid_result','test_tender_trade_result']:
             df['is_full_data'] = df.apply(lambda x:is_full_data(task,x),axis=1)                  
