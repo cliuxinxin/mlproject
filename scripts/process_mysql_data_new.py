@@ -387,9 +387,12 @@ if __name__ == '__main__':
                     for md5,value in label_df[label_df[col].notnull()][['md5',col]].values:
                         df.loc[df.md5 == md5,col] = value
                 # 填充子表
-                if task == 'bid' and len(sub_label_df) > 0:
-                    delete_win_by_df('final_winning_bidder',sub_label_df,origin_table)
-                    mysql_insert_data(sub_label_df,'final_winning_bidder')
+                if task == 'bid':
+                    df['announcement_id'] = df['id']
+                    delete_win_by_df('final_winning_bidder',df,origin_table)
+                    df.drop(columns=['announcement_id'],inplace=True)
+                    if len(sub_label_df) > 0:
+                        mysql_insert_data(sub_label_df,'final_winning_bidder')
 
                 # 清理df数据
                 df['labels'] = df['labels'].apply(lambda x: json.dumps(x,ensure_ascii=False))
