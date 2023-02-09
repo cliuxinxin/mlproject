@@ -406,7 +406,7 @@ if __name__ == '__main__':
                     df['amount'] = df.apply(lambda series:series['amount'] if series['money']==0 else series['money'],axis=1)
                 elif task == 'tender':
                     df['budget'] = df.apply(lambda series:series['budget'] if series['money']==0 else series['money'],axis=1)
-                df.drop(columns=['money'],inplace=True)
+                df.drop(columns=['money','detail_content'],inplace=True)
 
                 if origin_table in ['test_tender_bid','test_tender_bid_result','test_tender_trade_result']:
                     df['is_full_data'] = df.apply(lambda x:is_full_data(task,x),axis=1)                  
